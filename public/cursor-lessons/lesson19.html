@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제19강: 성능 최적화와 보안 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-tachometer-alt"></i> 제19강: 성능 최적화와 보안</h1>
+                <p class="lesson-subtitle">AI로 진단하고 개선하는 성능과 보안 최적화</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 60분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson18.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제19강: 성능 최적화와 보안</span>
+            <a href="lesson20.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI 기반 성능 프로파일링과 병목 지점 분석</li>
+                    <li>프론트엔드 최적화 (번들 크기, 렌더링, 캐싱)</li>
+                    <li>백엔드 최적화 (쿼리, 인덱싱, 캐싱 전략)</li>
+                    <li>보안 취약점 자동 스캔과 수정</li>
+                    <li>OWASP Top 10 대응과 보안 모범 사례</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-rocket"></i> 프론트엔드 성능 최적화</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 웹 애플리케이션의 성능을 분석하고, Core Web Vitals를 개선하는 구체적인 최적화 방안을 제시합니다. 번들 크기부터 렌더링 성능까지 종합적으로 개선합니다.</p>
+                </div>
+
+                <h3>번들 사이즈 최적화</h3>
+                <div class="bundle-optimization">
+                    <div class="optimization-request">
+                        <h4>요구사항: React 애플리케이션 번들 최적화</h4>
+                        <p>AI에게 요청: "번들 크기를 분석하고 최적화 방안을 제시해줘"</p>
+                    </div>
+
+                    <div class="ai-optimization">
+                        <h4>AI가 제안한 Webpack 설정</h4>
+                        <pre><code>// webpack.config.js
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
+
+module.exports = (env, argv) => {
+  const isProduction = argv.mode === 'production';
+  
+  return {
+    entry: {
+      main: './src/index.tsx',
+      // 벤더 청크 분리
+      vendor: ['react', 'react-dom', 'react-router-dom']
+    },
+    
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: isProduction 
+        ? '[name].[contenthash:8].js'
+        : '[name].js',
+      chunkFilename: isProduction
+        ? '[name].[contenthash:8].chunk.js'
+        : '[name].chunk.js',
+      clean: true,
+      publicPath: '/'
+    },
+    
+    optimization: {
+      minimize: isProduction,
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            parse: {
+              ecma: 8,
+            },
+            compress: {
+              ecma: 5,
+              warnings: false,
+              comparisons: false,
+              inline: 2,
+              drop_console: isProduction,
+              drop_debugger: isProduction
+            },
+            mangle: {
+              safari10: true,
+            },
+            output: {
+              ecma: 5,
+              comments: false,
+              ascii_only: true,
+            },
+          },
+          parallel: true,
+        }),
+        new CssMinimizerPlugin(),
+      ],
+      
+      // 코드 스플리팅 전략
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          
+          // 벤더 라이브러리
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name(module) {
+              const packageName = module.context.match(
+                /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+              )[1];
+              return `vendor.${packageName.replace('@', '')}`;
+            },
+            priority: 20,
+            reuseExistingChunk: true,
+          },
+          
+          // React 관련
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom|react-router)[\\/]/,
+            name: 'react',
+            priority: 30,
+            reuseExistingChunk: true,
+          },
+          
+          // UI 라이브러리
+          ui: {
+            test: /[\\/]node_modules[\\/](@mui|antd|@ant-design)[\\/]/,
+            name: 'ui',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
+          
+          // 공통 모듈
+          common: {
+            minChunks: 2,
+            priority: 10,
+            name: 'common',
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+        },
+      },
+      
+      // 런타임 청크 분리
+      runtimeChunk: {
+        name: 'runtime',
+      },
+      
+      // 모듈 ID 최적화
+      moduleIds: isProduction ? 'deterministic' : 'named',
+      chunkIds: isProduction ? 'deterministic' : 'named',
+    },
+    
+    module: {
+      rules: [
+        {
+          test: /\.(js|jsx|ts|tsx)$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                ['@babel/preset-env', {
+                  useBuiltIns: 'usage',
+                  corejs: 3,
+                  modules: false,
+                }],
+                '@babel/preset-react',
+                '@babel/preset-typescript'
+              ],
+              plugins: [
+                // 동적 import 지원
+                '@babel/plugin-syntax-dynamic-import',
+                // 프로덕션에서 PropTypes 제거
+                isProduction && [
+                  'babel-plugin-transform-react-remove-prop-types',
+                  { removeImport: true }
+                ],
+                // lodash 최적화
+                ['babel-plugin-lodash', { id: ['lodash', 'recompose'] }],
+              ].filter(Boolean),
+              cacheDirectory: true,
+            },
+          },
+        },
+        {
+          test: /\.css$/,
+          use: [
+            isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                modules: {
+                  auto: true,
+                  localIdentName: isProduction
+                    ? '[hash:base64:5]'
+                    : '[path][name]__[local]',
+                },
+                sourceMap: !isProduction,
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                postcssOptions: {
+                  plugins: [
+                    'autoprefixer',
+                    isProduction && ['cssnano', { preset: 'default' }],
+                  ].filter(Boolean),
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    
+    plugins: [
+      // HTML 생성
+      new HtmlWebpackPlugin({
+        template: './public/index.html',
+        minify: isProduction ? {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true,
+          minifyJS: true,
+          minifyCSS: true,
+          minifyURLs: true,
+        } : false,
+      }),
+      
+      // CSS 추출
+      isProduction && new MiniCssExtractPlugin({
+        filename: '[name].[contenthash:8].css',
+        chunkFilename: '[name].[contenthash:8].chunk.css',
+      }),
+      
+      // Gzip 압축
+      isProduction && new CompressionPlugin({
+        algorithm: 'gzip',
+        test: /\.(js|css|html|svg)$/,
+        threshold: 8192,
+        minRatio: 0.8,
+      }),
+      
+      // Brotli 압축
+      isProduction && new CompressionPlugin({
+        algorithm: 'brotliCompress',
+        test: /\.(js|css|html|svg)$/,
+        threshold: 8192,
+        minRatio: 0.8,
+        filename: '[path][base].br',
+      }),
+      
+      // 번들 분석
+      isProduction && process.env.ANALYZE && new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        reportFilename: 'bundle-report.html',
+        openAnalyzer: false,
+      }),
+      
+      // PWA 지원
+      isProduction && new WorkboxPlugin.GenerateSW({
+        clientsClaim: true,
+        skipWaiting: true,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\./,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 300, // 5분
+              },
+            },
+          },
+          {
+            urlPattern: /\.(png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30일
+              },
+            },
+          },
+        ],
+      }),
+      
+      // 환경 변수 정의
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(argv.mode),
+      }),
+    ].filter(Boolean),
+  };
+};</code></pre>
+                    </div>
+
+                    <div class="lazy-loading">
+                        <h4>컴포넌트 지연 로딩</h4>
+                        <pre><code>// App.tsx - 라우트 레벨 코드 스플리팅
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LoadingSpinner from './components/LoadingSpinner';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// 지연 로딩 컴포넌트
+const Home = lazy(() => import('./pages/Home'));
+const Dashboard = lazy(() => 
+  import(/* webpackChunkName: "dashboard" */ './pages/Dashboard')
+);
+const Profile = lazy(() => 
+  import(/* webpackChunkName: "profile" */ './pages/Profile')
+);
+const Settings = lazy(() => 
+  import(/* webpackChunkName: "settings" */ './pages/Settings')
+);
+
+// 프리로드 함수
+const preloadComponent = (component: () => Promise<any>) => {
+  component();
+};
+
+function App() {
+  // 마우스 호버 시 프리로드
+  const handleMouseEnter = (component: () => Promise<any>) => {
+    preloadComponent(component);
+  };
+
+  return (
+    <ErrorBoundary>
+      <Router>
+        <nav>
+          <Link 
+            to="/dashboard" 
+            onMouseEnter={() => handleMouseEnter(() => import('./pages/Dashboard'))}
+          >
+            Dashboard
+          </Link>
+          <Link 
+            to="/profile"
+            onMouseEnter={() => handleMouseEnter(() => import('./pages/Profile'))}
+          >
+            Profile
+          </Link>
+        </nav>
+        
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </Suspense>
+      </Router>
+    </ErrorBoundary>
+  );
+}
+
+// 컴포넌트 레벨 지연 로딩
+const HeavyComponent = lazy(() => 
+  import(/* webpackChunkName: "heavy-component" */ './components/HeavyComponent')
+);
+
+// 조건부 렌더링과 함께 사용
+function ConditionalComponent({ shouldLoad }) {
+  const [showHeavy, setShowHeavy] = useState(false);
+
+  return (
+    <div>
+      <button onClick={() => setShowHeavy(true)}>
+        Load Heavy Component
+      </button>
+      
+      {showHeavy && (
+        <Suspense fallback={<div>Loading component...</div>}>
+          <HeavyComponent />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+
+// 라이브러리 동적 임포트
+async function loadChart() {
+  const { Chart } = await import(
+    /* webpackChunkName: "chart" */ 'chart.js'
+  );
+  return Chart;
+}</code></pre>
+                    </div>
+
+                    <div class="performance-monitoring">
+                        <h4>성능 모니터링 코드</h4>
+                        <pre><code>// utils/performance.ts
+class PerformanceMonitor {
+  private observer: PerformanceObserver | null = null;
+  private metrics: Map<string, number[]> = new Map();
+
+  constructor() {
+    this.initializeObserver();
+    this.measureWebVitals();
+  }
+
+  private initializeObserver() {
+    if ('PerformanceObserver' in window) {
+      this.observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          this.processEntry(entry);
+        }
+      });
+
+      // 다양한 성능 메트릭 관찰
+      try {
+        this.observer.observe({ 
+          entryTypes: ['measure', 'navigation', 'resource', 'paint', 'largest-contentful-paint'] 
+        });
+      } catch (e) {
+        // 일부 엔트리 타입은 지원되지 않을 수 있음
+        console.warn('Some performance entry types not supported', e);
+      }
+    }
+  }
+
+  private processEntry(entry: PerformanceEntry) {
+    const metricName = entry.name;
+    const duration = entry.duration || 0;
+
+    if (!this.metrics.has(metricName)) {
+      this.metrics.set(metricName, []);
+    }
+
+    this.metrics.get(metricName)!.push(duration);
+
+    // 실시간 모니터링 데이터 전송
+    if (this.shouldReport(metricName)) {
+      this.reportMetric(metricName, duration);
+    }
+  }
+
+  private measureWebVitals() {
+    // First Contentful Paint (FCP)
+    new PerformanceObserver((list) => {
+      const fcp = list.getEntries()[0];
+      this.reportWebVital('FCP', fcp.startTime);
+    }).observe({ entryTypes: ['paint'] });
+
+    // Largest Contentful Paint (LCP)
+    new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      const lcp = entries[entries.length - 1];
+      this.reportWebVital('LCP', lcp.startTime);
+    }).observe({ entryTypes: ['largest-contentful-paint'] });
+
+    // First Input Delay (FID)
+    new PerformanceObserver((list) => {
+      const fid = list.getEntries()[0];
+      this.reportWebVital('FID', fid.processingStart - fid.startTime);
+    }).observe({ entryTypes: ['first-input'] });
+
+    // Cumulative Layout Shift (CLS)
+    let clsValue = 0;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (!entry.hadRecentInput) {
+          clsValue += entry.value;
+          this.reportWebVital('CLS', clsValue);
+        }
+      }
+    }).observe({ entryTypes: ['layout-shift'] });
+  }
+
+  private reportWebVital(name: string, value: number) {
+    // Analytics로 전송
+    if (window.gtag) {
+      gtag('event', name, {
+        value: Math.round(name === 'CLS' ? value * 1000 : value),
+        metric_value: value,
+        metric_delta: value,
+        event_category: 'Web Vitals',
+      });
+    }
+
+    // 커스텀 모니터링 서비스로 전송
+    this.sendToMonitoring({
+      metric: name,
+      value: value,
+      timestamp: Date.now(),
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+    });
+  }
+
+  private sendToMonitoring(data: any) {
+    // 비동기로 모니터링 엔드포인트에 전송
+    if ('sendBeacon' in navigator) {
+      navigator.sendBeacon('/api/metrics', JSON.stringify(data));
+    } else {
+      fetch('/api/metrics', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        keepalive: true,
+      }).catch(() => {});
+    }
+  }
+
+  // 커스텀 성능 측정
+  startMeasure(name: string) {
+    performance.mark(`${name}-start`);
+  }
+
+  endMeasure(name: string) {
+    performance.mark(`${name}-end`);
+    performance.measure(name, `${name}-start`, `${name}-end`);
+  }
+
+  // 리소스 타이밍 분석
+  analyzeResources() {
+    const resources = performance.getEntriesByType('resource');
+    const analysis = {
+      total: resources.length,
+      byType: {} as Record<string, number>,
+      slowest: [] as any[],
+      totalSize: 0,
+    };
+
+    resources.forEach(resource => {
+      const type = this.getResourceType(resource.name);
+      analysis.byType[type] = (analysis.byType[type] || 0) + 1;
+      
+      if (resource.duration > 1000) {
+        analysis.slowest.push({
+          name: resource.name,
+          duration: resource.duration,
+          size: resource.transferSize || 0,
+        });
+      }
+
+      analysis.totalSize += resource.transferSize || 0;
+    });
+
+    analysis.slowest.sort((a, b) => b.duration - a.duration);
+    return analysis;
+  }
+
+  private getResourceType(url: string): string {
+    if (url.includes('.js')) return 'js';
+    if (url.includes('.css')) return 'css';
+    if (/\.(png|jpg|jpeg|gif|svg|webp)/.test(url)) return 'image';
+    if (/\.(woff|woff2|ttf|eot)/.test(url)) return 'font';
+    return 'other';
+  }
+
+  private shouldReport(metricName: string): boolean {
+    // 중요한 메트릭만 실시간 리포트
+    const importantMetrics = ['FCP', 'LCP', 'FID', 'CLS', 'TTFB'];
+    return importantMetrics.includes(metricName);
+  }
+}
+
+export const performanceMonitor = new PerformanceMonitor();</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-database"></i> 백엔드 성능 최적화</h2>
+
+                <div class="backend-optimization">
+                    <h3>데이터베이스 쿼리 최적화</h3>
+                    
+                    <div class="query-optimization">
+                        <h4>AI가 최적화한 쿼리</h4>
+                        <pre><code>// services/UserService.ts - 최적화 전
+class UserService {
+  async getUserDashboard(userId: string) {
+    // ❌ N+1 문제 발생
+    const user = await User.findById(userId);
+    const posts = await Post.find({ authorId: userId });
+    
+    for (const post of posts) {
+      post.comments = await Comment.find({ postId: post.id });
+      post.likes = await Like.count({ postId: post.id });
+    }
+    
+    return { user, posts };
+  }
+}
+
+// 최적화 후
+class OptimizedUserService {
+  async getUserDashboard(userId: string) {
+    // ✅ 단일 쿼리로 모든 데이터 가져오기
+    const result = await db.query(`
+      WITH user_posts AS (
+        SELECT 
+          p.id,
+          p.title,
+          p.content,
+          p.created_at,
+          COUNT(DISTINCT c.id) as comment_count,
+          COUNT(DISTINCT l.id) as like_count
+        FROM posts p
+        LEFT JOIN comments c ON c.post_id = p.id
+        LEFT JOIN likes l ON l.post_id = p.id
+        WHERE p.author_id = $1
+        GROUP BY p.id
+      ),
+      user_stats AS (
+        SELECT 
+          COUNT(DISTINCT p.id) as total_posts,
+          COALESCE(SUM(comment_count), 0) as total_comments,
+          COALESCE(SUM(like_count), 0) as total_likes
+        FROM user_posts
+      )
+      SELECT 
+        u.*,
+        json_build_object(
+          'total_posts', us.total_posts,
+          'total_comments', us.total_comments,
+          'total_likes', us.total_likes
+        ) as stats,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', up.id,
+              'title', up.title,
+              'content', up.content,
+              'created_at', up.created_at,
+              'comment_count', up.comment_count,
+              'like_count', up.like_count
+            ) ORDER BY up.created_at DESC
+          ) FILTER (WHERE up.id IS NOT NULL),
+          '[]'::json
+        ) as posts
+      FROM users u
+      CROSS JOIN user_stats us
+      LEFT JOIN user_posts up ON true
+      WHERE u.id = $1
+      GROUP BY u.id, us.total_posts, us.total_comments, us.total_likes
+    `, [userId]);
+    
+    return result.rows[0];
+  }
+
+  // 인덱스 최적화
+  async optimizeIndexes() {
+    // 복합 인덱스 생성
+    await db.query(`
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_posts_author_created 
+      ON posts(author_id, created_at DESC);
+      
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_comments_post_created 
+      ON comments(post_id, created_at DESC);
+      
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_likes_post_user 
+      ON likes(post_id, user_id);
+      
+      -- 부분 인덱스 (조건부)
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_posts_published 
+      ON posts(created_at DESC) 
+      WHERE status = 'published';
+      
+      -- GIN 인덱스 (전문 검색)
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_posts_search 
+      ON posts USING gin(to_tsvector('english', title || ' ' || content));
+    `);
+  }
+
+  // 캐싱 전략
+  private cache = new NodeCache({ stdTTL: 600 }); // 10분 TTL
+  
+  async getUserWithCache(userId: string) {
+    const cacheKey = `user:${userId}`;
+    const cached = this.cache.get<User>(cacheKey);
+    
+    if (cached) {
+      // 캐시 히트율 모니터링
+      this.metrics.increment('cache.hit', { key: 'user' });
+      return cached;
+    }
+    
+    this.metrics.increment('cache.miss', { key: 'user' });
+    
+    const user = await this.getUserFromDB(userId);
+    
+    // 캐시 저장 (TTL 조정)
+    const ttl = user.isPremium ? 1800 : 600; // 프리미엄 사용자는 더 긴 캐시
+    this.cache.set(cacheKey, user, ttl);
+    
+    return user;
+  }
+}</code></pre>
+                    </div>
+
+                    <div class="connection-pooling">
+                        <h4>데이터베이스 연결 풀 최적화</h4>
+                        <pre><code>// config/database.ts
+import { Pool } from 'pg';
+import { createPool } from 'mysql2/promise';
+import Redis from 'ioredis';
+import { MongoClient } from 'mongodb';
+
+// PostgreSQL 연결 풀
+export const pgPool = new Pool({
+  host: process.env.PG_HOST,
+  port: parseInt(process.env.PG_PORT || '5432'),
+  database: process.env.PG_DATABASE,
+  user: process.env.PG_USER,
+  password: process.env.PG_PASSWORD,
+  
+  // 연결 풀 최적화
+  max: 20, // 최대 연결 수
+  min: 5, // 최소 연결 수
+  idleTimeoutMillis: 30000, // 30초 유휴 타임아웃
+  connectionTimeoutMillis: 2000, // 2초 연결 타임아웃
+  
+  // 성능 최적화
+  statement_timeout: 30000, // 30초 쿼리 타임아웃
+  query_timeout: 30000,
+  
+  // 연결 상태 확인
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+});
+
+// MySQL 연결 풀
+export const mysqlPool = createPool({
+  host: process.env.MYSQL_HOST,
+  port: parseInt(process.env.MYSQL_PORT || '3306'),
+  database: process.env.MYSQL_DATABASE,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  
+  // 연결 풀 설정
+  connectionLimit: 20,
+  queueLimit: 0,
+  waitForConnections: true,
+  
+  // 성능 최적화
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+  
+  // 타임아웃 설정
+  connectTimeout: 60000,
+  timeout: 60000,
+});
+
+// Redis 클러스터
+export const redisCluster = new Redis.Cluster([
+  {
+    host: process.env.REDIS_HOST_1,
+    port: 6379,
+  },
+  {
+    host: process.env.REDIS_HOST_2,
+    port: 6379,
+  },
+  {
+    host: process.env.REDIS_HOST_3,
+    port: 6379,
+  },
+], {
+  // 클러스터 옵션
+  clusterRetryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
+  
+  // 성능 최적화
+  enableOfflineQueue: false,
+  enableReadyCheck: true,
+  maxRetriesPerRequest: 3,
+  
+  // 연결 풀
+  natMap: {
+    '10.0.0.1:6379': { host: 'public-ip-1', port: 6379 },
+    '10.0.0.2:6379': { host: 'public-ip-2', port: 6379 },
+  },
+  
+  // Redis 옵션
+  redisOptions: {
+    password: process.env.REDIS_PASSWORD,
+    tls: process.env.NODE_ENV === 'production' ? {} : undefined,
+  },
+});
+
+// MongoDB 연결 최적화
+export const mongoClient = new MongoClient(process.env.MONGODB_URI!, {
+  // 연결 풀
+  minPoolSize: 10,
+  maxPoolSize: 50,
+  
+  // 타임아웃
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  
+  // 성능 최적화
+  compressors: ['snappy', 'zlib'],
+  retryWrites: true,
+  retryReads: true,
+  
+  // 모니터링
+  monitorCommands: process.env.NODE_ENV === 'development',
+});
+
+// 헬스 체크
+export async function checkDatabaseHealth() {
+  const health = {
+    postgres: false,
+    mysql: false,
+    redis: false,
+    mongodb: false,
+  };
+  
+  try {
+    await pgPool.query('SELECT 1');
+    health.postgres = true;
+  } catch (error) {
+    console.error('PostgreSQL health check failed:', error);
+  }
+  
+  try {
+    await mysqlPool.query('SELECT 1');
+    health.mysql = true;
+  } catch (error) {
+    console.error('MySQL health check failed:', error);
+  }
+  
+  try {
+    await redisCluster.ping();
+    health.redis = true;
+  } catch (error) {
+    console.error('Redis health check failed:', error);
+  }
+  
+  try {
+    await mongoClient.db().admin().ping();
+    health.mongodb = true;
+  } catch (error) {
+    console.error('MongoDB health check failed:', error);
+  }
+  
+  return health;
+}</code></pre>
+                    </div>
+
+                    <div class="caching-strategies">
+                        <h4>멀티레벨 캐싱 전략</h4>
+                        <pre><code>// services/CacheService.ts
+import { LRUCache } from 'lru-cache';
+import Redis from 'ioredis';
+import { compress, decompress } from 'lz4';
+
+export class MultiLevelCache {
+  private l1Cache: LRUCache<string, any>;
+  private l2Cache: Redis;
+  private readonly l1TTL = 60; // 1분
+  private readonly l2TTL = 3600; // 1시간
+
+  constructor(redis: Redis) {
+    // L1: 메모리 캐시 (빠르지만 용량 제한)
+    this.l1Cache = new LRUCache({
+      max: 1000, // 최대 1000개 항목
+      maxSize: 50 * 1024 * 1024, // 50MB
+      sizeCalculation: (value) => {
+        return JSON.stringify(value).length;
+      },
+      ttl: this.l1TTL * 1000,
+      updateAgeOnGet: true,
+      updateAgeOnHas: true,
+    });
+
+    // L2: Redis 캐시 (느리지만 대용량)
+    this.l2Cache = redis;
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    // L1 캐시 확인
+    const l1Value = this.l1Cache.get(key);
+    if (l1Value !== undefined) {
+      this.metrics.increment('cache.l1.hit');
+      return l1Value;
+    }
+
+    this.metrics.increment('cache.l1.miss');
+
+    // L2 캐시 확인
+    const l2Value = await this.l2Cache.getBuffer(key);
+    if (l2Value) {
+      this.metrics.increment('cache.l2.hit');
+      
+      // 압축 해제
+      const decompressed = await this.decompressData(l2Value);
+      const value = JSON.parse(decompressed);
+      
+      // L1 캐시에 저장
+      this.l1Cache.set(key, value);
+      
+      return value;
+    }
+
+    this.metrics.increment('cache.l2.miss');
+    return null;
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+    // L1 캐시에 저장
+    this.l1Cache.set(key, value);
+
+    // L2 캐시에 압축하여 저장
+    const compressed = await this.compressData(JSON.stringify(value));
+    await this.l2Cache.setex(
+      key,
+      ttl || this.l2TTL,
+      compressed
+    );
+  }
+
+  async invalidate(pattern: string): Promise<void> {
+    // L1 캐시 무효화
+    for (const key of this.l1Cache.keys()) {
+      if (key.match(pattern)) {
+        this.l1Cache.delete(key);
+      }
+    }
+
+    // L2 캐시 무효화
+    const keys = await this.l2Cache.keys(pattern);
+    if (keys.length > 0) {
+      await this.l2Cache.del(...keys);
+    }
+  }
+
+  // 캐시 워밍
+  async warmCache(keys: string[], fetcher: (key: string) => Promise<any>) {
+    const promises = keys.map(async (key) => {
+      const value = await fetcher(key);
+      await this.set(key, value);
+    });
+
+    await Promise.all(promises);
+  }
+
+  // 압축 유틸리티
+  private async compressData(data: string): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      compress(Buffer.from(data), (err, compressed) => {
+        if (err) reject(err);
+        else resolve(compressed);
+      });
+    });
+  }
+
+  private async decompressData(data: Buffer): Promise<string> {
+    return new Promise((resolve, reject) => {
+      decompress(data, (err, decompressed) => {
+        if (err) reject(err);
+        else resolve(decompressed.toString());
+      });
+    });
+  }
+}
+
+// 캐시 전략 구현
+export class CacheStrategy {
+  constructor(private cache: MultiLevelCache) {}
+
+  // Cache-Aside 패턴
+  async cacheAside<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+    ttl?: number
+  ): Promise<T> {
+    // 캐시 확인
+    const cached = await this.cache.get<T>(key);
+    if (cached !== null) {
+      return cached;
+    }
+
+    // 데이터 가져오기
+    const value = await fetcher();
+    
+    // 캐시 저장
+    await this.cache.set(key, value, ttl);
+    
+    return value;
+  }
+
+  // Write-Through 패턴
+  async writeThrough<T>(
+    key: string,
+    value: T,
+    writer: (value: T) => Promise<void>
+  ): Promise<void> {
+    // 데이터베이스에 먼저 쓰기
+    await writer(value);
+    
+    // 캐시 업데이트
+    await this.cache.set(key, value);
+  }
+
+  // Write-Behind 패턴 (배치 처리)
+  private writeBuffer = new Map<string, any>();
+  private writeTimer: NodeJS.Timeout | null = null;
+
+  async writeBehind<T>(
+    key: string,
+    value: T,
+    writer: (batch: Map<string, any>) => Promise<void>
+  ): Promise<void> {
+    // 캐시 즉시 업데이트
+    await this.cache.set(key, value);
+    
+    // 버퍼에 추가
+    this.writeBuffer.set(key, value);
+    
+    // 배치 처리 스케줄
+    if (!this.writeTimer) {
+      this.writeTimer = setTimeout(async () => {
+        const batch = new Map(this.writeBuffer);
+        this.writeBuffer.clear();
+        this.writeTimer = null;
+        
+        try {
+          await writer(batch);
+        } catch (error) {
+          console.error('Write-behind batch failed:', error);
+          // 실패한 항목 재시도 로직
+        }
+      }, 5000); // 5초마다 배치 처리
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-shield-alt"></i> 보안 최적화</h2>
+
+                <div class="security-optimization">
+                    <h3>OWASP Top 10 대응</h3>
+                    
+                    <div class="security-middleware">
+                        <h4>종합 보안 미들웨어</h4>
+                        <pre><code>// middleware/security.ts
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import hpp from 'hpp';
+import { randomBytes } from 'crypto';
+import validator from 'validator';
+
+export class SecurityMiddleware {
+  // CSP (Content Security Policy) 설정
+  static contentSecurityPolicy() {
+    return helmet.contentSecurityPolicy({
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'", // 인라인 스크립트 허용 (점진적으로 제거)
+          (req, res) => `'nonce-${res.locals.nonce}'`,
+          "https://trusted-cdn.com",
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+        ],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "wss:", "https://api.yourdomain.com"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+        reportUri: '/api/csp-report',
+      },
+    });
+  }
+
+  // Nonce 생성 미들웨어
+  static generateNonce() {
+    return (req: Request, res: Response, next: NextFunction) => {
+      res.locals.nonce = randomBytes(16).toString('base64');
+      next();
+    };
+  }
+
+  // Rate Limiting 설정
+  static rateLimiting() {
+    // 일반 API 제한
+    const apiLimiter = rateLimit({
+      windowMs: 15 * 60 * 1000, // 15분
+      max: 100,
+      message: 'Too many requests from this IP',
+      standardHeaders: true,
+      legacyHeaders: false,
+      // IP 기반 키 생성
+      keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress || 'unknown';
+      },
+      // 재시도 정보 추가
+      handler: (req, res) => {
+        res.status(429).json({
+          error: 'Too many requests',
+          retryAfter: req.rateLimit.resetTime,
+        });
+      },
+    });
+
+    // 로그인 시도 제한
+    const loginLimiter = rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 5, // 15분에 5회
+      skipSuccessfulRequests: true, // 성공한 요청은 카운트하지 않음
+    });
+
+    // 비용이 높은 작업 제한
+    const expensiveLimiter = rateLimit({
+      windowMs: 60 * 60 * 1000, // 1시간
+      max: 10,
+      message: 'Rate limit exceeded for expensive operations',
+    });
+
+    return { apiLimiter, loginLimiter, expensiveLimiter };
+  }
+
+  // SQL Injection 방지
+  static sqlInjectionPrevention() {
+    return (req: Request, res: Response, next: NextFunction) => {
+      // 쿼리 파라미터 검증
+      const suspiciousPatterns = [
+        /(\b(union|select|insert|update|delete|drop|create|alter|exec|script)\b)/gi,
+        /(;|--|\/\*|\*\/|xp_|sp_)/gi,
+        /(<script|<\/script|javascript:|onerror=|onload=)/gi,
+      ];
+
+      const checkValue = (value: any): boolean => {
+        if (typeof value !== 'string') return true;
+        return !suspiciousPatterns.some(pattern => pattern.test(value));
+      };
+
+      // 모든 입력 검증
+      const inputs = { ...req.query, ...req.body, ...req.params };
+      
+      for (const [key, value] of Object.entries(inputs)) {
+        if (!checkValue(value)) {
+          return res.status(400).json({
+            error: 'Invalid input detected',
+            field: key,
+          });
+        }
+      }
+
+      next();
+    };
+  }
+
+  // XSS 방지
+  static xssPrevention() {
+    return (req: Request, res: Response, next: NextFunction) => {
+      // HTML 이스케이프 함수
+      const escapeHtml = (unsafe: string): string => {
+        return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      };
+
+      // 입력 값 정제
+      const sanitizeInput = (obj: any): any => {
+        if (typeof obj === 'string') {
+          return escapeHtml(obj);
+        } else if (Array.isArray(obj)) {
+          return obj.map(sanitizeInput);
+        } else if (obj && typeof obj === 'object') {
+          const sanitized: any = {};
+          for (const [key, value] of Object.entries(obj)) {
+            sanitized[key] = sanitizeInput(value);
+          }
+          return sanitized;
+        }
+        return obj;
+      };
+
+      req.body = sanitizeInput(req.body);
+      req.query = sanitizeInput(req.query);
+      
+      next();
+    };
+  }
+
+  // CSRF 보호
+  static csrfProtection() {
+    const tokens = new Map<string, string>();
+
+    return {
+      generateToken: (req: Request, res: Response, next: NextFunction) => {
+        const token = randomBytes(32).toString('hex');
+        const sessionId = req.session?.id || req.ip;
+        
+        tokens.set(sessionId, token);
+        res.locals.csrfToken = token;
+        
+        // 토큰을 쿠키와 헤더 모두에 설정
+        res.cookie('XSRF-TOKEN', token, {
+          httpOnly: false, // JavaScript에서 읽을 수 있어야 함
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+        });
+        
+        next();
+      },
+      
+      verifyToken: (req: Request, res: Response, next: NextFunction) => {
+        const sessionId = req.session?.id || req.ip;
+        const storedToken = tokens.get(sessionId);
+        const providedToken = req.headers['x-csrf-token'] || req.body._csrf;
+        
+        if (!storedToken || storedToken !== providedToken) {
+          return res.status(403).json({ error: 'Invalid CSRF token' });
+        }
+        
+        next();
+      },
+    };
+  }
+
+  // 보안 헤더 설정
+  static securityHeaders() {
+    return helmet({
+      contentSecurityPolicy: false, // 별도로 설정
+      crossOriginEmbedderPolicy: true,
+      crossOriginOpenerPolicy: true,
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      dnsPrefetchControl: true,
+      frameguard: { action: 'deny' },
+      hidePoweredBy: true,
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      },
+      ieNoOpen: true,
+      noSniff: true,
+      originAgentCluster: true,
+      permittedCrossDomainPolicies: false,
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+      xssFilter: true,
+    });
+  }
+
+  // 입력 검증
+  static inputValidation() {
+    return (req: Request, res: Response, next: NextFunction) => {
+      // 이메일 검증
+      if (req.body.email && !validator.isEmail(req.body.email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+      }
+
+      // URL 검증
+      if (req.body.url && !validator.isURL(req.body.url)) {
+        return res.status(400).json({ error: 'Invalid URL format' });
+      }
+
+      // 파일 업로드 검증
+      if (req.files) {
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+        for (const file of Object.values(req.files)) {
+          if (!allowedMimeTypes.includes(file.mimetype)) {
+            return res.status(400).json({ error: 'Invalid file type' });
+          }
+          if (file.size > maxFileSize) {
+            return res.status(400).json({ error: 'File too large' });
+          }
+        }
+      }
+
+      next();
+    };
+  }
+}</code></pre>
+                    </div>
+
+                    <div class="encryption">
+                        <h4>데이터 암호화</h4>
+                        <pre><code>// services/EncryptionService.ts
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import { promisify } from 'util';
+
+export class EncryptionService {
+  private readonly algorithm = 'aes-256-gcm';
+  private readonly keyDerivationIterations = 100000;
+  private readonly saltLength = 32;
+  private readonly tagLength = 16;
+  private readonly ivLength = 16;
+
+  constructor(
+    private masterKey: string,
+    private pepper: string // 추가 보안을 위한 pepper
+  ) {}
+
+  // 대칭키 암호화 (민감한 데이터용)
+  async encryptData(plaintext: string): Promise<{
+    encrypted: string;
+    salt: string;
+    iv: string;
+    tag: string;
+  }> {
+    const salt = crypto.randomBytes(this.saltLength);
+    const iv = crypto.randomBytes(this.ivLength);
+    
+    // 키 유도
+    const key = await this.deriveKey(this.masterKey, salt);
+    
+    // 암호화
+    const cipher = crypto.createCipheriv(this.algorithm, key, iv);
+    
+    let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    const tag = cipher.getAuthTag();
+    
+    return {
+      encrypted,
+      salt: salt.toString('hex'),
+      iv: iv.toString('hex'),
+      tag: tag.toString('hex'),
+    };
+  }
+
+  // 복호화
+  async decryptData(encryptedData: {
+    encrypted: string;
+    salt: string;
+    iv: string;
+    tag: string;
+  }): Promise<string> {
+    const salt = Buffer.from(encryptedData.salt, 'hex');
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const tag = Buffer.from(encryptedData.tag, 'hex');
+    
+    // 키 유도
+    const key = await this.deriveKey(this.masterKey, salt);
+    
+    // 복호화
+    const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
+    decipher.setAuthTag(tag);
+    
+    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+  }
+
+  // 비밀번호 해싱 (pepper 추가)
+  async hashPassword(password: string): Promise<string> {
+    const pepperedPassword = password + this.pepper;
+    const saltRounds = 12;
+    return bcrypt.hash(pepperedPassword, saltRounds);
+  }
+
+  // 비밀번호 검증
+  async verifyPassword(password: string, hash: string): Promise<boolean> {
+    const pepperedPassword = password + this.pepper;
+    return bcrypt.compare(pepperedPassword, hash);
+  }
+
+  // 토큰 생성 (안전한 랜덤)
+  generateSecureToken(length: number = 32): string {
+    return crypto.randomBytes(length).toString('hex');
+  }
+
+  // 키 유도 함수
+  private async deriveKey(password: string, salt: Buffer): Promise<Buffer> {
+    const pbkdf2 = promisify(crypto.pbkdf2);
+    return pbkdf2(password, salt, this.keyDerivationIterations, 32, 'sha256');
+  }
+
+  // 필드 레벨 암호화 (데이터베이스용)
+  async encryptField(value: string): Promise<string> {
+    const { encrypted, salt, iv, tag } = await this.encryptData(value);
+    // Base64로 인코딩하여 저장
+    return Buffer.from(JSON.stringify({ encrypted, salt, iv, tag })).toString('base64');
+  }
+
+  async decryptField(encryptedValue: string): Promise<string> {
+    const data = JSON.parse(Buffer.from(encryptedValue, 'base64').toString());
+    return this.decryptData(data);
+  }
+
+  // HMAC 서명 (무결성 검증)
+  generateHMAC(data: string): string {
+    const hmac = crypto.createHmac('sha256', this.masterKey);
+    hmac.update(data);
+    return hmac.digest('hex');
+  }
+
+  verifyHMAC(data: string, signature: string): boolean {
+    const expectedSignature = this.generateHMAC(data);
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature)
+    );
+  }
+
+  // 키 로테이션
+  async rotateEncryption(
+    oldKey: string,
+    newKey: string,
+    encryptedData: any
+  ): Promise<any> {
+    // 기존 키로 복호화
+    const tempService = new EncryptionService(oldKey, this.pepper);
+    const decrypted = await tempService.decryptData(encryptedData);
+    
+    // 새 키로 암호화
+    const newService = new EncryptionService(newKey, this.pepper);
+    return newService.encryptData(decrypted);
+  }
+}
+
+// 환경 변수에서 키 로드 (AWS KMS, HashiCorp Vault 등 사용 권장)
+export const encryptionService = new EncryptionService(
+  process.env.MASTER_ENCRYPTION_KEY!,
+  process.env.PASSWORD_PEPPER!
+);</code></pre>
+                    </div>
+
+                    <div class="security-scanning">
+                        <h4>자동 보안 스캔</h4>
+                        <pre><code>// scripts/security-scan.ts
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+
+const execAsync = promisify(exec);
+
+export class SecurityScanner {
+  async runFullScan(): Promise<SecurityReport> {
+    const report: SecurityReport = {
+      timestamp: new Date(),
+      vulnerabilities: [],
+      summary: {
+        critical: 0,
+        high: 0,
+        medium: 0,
+        low: 0,
+      },
+    };
+
+    // 의존성 취약점 스캔
+    await this.scanDependencies(report);
+    
+    // 코드 취약점 스캔
+    await this.scanCode(report);
+    
+    // Docker 이미지 스캔
+    await this.scanDockerImages(report);
+    
+    // 시크릿 스캔
+    await this.scanSecrets(report);
+    
+    // OWASP 체크
+    await this.runOWASPChecks(report);
+    
+    return report;
+  }
+
+  private async scanDependencies(report: SecurityReport) {
+    try {
+      // npm audit
+      const { stdout: npmAudit } = await execAsync('npm audit --json');
+      const auditResult = JSON.parse(npmAudit);
+      
+      if (auditResult.vulnerabilities) {
+        Object.entries(auditResult.vulnerabilities).forEach(([pkg, vuln]: any) => {
+          report.vulnerabilities.push({
+            type: 'dependency',
+            package: pkg,
+            severity: vuln.severity,
+            description: vuln.title,
+            solution: vuln.fixAvailable,
+          });
+          
+          report.summary[vuln.severity]++;
+        });
+      }
+      
+      // Snyk 스캔
+      const { stdout: snykResult } = await execAsync('snyk test --json');
+      const snykData = JSON.parse(snykResult);
+      
+      snykData.vulnerabilities?.forEach((vuln: any) => {
+        report.vulnerabilities.push({
+          type: 'dependency',
+          package: vuln.packageName,
+          severity: vuln.severity,
+          description: vuln.title,
+          CVE: vuln.identifiers?.CVE,
+          solution: vuln.fixedIn,
+        });
+      });
+    } catch (error) {
+      console.error('Dependency scan failed:', error);
+    }
+  }
+
+  private async scanCode(report: SecurityReport) {
+    try {
+      // ESLint 보안 규칙
+      const { stdout } = await execAsync(
+        'eslint . --format json --config .eslintrc.security.js'
+      );
+      
+      const eslintResults = JSON.parse(stdout);
+      
+      eslintResults.forEach((file: any) => {
+        file.messages.forEach((message: any) => {
+          if (message.ruleId?.includes('security')) {
+            report.vulnerabilities.push({
+              type: 'code',
+              file: file.filePath,
+              line: message.line,
+              severity: message.severity === 2 ? 'high' : 'medium',
+              description: message.message,
+              rule: message.ruleId,
+            });
+          }
+        });
+      });
+      
+      // Semgrep 스캔
+      const { stdout: semgrepResult } = await execAsync(
+        'semgrep --config=auto --json'
+      );
+      
+      const semgrepData = JSON.parse(semgrepResult);
+      
+      semgrepData.results?.forEach((result: any) => {
+        report.vulnerabilities.push({
+          type: 'code',
+          file: result.path,
+          line: result.start.line,
+          severity: result.extra.severity,
+          description: result.extra.message,
+          rule: result.check_id,
+        });
+      });
+    } catch (error) {
+      console.error('Code scan failed:', error);
+    }
+  }
+
+  private async scanDockerImages(report: SecurityReport) {
+    try {
+      // Trivy 스캔
+      const { stdout } = await execAsync(
+        'trivy image --format json --severity HIGH,CRITICAL myapp:latest'
+      );
+      
+      const trivyResult = JSON.parse(stdout);
+      
+      trivyResult.Results?.forEach((result: any) => {
+        result.Vulnerabilities?.forEach((vuln: any) => {
+          report.vulnerabilities.push({
+            type: 'container',
+            target: result.Target,
+            severity: vuln.Severity.toLowerCase(),
+            CVE: vuln.VulnerabilityID,
+            description: vuln.Description,
+            solution: vuln.FixedVersion,
+          });
+        });
+      });
+    } catch (error) {
+      console.error('Docker scan failed:', error);
+    }
+  }
+
+  private async scanSecrets(report: SecurityReport) {
+    try {
+      // GitLeaks 스캔
+      const { stdout } = await execAsync('gitleaks detect --format json');
+      const leaks = JSON.parse(stdout);
+      
+      leaks.forEach((leak: any) => {
+        report.vulnerabilities.push({
+          type: 'secret',
+          file: leak.File,
+          line: leak.StartLine,
+          severity: 'critical',
+          description: `Potential ${leak.Description} found`,
+          rule: leak.Rule,
+        });
+      });
+    } catch (error) {
+      // GitLeaks는 시크릿을 찾으면 에러 코드를 반환
+      if (error.stdout) {
+        const leaks = JSON.parse(error.stdout);
+        // 위와 동일한 처리
+      }
+    }
+  }
+
+  private async runOWASPChecks(report: SecurityReport) {
+    // OWASP ZAP API 스캔 (실행 중인 애플리케이션 대상)
+    try {
+      const { stdout } = await execAsync(
+        'zap-cli --zap-url http://localhost:8080 -p 8090 quick-scan --self-contained http://localhost:3000'
+      );
+      
+      // ZAP 결과 파싱 및 리포트 추가
+      // ...
+    } catch (error) {
+      console.error('OWASP scan failed:', error);
+    }
+  }
+
+  // CI/CD 통합용
+  async generateCIReport(): Promise<void> {
+    const report = await this.runFullScan();
+    
+    // JUnit 형식으로 출력 (CI 통합용)
+    const junitXml = this.convertToJUnit(report);
+    await fs.writeFile('security-report.xml', junitXml);
+    
+    // 마크다운 리포트
+    const markdown = this.convertToMarkdown(report);
+    await fs.writeFile('security-report.md', markdown);
+    
+    // 심각한 취약점이 있으면 빌드 실패
+    if (report.summary.critical > 0 || report.summary.high > 0) {
+      console.error('Critical or high severity vulnerabilities found!');
+      process.exit(1);
+    }
+  }
+
+  private convertToJUnit(report: SecurityReport): string {
+    // JUnit XML 생성 로직
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Security Scan" tests="${report.vulnerabilities.length}">
+  <testsuite name="Vulnerabilities">
+    ${report.vulnerabilities.map(vuln => `
+    <testcase name="${vuln.type}: ${vuln.description}">
+      ${vuln.severity === 'critical' || vuln.severity === 'high' 
+        ? `<failure message="${vuln.description}" />` 
+        : ''}
+    </testcase>
+    `).join('')}
+  </testsuite>
+</testsuites>`;
+  }
+
+  private convertToMarkdown(report: SecurityReport): string {
+    return `# Security Scan Report
+
+## Summary
+- **Critical**: ${report.summary.critical}
+- **High**: ${report.summary.high}
+- **Medium**: ${report.summary.medium}
+- **Low**: ${report.summary.low}
+
+## Vulnerabilities
+
+${report.vulnerabilities.map(vuln => `
+### ${vuln.severity.toUpperCase()}: ${vuln.description}
+- **Type**: ${vuln.type}
+- **Location**: ${vuln.file || vuln.package || vuln.target}
+${vuln.line ? `- **Line**: ${vuln.line}` : ''}
+${vuln.CVE ? `- **CVE**: ${vuln.CVE}` : ''}
+${vuln.solution ? `- **Solution**: ${vuln.solution}` : ''}
+`).join('\n')}
+`;
+  }
+}
+
+// 타입 정의
+interface SecurityReport {
+  timestamp: Date;
+  vulnerabilities: Vulnerability[];
+  summary: {
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+}
+
+interface Vulnerability {
+  type: 'dependency' | 'code' | 'container' | 'secret';
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  description: string;
+  file?: string;
+  line?: number;
+  package?: string;
+  target?: string;
+  CVE?: string;
+  solution?: string;
+  rule?: string;
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 성능과 보안 최적화</h2>
+
+                <div class="practice-content">
+                    <h3>웹 애플리케이션 최적화하기</h3>
+                    <p>AI와 함께 기존 애플리케이션의 성능과 보안을 개선해봅시다.</p>
+
+                    <div class="optimization-checklist">
+                        <h4>최적화 체크리스트</h4>
+                        <div class="checklist">
+                            <div class="category">
+                                <h5>🚀 성능</h5>
+                                <ul>
+                                    <li>번들 크기 50% 감소</li>
+                                    <li>초기 로딩 시간 2초 이내</li>
+                                    <li>Core Web Vitals 모두 "Good"</li>
+                                    <li>API 응답 시간 200ms 이내</li>
+                                    <li>데이터베이스 쿼리 최적화</li>
+                                </ul>
+                            </div>
+                            <div class="category">
+                                <h5>🔒 보안</h5>
+                                <ul>
+                                    <li>OWASP Top 10 대응</li>
+                                    <li>민감 데이터 암호화</li>
+                                    <li>보안 헤더 구성</li>
+                                    <li>입력 검증 강화</li>
+                                    <li>자동 보안 스캔 구축</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="optimization-steps">
+                        <h4>최적화 단계</h4>
+                        
+                        <div class="step">
+                            <h5>1. 현재 상태 분석</h5>
+                            <p>Chat에 요청: "현재 애플리케이션의 성능과 보안 문제점을 분석해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>2. 번들 최적화</h5>
+                            <p>Cmd+K: "Webpack 설정을 최적화하고 코드 스플리팅 적용"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>3. 캐싱 전략</h5>
+                            <p>Composer로 멀티레벨 캐싱 구현</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>4. 보안 강화</h5>
+                            <p>AI에게: "보안 미들웨어와 암호화 시스템 구축해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>5. 모니터링 설정</h5>
+                            <p>성능과 보안 모니터링 대시보드 구축</p>
+                        </div>
+                    </div>
+
+                    <div class="monitoring-tools">
+                        <h4>📊 모니터링 도구</h4>
+                        <ul>
+                            <li><strong>Lighthouse:</strong> 웹 성능 측정</li>
+                            <li><strong>WebPageTest:</strong> 실제 사용자 경험 측정</li>
+                            <li><strong>New Relic:</strong> APM 모니터링</li>
+                            <li><strong>Sentry:</strong> 에러 추적</li>
+                            <li><strong>Datadog:</strong> 인프라 모니터링</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>지능적인 성능 최적화</h3>
+                        <p>AI가 병목 지점을 찾아내고 최적의 해결책을 제시합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>포괄적인 보안 강화</h3>
+                        <p>OWASP Top 10을 포함한 모든 보안 위협에 대응합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>자동화된 모니터링</h3>
+                        <p>성능과 보안을 실시간으로 모니터링하고 알림을 받습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>지속적인 개선</h3>
+                        <p>CI/CD 파이프라인에 통합된 자동 최적화 프로세스를 구축합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 대규모 프로젝트 아키텍처와 설계 패턴을 배웁니다.</p>
+                    <a href="lesson20.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="completed">API 개발과 문서화</li>
+                    <li class="completed">데이터베이스 설계와 최적화</li>
+                    <li class="completed">프론트엔드 프레임워크와 Cursor AI</li>
+                    <li class="completed">백엔드 프레임워크와 Cursor AI</li>
+                    <li class="completed">Docker와 Kubernetes 배포</li>
+                    <li class="current">성능 최적화와 보안</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-tachometer-alt"></i> 성능 메트릭</h3>
+                <div class="metrics">
+                    <div class="metric-item">
+                        <span class="metric-name">FCP</span>
+                        <span class="metric-target">&lt; 1.8s</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-name">LCP</span>
+                        <span class="metric-target">&lt; 2.5s</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-name">FID</span>
+                        <span class="metric-target">&lt; 100ms</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-name">CLS</span>
+                        <span class="metric-target">&lt; 0.1</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-name">TTFB</span>
+                        <span class="metric-target">&lt; 200ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 성능 최적화는 측정 가능한 목표부터 시작하세요. "빠르게 만들기"보다는 "LCP를 2.5초 이하로"같은 구체적인 목표가 더 효과적입니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 63.33%"></div>
+            <span class="progress-text">19/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

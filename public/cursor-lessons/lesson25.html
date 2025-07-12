@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제25강: 코드 마이그레이션과 리팩토링 도구 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-exchange-alt"></i> 제25강: 코드 마이그레이션과 리팩토링 도구</h1>
+                <p class="lesson-subtitle">AI와 함께하는 대규모 코드베이스 현대화</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 고급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 70분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 고급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson24.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제25강: 코드 마이그레이션과 리팩토링 도구</span>
+            <a href="lesson26.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>레거시 코드 현대화 전략과 도구 개발</li>
+                    <li>프레임워크 마이그레이션 자동화</li>
+                    <li>대규모 리팩토링 안전하게 수행하기</li>
+                    <li>코드 패턴 변환과 AST 조작</li>
+                    <li>점진적 마이그레이션 전략 구현</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-tools"></i> AI 기반 마이그레이션 도구</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 복잡한 코드베이스의 마이그레이션을 자동화하고, 안전하게 리팩토링할 수 있도록 도와줍니다. AST 분석과 패턴 매칭을 통해 대규모 변경을 정확하게 수행합니다.</p>
+                </div>
+
+                <h3>프레임워크 마이그레이션 자동화</h3>
+                <div class="migration-tool">
+                    <div class="tool-implementation">
+                        <h4>React 클래스 컴포넌트 → 함수형 컴포넌트 변환</h4>
+                        <pre><code>// tools/ReactMigrationTool.ts
+import { CursorAI } from '@cursor/api';
+import { Project, SourceFile, SyntaxKind } from 'ts-morph';
+import * as babel from '@babel/core';
+import traverse from '@babel/traverse';
+import generate from '@babel/generator';
+import * as t from '@babel/types';
+
+export class ReactMigrationTool {
+    private cursor: CursorAI;
+    private project: Project;
+    private migrationStats: MigrationStats;
+
+    constructor(projectPath: string) {
+        this.cursor = new CursorAI();
+        this.project = new Project({
+            tsConfigFilePath: `${projectPath}/tsconfig.json`
+        });
+        this.migrationStats = {
+            totalComponents: 0,
+            migratedComponents: 0,
+            errors: [],
+            warnings: []
+        };
+    }
+
+    async migrateToFunctionalComponents(): Promise<MigrationReport> {
+        const files = this.project.getSourceFiles('**/*.{tsx,jsx}');
+        
+        console.log(`🔍 ${files.length}개 파일 분석 중...`);
+
+        for (const file of files) {
+            try {
+                await this.migrateFile(file);
+            } catch (error) {
+                this.migrationStats.errors.push({
+                    file: file.getFilePath(),
+                    error: error.message
+                });
+            }
+        }
+
+        return this.generateReport();
+    }
+
+    private async migrateFile(file: SourceFile): Promise<void> {
+        const filePath = file.getFilePath();
+        const sourceCode = file.getFullText();
+
+        // AST 파싱
+        const ast = babel.parse(sourceCode, {
+            sourceType: 'module',
+            plugins: ['jsx', 'typescript', 'decorators-legacy'],
+            filename: filePath
+        });
+
+        let hasChanges = false;
+
+        // 클래스 컴포넌트 찾기 및 변환
+        traverse(ast, {
+            ClassDeclaration: (path) => {
+                if (this.isReactComponent(path.node)) {
+                    this.migrationStats.totalComponents++;
+                    
+                    try {
+                        const functionalComponent = this.convertToFunctional(path.node);
+                        path.replaceWith(functionalComponent);
+                        hasChanges = true;
+                        this.migrationStats.migratedComponents++;
+                    } catch (error) {
+                        this.migrationStats.warnings.push({
+                            file: filePath,
+                            component: path.node.id?.name || 'Anonymous',
+                            reason: error.message
+                        });
+                    }
+                }
+            }
+        });
+
+        if (hasChanges) {
+            // 코드 생성 및 저장
+            const { code } = generate(ast, {
+                retainLines: true,
+                decoratorsBeforeExport: true
+            });
+
+            // AI로 코드 최적화
+            const optimizedCode = await this.optimizeWithAI(code, filePath);
+            
+            file.replaceWithText(optimizedCode);
+            await file.save();
+        }
+    }
+
+    private isReactComponent(node: t.ClassDeclaration): boolean {
+        if (!node.superClass) return false;
+        
+        if (t.isMemberExpression(node.superClass)) {
+            return (
+                t.isIdentifier(node.superClass.object, { name: 'React' }) &&
+                t.isIdentifier(node.superClass.property, { name: 'Component' })
+            );
+        }
+        
+        return t.isIdentifier(node.superClass, { name: 'Component' });
+    }
+
+    private convertToFunctional(classNode: t.ClassDeclaration): t.Node {
+        const componentName = classNode.id?.name || 'Component';
+        const { state, methods, lifecycle, render } = this.analyzeClass(classNode);
+
+        // 함수형 컴포넌트 생성
+        const params = [t.identifier('props')];
+        const body = [];
+
+        // State를 useState로 변환
+        if (state) {
+            body.push(...this.convertStateToHooks(state));
+        }
+
+        // Lifecycle 메서드를 useEffect로 변환
+        if (lifecycle.length > 0) {
+            body.push(...this.convertLifecycleToHooks(lifecycle));
+        }
+
+        // 메서드를 함수로 변환
+        methods.forEach(method => {
+            body.push(this.convertMethodToFunction(method));
+        });
+
+        // render 메서드의 내용 추가
+        if (render) {
+            body.push(...this.extractRenderBody(render));
+        }
+
+        // 함수형 컴포넌트 생성
+        return t.functionDeclaration(
+            t.identifier(componentName),
+            params,
+            t.blockStatement(body)
+        );
+    }
+
+    private analyzeClass(classNode: t.ClassDeclaration) {
+        const state = this.extractState(classNode);
+        const methods = [];
+        const lifecycle = [];
+        let render = null;
+
+        classNode.body.body.forEach(member => {
+            if (t.isClassMethod(member)) {
+                const methodName = (member.key as t.Identifier).name;
+                
+                if (methodName === 'render') {
+                    render = member;
+                } else if (this.isLifecycleMethod(methodName)) {
+                    lifecycle.push(member);
+                } else {
+                    methods.push(member);
+                }
+            }
+        });
+
+        return { state, methods, lifecycle, render };
+    }
+
+    private convertStateToHooks(state: any): t.Statement[] {
+        const statements = [];
+        
+        Object.entries(state).forEach(([key, value]) => {
+            const stateVar = t.identifier(key);
+            const setterName = `set${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+            const setter = t.identifier(setterName);
+            
+            // const [state, setState] = useState(initialValue);
+            statements.push(
+                t.variableDeclaration('const', [
+                    t.variableDeclarator(
+                        t.arrayPattern([stateVar, setter]),
+                        t.callExpression(
+                            t.identifier('useState'),
+                            [this.valueToAST(value)]
+                        )
+                    )
+                ])
+            );
+        });
+
+        return statements;
+    }
+
+    private convertLifecycleToHooks(lifecycle: t.ClassMethod[]): t.Statement[] {
+        const statements = [];
+
+        lifecycle.forEach(method => {
+            const methodName = (method.key as t.Identifier).name;
+            
+            switch (methodName) {
+                case 'componentDidMount':
+                    statements.push(
+                        t.expressionStatement(
+                            t.callExpression(t.identifier('useEffect'), [
+                                t.arrowFunctionExpression(
+                                    [],
+                                    method.body
+                                ),
+                                t.arrayExpression([]) // 빈 의존성 배열
+                            ])
+                        )
+                    );
+                    break;
+                    
+                case 'componentDidUpdate':
+                    statements.push(
+                        t.expressionStatement(
+                            t.callExpression(t.identifier('useEffect'), [
+                                t.arrowFunctionExpression(
+                                    [],
+                                    method.body
+                                )
+                                // 의존성 배열 없음 - 모든 업데이트에서 실행
+                            ])
+                        )
+                    );
+                    break;
+                    
+                case 'componentWillUnmount':
+                    // useEffect cleanup으로 변환
+                    statements.push(
+                        t.expressionStatement(
+                            t.callExpression(t.identifier('useEffect'), [
+                                t.arrowFunctionExpression(
+                                    [],
+                                    t.blockStatement([
+                                        t.returnStatement(
+                                            t.arrowFunctionExpression(
+                                                [],
+                                                method.body
+                                            )
+                                        )
+                                    ])
+                                ),
+                                t.arrayExpression([])
+                            ])
+                        )
+                    );
+                    break;
+            }
+        });
+
+        return statements;
+    }
+
+    private async optimizeWithAI(code: string, filePath: string): Promise<string> {
+        const prompt = `
+React 함수형 컴포넌트로 변환된 코드를 최적화해주세요:
+
+파일: ${filePath}
+코드:
+\`\`\`typescript
+${code}
+\`\`\`
+
+다음 사항을 개선해주세요:
+1. 불필요한 re-render를 방지하기 위한 useMemo, useCallback 사용
+2. 커스텀 훅으로 로직 분리
+3. TypeScript 타입 개선
+4. 코드 가독성 향상
+5. React 최신 패턴 적용
+`;
+
+        const optimizedCode = await this.cursor.ai.generateCode(prompt);
+        return optimizedCode;
+    }
+
+    private generateReport(): MigrationReport {
+        return {
+            summary: {
+                totalComponents: this.migrationStats.totalComponents,
+                migratedComponents: this.migrationStats.migratedComponents,
+                failedComponents: this.migrationStats.totalComponents - this.migrationStats.migratedComponents,
+                successRate: (this.migrationStats.migratedComponents / this.migrationStats.totalComponents * 100).toFixed(2) + '%'
+            },
+            errors: this.migrationStats.errors,
+            warnings: this.migrationStats.warnings,
+            recommendations: this.generateRecommendations()
+        };
+    }
+
+    private generateRecommendations(): string[] {
+        const recommendations = [];
+        
+        if (this.migrationStats.warnings.length > 0) {
+            recommendations.push(
+                '일부 컴포넌트는 수동 검토가 필요합니다. 특히 복잡한 생명주기 로직이나 HOC를 사용하는 경우입니다.'
+            );
+        }
+        
+        recommendations.push(
+            'React.memo()를 사용하여 성능 최적화를 고려하세요.',
+            '커스텀 훅을 만들어 로직을 재사용하세요.',
+            'Suspense와 Error Boundaries를 도입하여 에러 처리를 개선하세요.'
+        );
+        
+        return recommendations;
+    }
+}
+
+// 대규모 리팩토링 도구
+export class LargeScaleRefactoringTool {
+    private cursor: CursorAI;
+    private project: Project;
+    private refactoringPlan: RefactoringPlan;
+
+    constructor(projectPath: string) {
+        this.cursor = new CursorAI();
+        this.project = new Project({
+            tsConfigFilePath: `${projectPath}/tsconfig.json`
+        });
+    }
+
+    async planRefactoring(goals: RefactoringGoals): Promise<RefactoringPlan> {
+        // AI로 리팩토링 계획 생성
+        const prompt = `
+프로젝트 리팩토링 계획을 수립해주세요:
+
+목표:
+${JSON.stringify(goals, null, 2)}
+
+프로젝트 구조:
+${this.getProjectStructure()}
+
+다음을 포함한 상세한 계획을 작성해주세요:
+1. 리팩토링 단계별 순서
+2. 각 단계의 위험도 평가
+3. 롤백 전략
+4. 테스트 계획
+5. 예상 소요 시간
+`;
+
+        const planResponse = await this.cursor.ai.generateCode(prompt);
+        this.refactoringPlan = JSON.parse(planResponse);
+        
+        return this.refactoringPlan;
+    }
+
+    async executeRefactoring(dryRun: boolean = true): Promise<RefactoringResult> {
+        const results: RefactoringResult = {
+            stages: [],
+            totalChanges: 0,
+            success: true,
+            rollbackPoints: []
+        };
+
+        for (const stage of this.refactoringPlan.stages) {
+            console.log(`🔧 ${stage.name} 실행 중...`);
+            
+            // 롤백 포인트 생성
+            if (!dryRun) {
+                const rollbackPoint = await this.createRollbackPoint(stage.name);
+                results.rollbackPoints.push(rollbackPoint);
+            }
+
+            try {
+                const stageResult = await this.executeStage(stage, dryRun);
+                results.stages.push(stageResult);
+                results.totalChanges += stageResult.changedFiles;
+                
+                // 테스트 실행
+                if (!dryRun && stage.runTests) {
+                    const testResult = await this.runTests();
+                    if (!testResult.success) {
+                        throw new Error(`테스트 실패: ${testResult.failedTests.join(', ')}`);
+                    }
+                }
+            } catch (error) {
+                results.success = false;
+                if (!dryRun) {
+                    await this.rollback(results.rollbackPoints[results.rollbackPoints.length - 1]);
+                }
+                throw error;
+            }
+        }
+
+        return results;
+    }
+
+    private async executeStage(stage: RefactoringStage, dryRun: boolean): Promise<StageResult> {
+        const result: StageResult = {
+            name: stage.name,
+            changedFiles: 0,
+            changes: [],
+            duration: 0
+        };
+
+        const startTime = Date.now();
+
+        switch (stage.type) {
+            case 'rename':
+                result.changes = await this.executeRename(stage.config, dryRun);
+                break;
+                
+            case 'extract':
+                result.changes = await this.executeExtraction(stage.config, dryRun);
+                break;
+                
+            case 'move':
+                result.changes = await this.executeMove(stage.config, dryRun);
+                break;
+                
+            case 'pattern-replace':
+                result.changes = await this.executePatternReplace(stage.config, dryRun);
+                break;
+                
+            case 'architecture-change':
+                result.changes = await this.executeArchitectureChange(stage.config, dryRun);
+                break;
+        }
+
+        result.changedFiles = result.changes.length;
+        result.duration = Date.now() - startTime;
+
+        return result;
+    }
+
+    private async executeRename(config: RenameConfig, dryRun: boolean): Promise<Change[]> {
+        const changes: Change[] = [];
+        
+        // 심볼 찾기
+        const sourceFiles = this.project.getSourceFiles();
+        
+        for (const file of sourceFiles) {
+            const symbols = file.getDescendantsOfKind(SyntaxKind.Identifier)
+                .filter(id => id.getText() === config.oldName);
+                
+            for (const symbol of symbols) {
+                const references = symbol.findReferences();
+                
+                for (const ref of references) {
+                    for (const refEntry of ref.getReferences()) {
+                        changes.push({
+                            file: refEntry.getSourceFile().getFilePath(),
+                            position: refEntry.getTextSpan().getStart(),
+                            oldText: config.oldName,
+                            newText: config.newName,
+                            type: 'rename'
+                        });
+                        
+                        if (!dryRun) {
+                            refEntry.getNode().replaceWithText(config.newName);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return changes;
+    }
+
+    private async executePatternReplace(config: PatternReplaceConfig, dryRun: boolean): Promise<Change[]> {
+        const changes: Change[] = [];
+        
+        // AI로 패턴 매칭 및 변환
+        const prompt = `
+다음 코드 패턴을 찾아서 변환해주세요:
+
+찾을 패턴:
+${config.searchPattern}
+
+변환할 패턴:
+${config.replacePattern}
+
+예시:
+${config.examples?.map(ex => `
+이전: ${ex.before}
+이후: ${ex.after}
+`).join('\n')}
+
+AST 변환 코드를 생성해주세요.
+`;
+
+        const transformCode = await this.cursor.ai.generateCode(prompt);
+        
+        // 생성된 변환 코드 실행
+        const transform = eval(transformCode);
+        
+        const files = this.project.getSourceFiles(config.filePattern || '**/*.{ts,tsx}');
+        
+        for (const file of files) {
+            const ast = file.compilerNode;
+            const transformedAst = transform(ast);
+            
+            if (transformedAst !== ast) {
+                changes.push({
+                    file: file.getFilePath(),
+                    type: 'pattern-replace',
+                    description: `패턴 "${config.searchPattern}" → "${config.replacePattern}"`
+                });
+                
+                if (!dryRun) {
+                    file.replaceWithText(transformedAst.getFullText());
+                }
+            }
+        }
+        
+        return changes;
+    }
+
+    private async executeArchitectureChange(config: ArchitectureChangeConfig, dryRun: boolean): Promise<Change[]> {
+        const changes: Change[] = [];
+        
+        // 아키텍처 변경은 복잡하므로 AI의 도움을 받아 계획 수립
+        const prompt = `
+다음 아키텍처 변경을 수행하는 코드를 생성해주세요:
+
+현재 아키텍처: ${config.from}
+목표 아키텍처: ${config.to}
+
+변경 사항:
+${config.changes.map(c => `- ${c}`).join('\n')}
+
+다음을 포함해주세요:
+1. 파일 이동 계획
+2. 인터페이스 변경
+3. 의존성 업데이트
+4. 점진적 마이그레이션 코드
+`;
+
+        const migrationPlan = await this.cursor.ai.generateCode(prompt);
+        
+        // 계획 실행
+        const plan = JSON.parse(migrationPlan);
+        
+        // 1. 새로운 구조 생성
+        if (!dryRun) {
+            for (const dir of plan.newDirectories) {
+                await this.project.createDirectory(dir);
+            }
+        }
+        
+        // 2. 파일 이동 및 변환
+        for (const fileMove of plan.fileMoves) {
+            const sourceFile = this.project.getSourceFile(fileMove.from);
+            if (sourceFile) {
+                changes.push({
+                    file: fileMove.from,
+                    type: 'move',
+                    description: `${fileMove.from} → ${fileMove.to}`
+                });
+                
+                if (!dryRun) {
+                    // 내용 변환
+                    const transformedContent = await this.transformFileForNewArchitecture(
+                        sourceFile.getFullText(),
+                        fileMove.transformations
+                    );
+                    
+                    // 새 위치에 파일 생성
+                    this.project.createSourceFile(fileMove.to, transformedContent);
+                    
+                    // 기존 파일 삭제
+                    sourceFile.delete();
+                }
+            }
+        }
+        
+        // 3. 의존성 업데이트
+        await this.updateDependencies(plan.dependencies, dryRun);
+        
+        return changes;
+    }
+
+    private async transformFileForNewArchitecture(content: string, transformations: any[]): Promise<string> {
+        let transformedContent = content;
+        
+        for (const transformation of transformations) {
+            const prompt = `
+다음 코드를 ${transformation.description}에 맞게 변환해주세요:
+
+\`\`\`typescript
+${transformedContent}
+\`\`\`
+
+변환 규칙:
+${JSON.stringify(transformation.rules, null, 2)}
+`;
+
+            transformedContent = await this.cursor.ai.generateCode(prompt);
+        }
+        
+        return transformedContent;
+    }
+
+    private async createRollbackPoint(name: string): Promise<RollbackPoint> {
+        // Git stash 또는 브랜치 생성
+        const timestamp = new Date().toISOString();
+        const rollbackId = `rollback_${name}_${timestamp}`;
+        
+        // 현재 상태 저장
+        await this.executeCommand(`git stash save "${rollbackId}"`);
+        
+        return {
+            id: rollbackId,
+            name,
+            timestamp,
+            files: await this.getModifiedFiles()
+        };
+    }
+
+    private async rollback(rollbackPoint: RollbackPoint): Promise<void> {
+        console.log(`⏪ ${rollbackPoint.name}으로 롤백 중...`);
+        await this.executeCommand(`git stash pop`);
+    }
+
+    private async runTests(): Promise<TestResult> {
+        // 프로젝트의 테스트 명령 실행
+        try {
+            const output = await this.executeCommand('npm test');
+            return {
+                success: true,
+                output,
+                failedTests: []
+            };
+        } catch (error) {
+            return {
+                success: false,
+                output: error.message,
+                failedTests: this.parseFailedTests(error.message)
+            };
+        }
+    }
+
+    private async executeCommand(command: string): Promise<string> {
+        const { exec } = require('child_process');
+        const { promisify } = require('util');
+        const execAsync = promisify(exec);
+        
+        const { stdout } = await execAsync(command);
+        return stdout;
+    }
+}
+
+// 마이그레이션 전략 생성기
+export class MigrationStrategyGenerator {
+    private cursor: CursorAI;
+
+    constructor() {
+        this.cursor = new CursorAI();
+    }
+
+    async generateStrategy(config: MigrationConfig): Promise<MigrationStrategy> {
+        const prompt = `
+다음 마이그레이션을 위한 상세한 전략을 수립해주세요:
+
+현재 상태:
+- 기술 스택: ${config.currentStack.join(', ')}
+- 코드베이스 크기: ${config.codebaseSize}
+- 팀 규모: ${config.teamSize}
+- 일일 활성 사용자: ${config.dailyActiveUsers}
+
+목표 상태:
+- 기술 스택: ${config.targetStack.join(', ')}
+- 목표 기한: ${config.deadline}
+
+제약 사항:
+${config.constraints.map(c => `- ${c}`).join('\n')}
+
+다음을 포함한 전략을 제시해주세요:
+1. 단계별 마이그레이션 계획
+2. 각 단계의 리스크 평가
+3. 병렬 실행 vs 점진적 실행 전략
+4. 기능 플래그 사용 계획
+5. 롤백 계획
+6. 모니터링 및 검증 방법
+`;
+
+        const strategyResponse = await this.cursor.ai.generateCode(prompt);
+        const strategy = JSON.parse(strategyResponse);
+
+        // 전략 검증
+        strategy.validationReport = await this.validateStrategy(strategy, config);
+        
+        return strategy;
+    }
+
+    private async validateStrategy(strategy: MigrationStrategy, config: MigrationConfig): Promise<ValidationReport> {
+        const report: ValidationReport = {
+            feasible: true,
+            risks: [],
+            recommendations: []
+        };
+
+        // 기한 실현 가능성 검증
+        const estimatedDuration = this.estimateDuration(strategy);
+        if (estimatedDuration > config.deadline) {
+            report.feasible = false;
+            report.risks.push({
+                level: 'high',
+                description: `예상 소요 시간(${estimatedDuration}일)이 목표 기한을 초과합니다.`
+            });
+        }
+
+        // 리소스 검증
+        const requiredResources = this.calculateRequiredResources(strategy);
+        if (requiredResources.developers > config.teamSize) {
+            report.risks.push({
+                level: 'medium',
+                description: `필요한 개발자 수(${requiredResources.developers})가 현재 팀 규모를 초과합니다.`
+            });
+        }
+
+        // 다운타임 리스크 평가
+        if (strategy.requiresDowntime && config.dailyActiveUsers > 10000) {
+            report.risks.push({
+                level: 'high',
+                description: '높은 사용자 수로 인해 다운타임이 비즈니스에 큰 영향을 줄 수 있습니다.'
+            });
+            report.recommendations.push('블루-그린 배포 또는 카나리 배포 전략을 고려하세요.');
+        }
+
+        return report;
+    }
+
+    private estimateDuration(strategy: MigrationStrategy): number {
+        return strategy.phases.reduce((total, phase) => {
+            return total + phase.estimatedDays;
+        }, 0);
+    }
+
+    private calculateRequiredResources(strategy: MigrationStrategy): RequiredResources {
+        const maxConcurrentTasks = Math.max(...strategy.phases.map(p => p.tasks.length));
+        
+        return {
+            developers: Math.ceil(maxConcurrentTasks / 2), // 2 tasks per developer
+            qaEngineers: Math.ceil(maxConcurrentTasks / 4), // 4 tasks per QA
+            devOpsEngineers: strategy.phases.some(p => p.requiresInfraChange) ? 2 : 1
+        };
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+
+                <h3>점진적 마이그레이션 패턴</h3>
+                <div class="gradual-migration">
+                    <div class="migration-patterns">
+                        <h4>Strangler Fig 패턴 구현</h4>
+                        <pre><code>// patterns/StranglerFigPattern.ts
+export class StranglerFigMigration {
+    private oldSystem: LegacySystem;
+    private newSystem: ModernSystem;
+    private router: TrafficRouter;
+    private featureFlags: FeatureFlagService;
+
+    constructor(config: StranglerConfig) {
+        this.oldSystem = config.oldSystem;
+        this.newSystem = config.newSystem;
+        this.router = new TrafficRouter();
+        this.featureFlags = new FeatureFlagService();
+    }
+
+    async migrateFeature(featureName: string): Promise<void> {
+        // 1. 새 시스템에 기능 구현
+        console.log(`🔨 ${featureName} 기능을 새 시스템에 구현 중...`);
+        await this.implementInNewSystem(featureName);
+
+        // 2. 기능 플래그로 트래픽 점진적 이동
+        console.log(`🚦 트래픽 라우팅 시작...`);
+        await this.setupProgressiveRollout(featureName);
+
+        // 3. 모니터링 및 검증
+        console.log(`📊 성능 및 정확성 모니터링...`);
+        await this.monitorAndValidate(featureName);
+
+        // 4. 구 시스템에서 기능 제거
+        console.log(`🗑️ 레거시 코드 제거...`);
+        await this.decommissionOldFeature(featureName);
+    }
+
+    private async implementInNewSystem(featureName: string): Promise<void> {
+        const legacyCode = await this.oldSystem.getFeatureCode(featureName);
+        
+        // AI로 현대적인 코드로 변환
+        const prompt = `
+레거시 코드를 현대적인 패턴으로 재구현해주세요:
+
+레거시 코드:
+\`\`\`
+${legacyCode}
+\`\`\`
+
+요구사항:
+- TypeScript 사용
+- 의존성 주입 패턴 적용
+- 단위 테스트 가능한 구조
+- 비동기/대기 패턴 사용
+- 에러 처리 개선
+`;
+
+        const modernCode = await this.cursor.ai.generateCode(prompt);
+        await this.newSystem.deployFeature(featureName, modernCode);
+    }
+
+    private async setupProgressiveRollout(featureName: string): Promise<void> {
+        // 점진적 롤아웃 설정
+        const rolloutPlan = [
+            { percentage: 1, duration: '1h', description: '카나리 테스트' },
+            { percentage: 5, duration: '6h', description: '초기 검증' },
+            { percentage: 25, duration: '24h', description: '부분 롤아웃' },
+            { percentage: 50, duration: '48h', description: '절반 롤아웃' },
+            { percentage: 100, duration: 'permanent', description: '전체 롤아웃' }
+        ];
+
+        for (const stage of rolloutPlan) {
+            await this.featureFlags.setRolloutPercentage(featureName, stage.percentage);
+            
+            // 라우팅 규칙 업데이트
+            this.router.updateRule({
+                feature: featureName,
+                condition: (request) => {
+                    const userId = request.userId;
+                    const bucket = this.hashUserId(userId) % 100;
+                    return bucket < stage.percentage;
+                },
+                target: this.newSystem
+            });
+
+            // 모니터링 기간 대기
+            if (stage.duration !== 'permanent') {
+                await this.waitAndMonitor(stage.duration);
+                
+                // 문제 발생 시 롤백
+                const metrics = await this.collectMetrics(featureName);
+                if (!this.meetsQualityCriteria(metrics)) {
+                    await this.rollback(featureName);
+                    throw new Error(`품질 기준 미달: ${JSON.stringify(metrics)}`);
+                }
+            }
+        }
+    }
+
+    private async monitorAndValidate(featureName: string): Promise<void> {
+        const monitoring = new MonitoringService();
+        
+        // 실시간 모니터링 설정
+        monitoring.track({
+            feature: featureName,
+            metrics: [
+                'response_time',
+                'error_rate',
+                'throughput',
+                'cpu_usage',
+                'memory_usage'
+            ],
+            alerts: [
+                {
+                    condition: 'error_rate > 0.01',
+                    action: 'notify',
+                    severity: 'warning'
+                },
+                {
+                    condition: 'response_time > old_system_p99 * 1.1',
+                    action: 'rollback',
+                    severity: 'critical'
+                }
+            ]
+        });
+
+        // 데이터 일관성 검증
+        const validator = new DataConsistencyValidator();
+        const validationResult = await validator.compare(
+            this.oldSystem,
+            this.newSystem,
+            featureName
+        );
+
+        if (!validationResult.isConsistent) {
+            console.error('❌ 데이터 불일치 발견:', validationResult.differences);
+            await this.reconcileData(validationResult.differences);
+        }
+    }
+
+    private async decommissionOldFeature(featureName: string): Promise<void> {
+        // 안전한 제거를 위한 단계
+        
+        // 1. 더 이상 사용되지 않음 표시
+        await this.oldSystem.markAsDeprecated(featureName);
+        
+        // 2. 일정 기간 대기 (혹시 모를 롤백을 위해)
+        await this.wait('7d');
+        
+        // 3. 코드 제거
+        const removalPlan = await this.generateRemovalPlan(featureName);
+        
+        for (const step of removalPlan.steps) {
+            console.log(`🧹 ${step.description}`);
+            await step.execute();
+            
+            // 각 단계 후 시스템 정상 작동 확인
+            const healthCheck = await this.oldSystem.healthCheck();
+            if (!healthCheck.healthy) {
+                throw new Error(`시스템 헬스체크 실패: ${healthCheck.errors}`);
+            }
+        }
+        
+        // 4. 관련 인프라 정리
+        await this.cleanupInfrastructure(featureName);
+    }
+
+    private async generateRemovalPlan(featureName: string): Promise<RemovalPlan> {
+        const dependencies = await this.analyzeDependencies(featureName);
+        
+        const prompt = `
+다음 기능을 안전하게 제거하는 계획을 수립해주세요:
+
+기능: ${featureName}
+의존성: ${JSON.stringify(dependencies)}
+
+안전한 제거를 위해:
+1. 제거 순서 결정
+2. 각 단계별 검증 방법
+3. 부작용 최소화 방안
+`;
+
+        const plan = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(plan);
+    }
+}
+
+// 코드베이스 분석 도구
+export class CodebaseAnalyzer {
+    async analyzeForMigration(projectPath: string): Promise<AnalysisReport> {
+        const report: AnalysisReport = {
+            statistics: await this.gatherStatistics(projectPath),
+            dependencies: await this.analyzeDependencies(projectPath),
+            complexity: await this.measureComplexity(projectPath),
+            testCoverage: await this.getTestCoverage(projectPath),
+            technicalDebt: await this.assessTechnicalDebt(projectPath),
+            migrationCandidates: [],
+            estimatedEffort: 0
+        };
+
+        // AI로 마이그레이션 후보 식별
+        report.migrationCandidates = await this.identifyMigrationCandidates(report);
+        report.estimatedEffort = await this.estimateEffort(report);
+
+        return report;
+    }
+
+    private async identifyMigrationCandidates(analysis: Partial<AnalysisReport>): Promise<MigrationCandidate[]> {
+        const prompt = `
+코드베이스 분석 결과를 바탕으로 마이그레이션 우선순위를 정해주세요:
+
+통계: ${JSON.stringify(analysis.statistics)}
+복잡도: ${JSON.stringify(analysis.complexity)}
+기술 부채: ${JSON.stringify(analysis.technicalDebt)}
+
+다음 기준으로 평가해주세요:
+1. 비즈니스 영향도
+2. 기술적 복잡도
+3. 의존성
+4. 리스크
+5. 예상 ROI
+
+각 후보에 대해 점수(1-10)와 근거를 제시해주세요.
+`;
+
+        const candidates = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(candidates);
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-sync-alt"></i> 안전한 리팩토링 전략</h2>
+                
+                <h3>자동화된 리팩토링 검증</h3>
+                <div class="refactoring-validation">
+                    <div class="validation-implementation">
+                        <h4>리팩토링 안전성 검증 시스템</h4>
+                        <pre><code>// validation/RefactoringValidator.ts
+export class RefactoringValidator {
+    private cursor: CursorAI;
+    private testRunner: TestRunner;
+    private performanceProfiler: PerformanceProfiler;
+
+    async validateRefactoring(
+        before: CodeSnapshot,
+        after: CodeSnapshot
+    ): Promise<ValidationResult> {
+        const result: ValidationResult = {
+            behaviorPreserved: true,
+            performanceImpact: 'neutral',
+            issues: [],
+            suggestions: []
+        };
+
+        // 1. 동작 보존 검증
+        console.log('🧪 동작 보존 테스트...');
+        const behaviorTest = await this.testBehaviorPreservation(before, after);
+        result.behaviorPreserved = behaviorTest.passed;
+        result.issues.push(...behaviorTest.issues);
+
+        // 2. 성능 영향 분석
+        console.log('⚡ 성능 영향 분석...');
+        const perfAnalysis = await this.analyzePerformanceImpact(before, after);
+        result.performanceImpact = perfAnalysis.impact;
+        
+        // 3. 시맨틱 동등성 검증
+        console.log('🔍 시맨틱 분석...');
+        const semanticAnalysis = await this.verifySemanticEquivalence(before, after);
+        result.issues.push(...semanticAnalysis.issues);
+
+        // 4. 타입 안전성 검증
+        console.log('📐 타입 안전성 검증...');
+        const typeCheck = await this.verifyTypeSafety(after);
+        result.issues.push(...typeCheck.issues);
+
+        // 5. AI 기반 개선 제안
+        result.suggestions = await this.generateImprovementSuggestions(after);
+
+        return result;
+    }
+
+    private async testBehaviorPreservation(
+        before: CodeSnapshot,
+        after: CodeSnapshot
+    ): Promise<BehaviorTestResult> {
+        // 속성 기반 테스트 생성
+        const propertyTests = await this.generatePropertyTests(before);
+        
+        // 스냅샷 테스트
+        const snapshotTests = await this.generateSnapshotTests(before);
+        
+        // 양쪽 코드에 대해 테스트 실행
+        const beforeResults = await this.runTests([...propertyTests, ...snapshotTests], before);
+        const afterResults = await this.runTests([...propertyTests, ...snapshotTests], after);
+        
+        // 결과 비교
+        const issues = this.compareTestResults(beforeResults, afterResults);
+        
+        return {
+            passed: issues.length === 0,
+            issues,
+            coverage: afterResults.coverage
+        };
+    }
+
+    private async generatePropertyTests(code: CodeSnapshot): Promise<Test[]> {
+        const prompt = `
+다음 코드에 대한 속성 기반 테스트를 생성해주세요:
+
+\`\`\`typescript
+${code.content}
+\`\`\`
+
+fast-check 라이브러리를 사용하여:
+1. 함수의 불변성 테스트
+2. 입출력 관계 테스트
+3. 에지 케이스 테스트
+4. 성능 특성 테스트
+`;
+
+        const tests = await this.cursor.ai.generateCode(prompt);
+        return this.parseTests(tests);
+    }
+
+    private async verifySemanticEquivalence(
+        before: CodeSnapshot,
+        after: CodeSnapshot
+    ): Promise<SemanticAnalysis> {
+        // 추상 구문 트리 비교
+        const beforeAST = this.parseToAST(before.content);
+        const afterAST = this.parseToAST(after.content);
+        
+        // 의미론적 차이 분석
+        const differences = this.compareASTs(beforeAST, afterAST);
+        
+        const issues = [];
+        for (const diff of differences) {
+            if (diff.type === 'semantic-change') {
+                issues.push({
+                    severity: 'warning',
+                    message: `의미론적 변경 감지: ${diff.description}`,
+                    location: diff.location
+                });
+            }
+        }
+        
+        return { issues };
+    }
+
+    private async generateImprovementSuggestions(code: CodeSnapshot): Promise<Suggestion[]> {
+        const prompt = `
+리팩토링된 코드를 분석하여 추가 개선사항을 제안해주세요:
+
+\`\`\`typescript
+${code.content}
+\`\`\`
+
+다음 관점에서 분석:
+1. 가독성 개선
+2. 성능 최적화 기회
+3. 타입 안전성 강화
+4. 테스트 용이성 개선
+5. 재사용성 증대
+`;
+
+        const suggestions = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(suggestions);
+    }
+}
+
+// 리팩토링 오케스트레이터
+export class RefactoringOrchestrator {
+    private validator: RefactoringValidator;
+    private executor: RefactoringExecutor;
+    private monitor: RefactoringMonitor;
+
+    async orchestrateRefactoring(plan: RefactoringPlan): Promise<void> {
+        // 1. 사전 검증
+        await this.preValidation(plan);
+        
+        // 2. 백업 생성
+        const backup = await this.createBackup();
+        
+        // 3. 단계별 실행
+        for (const step of plan.steps) {
+            try {
+                // 실행
+                await this.executeStep(step);
+                
+                // 검증
+                const validation = await this.validator.validateStep(step);
+                if (!validation.success) {
+                    throw new Error(`검증 실패: ${validation.errors.join(', ')}`);
+                }
+                
+                // 모니터링
+                await this.monitor.checkHealth();
+                
+            } catch (error) {
+                // 롤백
+                await this.rollback(backup);
+                throw error;
+            }
+        }
+        
+        // 4. 최종 검증
+        await this.finalValidation();
+        
+        // 5. 정리
+        await this.cleanup(backup);
+    }
+
+    private async executeStep(step: RefactoringStep): Promise<void> {
+        console.log(`🔧 ${step.name} 실행 중...`);
+        
+        // 병렬 실행 가능한 작업 식별
+        const parallelTasks = step.tasks.filter(t => t.canRunInParallel);
+        const sequentialTasks = step.tasks.filter(t => !t.canRunInParallel);
+        
+        // 병렬 작업 실행
+        await Promise.all(parallelTasks.map(task => this.executor.execute(task)));
+        
+        // 순차 작업 실행
+        for (const task of sequentialTasks) {
+            await this.executor.execute(task);
+        }
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice-section">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 레거시 프로젝트 현대화</h2>
+                
+                <div class="exercise">
+                    <h3>과제: jQuery 프로젝트를 React로 마이그레이션</h3>
+                    <p>다음 요구사항을 만족하는 마이그레이션 도구를 구축하세요:</p>
+                    
+                    <div class="requirements">
+                        <h4>요구사항:</h4>
+                        <ul>
+                            <li>jQuery 코드를 React 컴포넌트로 자동 변환</li>
+                            <li>이벤트 핸들러와 DOM 조작 코드 마이그레이션</li>
+                            <li>AJAX 호출을 modern fetch/axios로 변환</li>
+                            <li>점진적 마이그레이션 지원 (페이지별)</li>
+                            <li>자동 테스트 생성</li>
+                            <li>마이그레이션 진행 상황 대시보드</li>
+                        </ul>
+                    </div>
+
+                    <div class="hints">
+                        <h4>힌트:</h4>
+                        <ul>
+                            <li>jQuery 선택자를 React ref로 매핑</li>
+                            <li>이벤트 위임 패턴을 React 이벤트로 변환</li>
+                            <li>jQuery 플러그인은 React 컴포넌트로 래핑</li>
+                            <li>상태 관리를 위해 useState/useReducer 활용</li>
+                            <li>기존 스타일은 CSS Modules로 분리</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary-section">
+                <h2><i class="fas fa-bookmark"></i> 핵심 요약</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>마이그레이션 도구</h3>
+                        <ul>
+                            <li>AST 기반 코드 변환</li>
+                            <li>패턴 인식과 자동 변환</li>
+                            <li>점진적 마이그레이션</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>리팩토링 전략</h3>
+                        <ul>
+                            <li>안전성 우선 접근</li>
+                            <li>자동화된 검증</li>
+                            <li>롤백 계획 수립</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>품질 보증</h3>
+                        <ul>
+                            <li>동작 보존 테스트</li>
+                            <li>성능 영향 분석</li>
+                            <li>타입 안전성 검증</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>프로젝트 관리</h3>
+                        <ul>
+                            <li>단계별 실행 계획</li>
+                            <li>리스크 관리</li>
+                            <li>진행 상황 모니터링</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="progress-indicator">
+                <h3>진행 상황</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 83.33%;"></div>
+                </div>
+                <span>25/30 강의 (83.33%)</span>
+            </div>
+
+            <nav class="lesson-nav-sidebar">
+                <h3>전체 강의</h3>
+                <ul>
+                    <li><a href="lesson23.html">제23강: AI 코드 리뷰</a></li>
+                    <li><a href="lesson24.html">제24강: 문서화 자동화</a></li>
+                    <li class="current">제25강: 마이그레이션 도구</li>
+                    <li><a href="lesson26.html">제26강: 성능 프로파일링</a></li>
+                    <li><a href="lesson27.html">제27강: AI 디버깅 도구</a></li>
+                </ul>
+            </nav>
+
+            <div class="study-tips">
+                <h3>학습 팁</h3>
+                <ul>
+                    <li>마이그레이션은 항상 작은 단위부터 시작하세요</li>
+                    <li>자동화 도구를 만들기 전에 수동으로 몇 번 해보세요</li>
+                    <li>기존 테스트를 최대한 활용하여 안전성을 확보하세요</li>
+                    <li>성능 저하가 없는지 지속적으로 모니터링하세요</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

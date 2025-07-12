@@ -1,8 +1,11 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import { PlaywrightTestPanel } from "@/components/playwright-test-panel"
 
 export default function SettingsPage() {
   return (
@@ -89,6 +92,18 @@ export default function SettingsPage() {
               />
             </div>
             <Button>API 키 저장</Button>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Playwright 테스트 환경</CardTitle>
+            <CardDescription>
+              자동 스크린샷 시스템의 개발 환경을 검증하고 테스트합니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PlaywrightTestPanel />
           </CardContent>
         </Card>
       </div>

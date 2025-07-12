@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>19강: Notion Formula 2.0 입문</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- 사이드바 내용은 index.html에서 동적으로 로드 -->
+        </aside>
+        <main class="main-content">
+            <h1>19강: Notion Formula 2.0 입문</h1>
+            <p>노션의 '수식(Formula)' 속성은 데이터베이스 내의 다른 속성 값을 기반으로 계산된 값을 표시할 수 있게 해주는 강력한 기능입니다. Notion Formula 2.0은 이전 버전에 비해 훨씬 유연하고 강력해진 구문과 편집기를 제공합니다. 이 강의에서는 새로운 수식 구문과 편집기에 익숙해지고, 점 표기법(dot notation)을 사용하여 함수를 연결하며, 리치 데이터(Rich Data) 개념을 파악하여 노션 데이터베이스를 프로그래밍하는 첫걸음을 내딛습니다.</p>
+            
+            <h2>학습 목표</h2>
+            <ul>
+                <li>새로운 수식 구문과 편집기를 이해합니다.</li>
+                <li>점 표기법(dot notation)을 사용하여 함수를 연결하는 방법을 배웁니다.</li>
+                <li>리치 데이터(텍스트가 아닌 페이지, 사람, 목록 자체를 반환) 개념을 파악합니다.</li>
+            </ul>
+
+            <h2>주요 개념</h2>
+            <ul>
+                <li><strong>수식 편집기 (Formula Editor):</strong> 노션 수식을 작성하고 테스트하는 인터페이스입니다. 자동 완성, 오류 감지, 함수 설명 등의 기능을 제공하여 수식 작성을 돕습니다.</li>
+                <li><strong>점 표기법 (Dot Notation):</strong> 객체의 속성이나 메서드에 접근할 때 사용하는 방식입니다. 예를 들어, <code>prop("날짜").format("YYYY-MM-DD")</code>와 같이 속성 뒤에 점(.)을 찍어 해당 속성에 적용할 수 있는 함수를 호출합니다.</li>
+                <li><strong>리치 데이터 타입 (Rich Data Types):</strong> Notion Formula 2.0에서는 단순히 텍스트나 숫자뿐만 아니라, 페이지, 사람, 날짜, 목록 등 다양한 복합적인 데이터 타입을 반환하고 조작할 수 있습니다. 이는 수식의 활용 범위를 크게 확장시킵니다.</li>
+            </ul>
+
+            <h2>실습 과제</h2>
+            <p>새로운 데이터베이스를 만들고 <strong>'작성자'</strong>라는 '사람' 속성을 추가합니다. 이 속성에 자신을 할당해 보세요. 그리고 새로운 '수식' 속성을 추가하여 다음 수식을 작성하고 결과를 확인합니다.</p>
+            <ul>
+                <li><code>prop("작성자").name()</code>: 작성자의 이름을 출력합니다.</li>
+                <li><code>prop("작성자").email()</code>: 작성자의 이메일을 출력합니다.</li>
+            </ul>
+            <p>이를 통해 '사람' 속성에서 이름과 이메일 정보를 추출하는 방법을 이해합니다.</p>
+
+            <div class="navigation">
+                <!-- 이전/다음 강의 링크 -->
+            </div>
+        </main>
+    </div>
+</body>
+</html>

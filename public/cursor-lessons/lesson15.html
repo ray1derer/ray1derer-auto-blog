@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제15강: 데이터베이스 설계와 최적화 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-database"></i> 제15강: 데이터베이스 설계와 최적화</h1>
+                <p class="lesson-subtitle">AI와 함께하는 효율적인 데이터 모델링과 쿼리 최적화</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 50분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson14.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제15강: 데이터베이스 설계와 최적화</span>
+            <a href="lesson16.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI 기반 데이터베이스 스키마 설계 방법 익히기</li>
+                    <li>관계형 및 NoSQL 데이터베이스 선택 기준 이해하기</li>
+                    <li>인덱싱 전략과 쿼리 최적화 기법 마스터하기</li>
+                    <li>마이그레이션과 버전 관리 시스템 구축하기</li>
+                    <li>성능 모니터링과 튜닝 방법 학습하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-sitemap"></i> AI 기반 데이터베이스 설계</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 비즈니스 요구사항을 분석하여 최적의 데이터베이스 구조를 설계합니다. 정규화, 인덱싱, 관계 설정까지 모든 과정을 자동화하여 확장 가능하고 효율적인 데이터베이스를 구축할 수 있습니다.</p>
+                </div>
+
+                <h3>E-Commerce 플랫폼 데이터베이스 설계</h3>
+                <div class="db-design-example">
+                    <div class="requirements">
+                        <h4>요구사항</h4>
+                        <ul>
+                            <li>사용자 관리 (구매자/판매자)</li>
+                            <li>상품 카탈로그와 재고 관리</li>
+                            <li>주문 및 결제 처리</li>
+                            <li>리뷰와 평점 시스템</li>
+                            <li>장바구니와 위시리스트</li>
+                        </ul>
+                    </div>
+
+                    <div class="ai-generated-schema">
+                        <h4>AI가 생성한 데이터베이스 스키마</h4>
+                        <pre><code>-- PostgreSQL Schema
+
+-- 사용자 관련 테이블
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('buyer', 'seller', 'admin')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT true,
+    email_verified BOOLEAN DEFAULT false
+);
+
+CREATE TABLE user_profiles (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    phone VARCHAR(20),
+    avatar_url VARCHAR(500),
+    bio TEXT,
+    date_of_birth DATE,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 판매자 정보
+CREATE TABLE sellers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    store_name VARCHAR(255) NOT NULL,
+    store_slug VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    logo_url VARCHAR(500),
+    rating DECIMAL(3,2) DEFAULT 0,
+    total_sales INTEGER DEFAULT 0,
+    is_verified BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 카테고리 (계층 구조)
+CREATE TABLE categories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    parent_id UUID REFERENCES categories(id) ON DELETE CASCADE,
+    level INTEGER NOT NULL DEFAULT 0,
+    path TEXT NOT NULL, -- 예: /electronics/computers/laptops
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 상품 테이블
+CREATE TABLE products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    seller_id UUID NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
+    category_id UUID NOT NULL REFERENCES categories(id),
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+    compare_at_price DECIMAL(10,2),
+    cost DECIMAL(10,2),
+    sku VARCHAR(100) UNIQUE,
+    barcode VARCHAR(100),
+    weight INTEGER, -- in grams
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'draft', 'archived')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 상품 이미지
+CREATE TABLE product_images (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    url VARCHAR(500) NOT NULL,
+    alt_text VARCHAR(255),
+    position INTEGER DEFAULT 0,
+    is_primary BOOLEAN DEFAULT false
+);
+
+-- 상품 옵션 (색상, 크기 등)
+CREATE TABLE product_variants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    sku VARCHAR(100) UNIQUE,
+    price DECIMAL(10,2),
+    compare_at_price DECIMAL(10,2),
+    inventory_quantity INTEGER DEFAULT 0,
+    options JSONB NOT NULL, -- {"color": "red", "size": "L"}
+    is_available BOOLEAN DEFAULT true
+);
+
+-- 재고 추적
+CREATE TABLE inventory_movements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    variant_id UUID NOT NULL REFERENCES product_variants(id),
+    quantity INTEGER NOT NULL,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('purchase', 'sale', 'return', 'adjustment')),
+    reference_id UUID, -- order_id or adjustment_id
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 주문 테이블
+CREATE TABLE orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number VARCHAR(20) UNIQUE NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id),
+    status VARCHAR(20) DEFAULT 'pending' 
+        CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded')),
+    subtotal DECIMAL(10,2) NOT NULL,
+    tax_amount DECIMAL(10,2) DEFAULT 0,
+    shipping_amount DECIMAL(10,2) DEFAULT 0,
+    discount_amount DECIMAL(10,2) DEFAULT 0,
+    total_amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'USD',
+    shipping_address JSONB,
+    billing_address JSONB,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 주문 상품
+CREATE TABLE order_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES products(id),
+    variant_id UUID REFERENCES product_variants(id),
+    seller_id UUID NOT NULL REFERENCES sellers(id),
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    price DECIMAL(10,2) NOT NULL,
+    discount_amount DECIMAL(10,2) DEFAULT 0,
+    tax_amount DECIMAL(10,2) DEFAULT 0,
+    total_amount DECIMAL(10,2) NOT NULL
+);
+
+-- 리뷰와 평점
+CREATE TABLE reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id),
+    order_item_id UUID REFERENCES order_items(id),
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    title VARCHAR(255),
+    comment TEXT,
+    is_verified_purchase BOOLEAN DEFAULT false,
+    helpful_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(product_id, user_id, order_item_id)
+);
+
+-- 장바구니
+CREATE TABLE cart_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES products(id),
+    variant_id UUID REFERENCES product_variants(id),
+    quantity INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, product_id, variant_id)
+);
+
+-- 인덱스 생성
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_products_seller ON products(seller_id);
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_products_status ON products(status) WHERE status = 'active';
+CREATE INDEX idx_orders_user ON orders(user_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_reviews_product ON reviews(product_id);
+CREATE INDEX idx_reviews_user ON reviews(user_id);
+CREATE INDEX idx_cart_items_user ON cart_items(user_id);
+
+-- 전문 검색을 위한 인덱스
+CREATE INDEX idx_products_search ON products USING gin(
+    to_tsvector('english', name || ' ' || COALESCE(description, ''))
+);
+
+-- 트리거: 업데이트 시간 자동 갱신
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-bolt"></i> 쿼리 최적화 전략</h2>
+
+                <div class="query-optimization">
+                    <h3>AI가 분석한 쿼리 성능 개선</h3>
+                    
+                    <div class="optimization-example">
+                        <div class="slow-query">
+                            <h4>❌ 느린 쿼리</h4>
+                            <pre><code>-- 인기 상품 조회 (N+1 문제)
+SELECT p.*, s.store_name, 
+       (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) as review_count,
+       (SELECT AVG(rating) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
+       (SELECT COUNT(*) FROM order_items oi WHERE oi.product_id = p.id) as sales_count
+FROM products p
+JOIN sellers s ON p.seller_id = s.id
+WHERE p.status = 'active'
+ORDER BY sales_count DESC
+LIMIT 20;</code></pre>
+                            <div class="query-plan">
+                                <p>실행 계획: 각 상품마다 3개의 서브쿼리 실행 (총 60개의 추가 쿼리)</p>
+                                <p>예상 실행 시간: ~500ms</p>
+                            </div>
+                        </div>
+
+                        <div class="optimized-query">
+                            <h4>✅ 최적화된 쿼리</h4>
+                            <pre><code>-- CTE와 JOIN을 활용한 최적화
+WITH product_stats AS (
+    SELECT 
+        p.id,
+        COUNT(DISTINCT r.id) as review_count,
+        AVG(r.rating) as avg_rating,
+        COUNT(DISTINCT oi.id) as sales_count
+    FROM products p
+    LEFT JOIN reviews r ON r.product_id = p.id
+    LEFT JOIN order_items oi ON oi.product_id = p.id
+    WHERE p.status = 'active'
+    GROUP BY p.id
+),
+ranked_products AS (
+    SELECT 
+        p.*,
+        s.store_name,
+        ps.review_count,
+        ps.avg_rating,
+        ps.sales_count,
+        ROW_NUMBER() OVER (ORDER BY ps.sales_count DESC) as rank
+    FROM products p
+    JOIN sellers s ON p.seller_id = s.id
+    JOIN product_stats ps ON ps.id = p.id
+)
+SELECT * FROM ranked_products
+WHERE rank <= 20;</code></pre>
+                            <div class="query-plan">
+                                <p>실행 계획: 단일 쿼리로 모든 데이터 조회</p>
+                                <p>예상 실행 시간: ~50ms (10배 향상)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>인덱싱 전략</h3>
+                    <div class="indexing-strategy">
+                        <h4>복합 인덱스 설계</h4>
+                        <pre><code>-- 주문 조회 최적화를 위한 복합 인덱스
+CREATE INDEX idx_orders_user_status_created 
+ON orders(user_id, status, created_at DESC);
+
+-- 상품 검색 최적화
+CREATE INDEX idx_products_category_status_price 
+ON products(category_id, status, price) 
+WHERE status = 'active';
+
+-- 리뷰 집계 최적화
+CREATE INDEX idx_reviews_product_rating 
+ON reviews(product_id, rating) 
+INCLUDE (created_at);
+
+-- 판매자별 상품 조회 최적화
+CREATE INDEX idx_products_seller_status_created 
+ON products(seller_id, status, created_at DESC);
+
+-- 부분 인덱스 (특정 조건만 인덱싱)
+CREATE INDEX idx_high_value_orders 
+ON orders(total_amount) 
+WHERE total_amount > 1000;
+
+-- JSONB 필드 인덱싱
+CREATE INDEX idx_variant_options 
+ON product_variants USING gin(options);
+
+-- 전문 검색 최적화
+CREATE INDEX idx_products_fts ON products 
+USING gin(to_tsvector('english', 
+    name || ' ' || COALESCE(description, '') || ' ' || sku
+));</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-exchange-alt"></i> NoSQL vs SQL 선택 가이드</h2>
+
+                <div class="db-comparison">
+                    <h3>AI 기반 데이터베이스 선택</h3>
+                    
+                    <div class="db-decision-tree">
+                        <div class="use-case-analysis">
+                            <h4>MongoDB 스키마 (NoSQL)</h4>
+                            <pre><code>// 상품 컬렉션 - 유연한 스키마
+{
+  "_id": ObjectId("..."),
+  "name": "Gaming Laptop",
+  "slug": "gaming-laptop-rtx-4090",
+  "seller": {
+    "id": ObjectId("..."),
+    "name": "TechStore",
+    "rating": 4.8
+  },
+  "category": {
+    "path": ["Electronics", "Computers", "Laptops"],
+    "id": ObjectId("...")
+  },
+  "pricing": {
+    "currency": "USD",
+    "price": 2499.99,
+    "compareAtPrice": 2999.99,
+    "discountPercentage": 17
+  },
+  "variants": [
+    {
+      "sku": "GL-RTX4090-16GB",
+      "options": {
+        "ram": "16GB",
+        "storage": "1TB SSD",
+        "color": "Black"
+      },
+      "inventory": {
+        "quantity": 15,
+        "reserved": 3,
+        "available": 12
+      },
+      "price": 2499.99
+    }
+  ],
+  "images": [
+    {
+      "url": "https://...",
+      "alt": "Front view",
+      "isPrimary": true
+    }
+  ],
+  "specifications": {
+    "processor": "Intel i9-13900K",
+    "graphics": "NVIDIA RTX 4090",
+    "display": {
+      "size": "17.3 inches",
+      "resolution": "2560x1440",
+      "refreshRate": "165Hz"
+    },
+    "ports": ["USB-C", "HDMI 2.1", "Thunderbolt 4"]
+  },
+  "reviews": {
+    "average": 4.7,
+    "count": 128,
+    "distribution": {
+      "5": 89,
+      "4": 28,
+      "3": 8,
+      "2": 2,
+      "1": 1
+    }
+  },
+  "metadata": {
+    "createdAt": ISODate("..."),
+    "updatedAt": ISODate("..."),
+    "tags": ["gaming", "high-performance", "rtx-4090"],
+    "searchKeywords": ["gaming laptop", "rtx 4090", "high fps"]
+  }
+}
+
+// 인덱스 전략
+db.products.createIndex({ "slug": 1 }, { unique: true });
+db.products.createIndex({ "seller.id": 1, "metadata.createdAt": -1 });
+db.products.createIndex({ 
+  "name": "text", 
+  "specifications": "text", 
+  "metadata.searchKeywords": "text" 
+});
+db.products.createIndex({ "category.path": 1 });
+db.products.createIndex({ 
+  "pricing.price": 1, 
+  "reviews.average": -1 
+});</code></pre>
+                        </div>
+
+                        <div class="decision-criteria">
+                            <h4>선택 기준</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>요구사항</th>
+                                        <th>SQL (PostgreSQL)</th>
+                                        <th>NoSQL (MongoDB)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>복잡한 관계</td>
+                                        <td>✅ 뛰어남</td>
+                                        <td>⚠️ 제한적</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ACID 트랜잭션</td>
+                                        <td>✅ 완벽 지원</td>
+                                        <td>⚠️ 부분 지원</td>
+                                    </tr>
+                                    <tr>
+                                        <td>스키마 유연성</td>
+                                        <td>⚠️ 엄격함</td>
+                                        <td>✅ 매우 유연</td>
+                                    </tr>
+                                    <tr>
+                                        <td>수평 확장</td>
+                                        <td>⚠️ 복잡함</td>
+                                        <td>✅ 쉬움</td>
+                                    </tr>
+                                    <tr>
+                                        <td>복잡한 쿼리</td>
+                                        <td>✅ SQL 파워</td>
+                                        <td>⚠️ 제한적</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-sync-alt"></i> 데이터베이스 마이그레이션</h2>
+
+                <div class="migration-management">
+                    <h3>마이그레이션 자동화</h3>
+                    
+                    <pre><code>// migrations/20240115_add_product_reviews.js
+export const up = async (db) => {
+    // 리뷰 요약 테이블 추가
+    await db.createTable('review_summaries', {
+        id: {
+            type: 'uuid',
+            primaryKey: true,
+            defaultValue: db.raw('gen_random_uuid()')
+        },
+        product_id: {
+            type: 'uuid',
+            notNull: true,
+            references: 'products.id',
+            onDelete: 'CASCADE'
+        },
+        total_reviews: {
+            type: 'integer',
+            defaultValue: 0
+        },
+        average_rating: {
+            type: 'decimal(3,2)',
+            defaultValue: 0
+        },
+        rating_distribution: {
+            type: 'jsonb',
+            defaultValue: '{}'
+        },
+        last_updated: {
+            type: 'timestamp',
+            defaultValue: db.raw('CURRENT_TIMESTAMP')
+        }
+    });
+
+    // 인덱스 추가
+    await db.addIndex('review_summaries', ['product_id'], {
+        unique: true,
+        name: 'idx_review_summaries_product'
+    });
+
+    // 기존 데이터 마이그레이션
+    await db.raw(`
+        INSERT INTO review_summaries (product_id, total_reviews, average_rating, rating_distribution)
+        SELECT 
+            p.id,
+            COUNT(r.id),
+            COALESCE(AVG(r.rating), 0),
+            jsonb_build_object(
+                '5', COUNT(CASE WHEN r.rating = 5 THEN 1 END),
+                '4', COUNT(CASE WHEN r.rating = 4 THEN 1 END),
+                '3', COUNT(CASE WHEN r.rating = 3 THEN 1 END),
+                '2', COUNT(CASE WHEN r.rating = 2 THEN 1 END),
+                '1', COUNT(CASE WHEN r.rating = 1 THEN 1 END)
+            )
+        FROM products p
+        LEFT JOIN reviews r ON r.product_id = p.id
+        GROUP BY p.id
+    `);
+
+    // 트리거 생성: 리뷰 추가/수정 시 자동 업데이트
+    await db.raw(`
+        CREATE OR REPLACE FUNCTION update_review_summary()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            WITH stats AS (
+                SELECT 
+                    COUNT(*) as total,
+                    AVG(rating) as avg_rating,
+                    jsonb_build_object(
+                        '5', COUNT(CASE WHEN rating = 5 THEN 1 END),
+                        '4', COUNT(CASE WHEN rating = 4 THEN 1 END),
+                        '3', COUNT(CASE WHEN rating = 3 THEN 1 END),
+                        '2', COUNT(CASE WHEN rating = 2 THEN 1 END),
+                        '1', COUNT(CASE WHEN rating = 1 THEN 1 END)
+                    ) as distribution
+                FROM reviews
+                WHERE product_id = COALESCE(NEW.product_id, OLD.product_id)
+            )
+            INSERT INTO review_summaries (product_id, total_reviews, average_rating, rating_distribution)
+            VALUES (COALESCE(NEW.product_id, OLD.product_id), 
+                    (SELECT total FROM stats),
+                    (SELECT avg_rating FROM stats),
+                    (SELECT distribution FROM stats))
+            ON CONFLICT (product_id) DO UPDATE SET
+                total_reviews = EXCLUDED.total_reviews,
+                average_rating = EXCLUDED.average_rating,
+                rating_distribution = EXCLUDED.rating_distribution,
+                last_updated = CURRENT_TIMESTAMP;
+            
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER trigger_update_review_summary
+        AFTER INSERT OR UPDATE OR DELETE ON reviews
+        FOR EACH ROW EXECUTE FUNCTION update_review_summary();
+    `);
+};
+
+export const down = async (db) => {
+    await db.raw('DROP TRIGGER IF EXISTS trigger_update_review_summary ON reviews');
+    await db.raw('DROP FUNCTION IF EXISTS update_review_summary()');
+    await db.dropTable('review_summaries');
+};</code></pre>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-tachometer-alt"></i> 성능 모니터링과 튜닝</h2>
+
+                <div class="performance-monitoring">
+                    <h3>쿼리 성능 분석</h3>
+                    
+                    <pre><code>-- 느린 쿼리 찾기
+SELECT 
+    query,
+    calls,
+    total_time,
+    mean_time,
+    stddev_time,
+    rows
+FROM pg_stat_statements
+WHERE query NOT LIKE '%pg_stat_statements%'
+ORDER BY mean_time DESC
+LIMIT 10;
+
+-- 인덱스 사용률 확인
+SELECT 
+    schemaname,
+    tablename,
+    indexname,
+    idx_scan,
+    idx_tup_read,
+    idx_tup_fetch,
+    pg_size_pretty(pg_relation_size(indexrelid)) as index_size
+FROM pg_stat_user_indexes
+ORDER BY idx_scan ASC;
+
+-- 테이블 크기와 팽창도
+SELECT
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size,
+    n_live_tup,
+    n_dead_tup,
+    ROUND(100.0 * n_dead_tup / NULLIF(n_live_tup + n_dead_tup, 0), 2) as dead_pct
+FROM pg_stat_user_tables
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+-- 캐시 히트율
+SELECT 
+    sum(heap_blks_read) as heap_read,
+    sum(heap_blks_hit) as heap_hit,
+    ROUND(100.0 * sum(heap_blks_hit) / 
+          NULLIF(sum(heap_blks_hit) + sum(heap_blks_read), 0), 2) as cache_hit_ratio
+FROM pg_statio_user_tables;</code></pre>
+
+                    <h3>자동 최적화 스크립트</h3>
+                    <pre><code>// 데이터베이스 최적화 자동화
+class DatabaseOptimizer {
+    async analyzeAndOptimize() {
+        const issues = await this.identifyPerformanceIssues();
+        
+        for (const issue of issues) {
+            switch (issue.type) {
+                case 'MISSING_INDEX':
+                    await this.createIndex(issue);
+                    break;
+                case 'UNUSED_INDEX':
+                    await this.dropIndex(issue);
+                    break;
+                case 'TABLE_BLOAT':
+                    await this.vacuumTable(issue);
+                    break;
+                case 'SLOW_QUERY':
+                    await this.optimizeQuery(issue);
+                    break;
+            }
+        }
+    }
+
+    async identifyPerformanceIssues() {
+        const issues = [];
+
+        // 인덱스가 필요한 쿼리 찾기
+        const missingIndexes = await db.query(`
+            SELECT 
+                schemaname,
+                tablename,
+                attname,
+                n_distinct,
+                correlation
+            FROM pg_stats
+            WHERE schemaname = 'public'
+            AND n_distinct > 100
+            AND correlation < 0.1
+            AND tablename || '.' || attname NOT IN (
+                SELECT tablename || '.' || column_name
+                FROM information_schema.constraint_column_usage
+            )
+        `);
+
+        // 사용되지 않는 인덱스 찾기
+        const unusedIndexes = await db.query(`
+            SELECT 
+                schemaname,
+                tablename,
+                indexname
+            FROM pg_stat_user_indexes
+            WHERE idx_scan = 0
+            AND indexrelid NOT IN (
+                SELECT conindid FROM pg_constraint
+            )
+            AND pg_relation_size(indexrelid) > 1048576 -- 1MB 이상
+        `);
+
+        return issues;
+    }
+
+    async createIndex(issue) {
+        const indexName = `idx_${issue.table}_${issue.column}`;
+        const sql = `CREATE INDEX CONCURRENTLY ${indexName} 
+                     ON ${issue.table}(${issue.column})`;
+        
+        console.log(`Creating index: ${indexName}`);
+        await db.query(sql);
+    }
+}</code></pre>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 소셜 미디어 데이터베이스 설계</h2>
+
+                <div class="practice-content">
+                    <h3>Instagram 클론 데이터베이스 구축</h3>
+                    <p>AI와 함께 확장 가능한 소셜 미디어 플랫폼 데이터베이스를 설계해봅시다.</p>
+
+                    <div class="practice-requirements">
+                        <h4>기능 요구사항</h4>
+                        <ul>
+                            <li>사용자 프로필과 팔로우 시스템</li>
+                            <li>게시물 (사진/비디오) 업로드</li>
+                            <li>좋아요와 댓글</li>
+                            <li>스토리 (24시간 후 삭제)</li>
+                            <li>다이렉트 메시지</li>
+                            <li>해시태그와 멘션</li>
+                            <li>알림 시스템</li>
+                        </ul>
+                    </div>
+
+                    <div class="practice-steps">
+                        <h4>설계 단계</h4>
+                        
+                        <ol>
+                            <li>
+                                <strong>데이터 모델링</strong>
+                                <p>Chat: "Instagram 클론을 위한 ER 다이어그램과 테이블 구조를 설계해줘"</p>
+                            </li>
+                            <li>
+                                <strong>스키마 생성</strong>
+                                <p>Composer: "PostgreSQL과 Redis를 조합한 하이브리드 스키마를 만들어줘"</p>
+                            </li>
+                            <li>
+                                <strong>인덱싱 전략</strong>
+                                <p>AI: "피드 생성과 검색을 위한 최적의 인덱스를 설계해줘"</p>
+                            </li>
+                            <li>
+                                <strong>샤딩 전략</strong>
+                                <p>고급: "수백만 사용자를 위한 데이터베이스 샤딩 전략을 제안해줘"</p>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="performance-goals">
+                        <h4>성능 목표</h4>
+                        <ul>
+                            <li>피드 로딩: < 100ms</li>
+                            <li>게시물 업로드: < 500ms</li>
+                            <li>검색 응답: < 200ms</li>
+                            <li>동시 접속자: 100,000+</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>지능형 스키마 설계</h3>
+                        <p>비즈니스 요구사항을 분석하여 최적의 데이터베이스 구조를 자동으로 설계합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>쿼리 자동 최적화</h3>
+                        <p>느린 쿼리를 감지하고 인덱스 추가, 쿼리 재작성 등의 최적화를 수행합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>하이브리드 접근</h3>
+                        <p>SQL과 NoSQL의 장점을 결합한 최적의 데이터 저장 전략을 제시합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>자동화된 관리</h3>
+                        <p>마이그레이션, 백업, 성능 모니터링을 자동화하여 운영 부담을 줄입니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 프론트엔드 프레임워크와 Cursor AI의 통합 활용법을 배웁니다.</p>
+                    <a href="lesson16.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="completed">API 개발과 문서화</li>
+                    <li class="current">데이터베이스 설계와 최적화</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-database"></i> DB 명령어</h3>
+                <div class="command-list">
+                    <code>EXPLAIN ANALYZE</code>
+                    <code>CREATE INDEX</code>
+                    <code>VACUUM FULL</code>
+                    <code>ANALYZE</code>
+                    <code>\d table_name</code>
+                    <code>\di</code>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 인덱스는 만능이 아닙니다. 쓰기 성능과 저장 공간을 희생하므로, 실제로 필요한 곳에만 생성하세요. EXPLAIN ANALYZE로 항상 검증하세요.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 50%"></div>
+            <span class="progress-text">15/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

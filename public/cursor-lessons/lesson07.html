@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제7강: Composer 기능 활용 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-music"></i> 제7강: Composer 기능 활용</h1>
+                <p class="lesson-subtitle">여러 파일을 동시에 편집하는 강력한 도구</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 초급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 45분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 기초</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson06.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제7강: Composer 기능 활용</span>
+            <a href="lesson08.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Composer의 핵심 개념과 사용 시나리오 이해하기</li>
+                    <li>멀티 파일 편집 워크플로우 마스터하기</li>
+                    <li>새 프로젝트 생성과 구조 설계 방법 익히기</li>
+                    <li>대규모 리팩토링 작업 효율적으로 수행하기</li>
+                    <li>Composer와 다른 기능의 시너지 활용하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-magic"></i> Composer란 무엇인가?</h2>
+                
+                <div class="info-box">
+                    <p>Composer는 Cursor의 혁신적인 기능으로, AI와 대화하며 여러 파일을 동시에 생성하고 편집할 수 있습니다. 단일 파일 편집을 넘어 전체 프로젝트 수준의 작업을 AI와 함께 수행할 수 있습니다.</p>
+                </div>
+
+                <h3>Composer의 핵심 특징</h3>
+                <div class="composer-features">
+                    <div class="feature-card">
+                        <i class="fas fa-files-alt"></i>
+                        <h4>멀티 파일 편집</h4>
+                        <p>여러 파일을 동시에 생성, 수정, 삭제</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-sync-alt"></i>
+                        <h4>컨텍스트 인식</h4>
+                        <p>파일 간 의존성을 이해하고 일관성 있게 수정</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-eye"></i>
+                        <h4>실시간 프리뷰</h4>
+                        <p>변경사항을 미리 확인하고 선택적 적용</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-comments"></i>
+                        <h4>대화형 개발</h4>
+                        <p>AI와 대화하며 점진적으로 작업 진행</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-rocket"></i> Composer 시작하기</h2>
+
+                <div class="composer-guide">
+                    <h3>Composer 열기</h3>
+                    <div class="open-composer">
+                        <div class="method">
+                            <div class="shortcut"><kbd>Cmd/Ctrl</kbd> + <kbd>I</kbd></div>
+                            <p>가장 빠른 방법: 언제든지 Composer를 열 수 있습니다</p>
+                        </div>
+                        <div class="method">
+                            <div class="shortcut"><i class="fas fa-plus"></i> 새 Composer</div>
+                            <p>사이드바에서 Composer 탭의 + 버튼 클릭</p>
+                        </div>
+                    </div>
+
+                    <h3>Composer 인터페이스</h3>
+                    <div class="composer-interface">
+                        <div class="interface-mockup">
+                            <div class="composer-header">
+                                <span class="composer-title">🎼 Composer</span>
+                                <div class="composer-controls">
+                                    <button class="control-btn"><i class="fas fa-expand"></i></button>
+                                    <button class="control-btn"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                            <div class="composer-body">
+                                <div class="file-context">
+                                    <p class="context-label">Working with:</p>
+                                    <div class="file-pills">
+                                        <span class="file-pill">App.js</span>
+                                        <span class="file-pill">styles.css</span>
+                                        <span class="file-pill">+ Add files...</span>
+                                    </div>
+                                </div>
+                                <div class="composer-chat">
+                                    <div class="chat-input-area">
+                                        <textarea placeholder="Describe what you want to create or change..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-hammer"></i> Composer 활용 시나리오</h2>
+
+                <div class="use-cases">
+                    <h3>1. 새 기능 구현하기</h3>
+                    <div class="scenario">
+                        <h4>시나리오: 사용자 인증 시스템 추가</h4>
+                        
+                        <div class="composer-demo">
+                            <div class="composer-input">
+                                <p class="user-request">
+                                    "React 앱에 사용자 인증 시스템을 추가해줘. 로그인/회원가입 폼, 인증 컨텍스트, 보호된 라우트가 필요해."
+                                </p>
+                            </div>
+                            
+                            <div class="composer-response">
+                                <h5>Composer가 생성할 파일들:</h5>
+                                <div class="file-changes">
+                                    <div class="file-change new">
+                                        <span class="file-status">NEW</span>
+                                        <span class="file-name">src/contexts/AuthContext.js</span>
+                                        <pre><code>import React, { createContext, useState, useContext, useEffect } from 'react';
+import { auth } from '../services/firebase';
+
+const AuthContext = createContext();
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const login = async (email, password) => {
+    return auth.signInWithEmailAndPassword(email, password);
+  };
+
+  const signup = async (email, password) => {
+    return auth.createUserWithEmailAndPassword(email, password);
+  };
+
+  const logout = async () => {
+    return auth.signOut();
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    signup,
+    logout
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};</code></pre>
+                                    </div>
+
+                                    <div class="file-change new">
+                                        <span class="file-status">NEW</span>
+                                        <span class="file-name">src/components/LoginForm.js</span>
+                                        <pre><code>import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+const LoginForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      setError('');
+      setLoading(true);
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (error) {
+      setError('Failed to log in: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="auth-form">
+      <h2>Login</h2>
+      {error && <div className="error-message">{error}</div>}
+      
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      
+      <button type="submit" disabled={loading}>
+        {loading ? 'Logging in...' : 'Login'}
+      </button>
+    </form>
+  );
+};</code></pre>
+                                    </div>
+
+                                    <div class="file-change new">
+                                        <span class="file-status">NEW</span>
+                                        <span class="file-name">src/components/ProtectedRoute.js</span>
+                                    </div>
+
+                                    <div class="file-change modified">
+                                        <span class="file-status">MODIFIED</span>
+                                        <span class="file-name">src/App.js</span>
+                                        <div class="diff-preview">
+                                            <p class="diff-add">+ import { AuthProvider } from './contexts/AuthContext';</p>
+                                            <p class="diff-add">+ import ProtectedRoute from './components/ProtectedRoute';</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. 대규모 리팩토링</h3>
+                    <div class="scenario">
+                        <h4>시나리오: JavaScript를 TypeScript로 마이그레이션</h4>
+                        
+                        <div class="composer-demo">
+                            <div class="composer-input">
+                                <p class="user-request">
+                                    "현재 프로젝트의 모든 JavaScript 파일을 TypeScript로 변환해줘. 적절한 타입 정의와 인터페이스를 추가하고, tsconfig.json도 설정해줘."
+                                </p>
+                            </div>
+                            
+                            <div class="composer-workflow">
+                                <div class="workflow-step">
+                                    <h5>1. 설정 파일 생성</h5>
+                                    <ul>
+                                        <li>tsconfig.json 생성</li>
+                                        <li>필요한 @types 패키지 추가</li>
+                                    </ul>
+                                </div>
+                                <div class="workflow-step">
+                                    <h5>2. 파일 확장자 변경</h5>
+                                    <ul>
+                                        <li>.js → .ts</li>
+                                        <li>.jsx → .tsx</li>
+                                    </ul>
+                                </div>
+                                <div class="workflow-step">
+                                    <h5>3. 타입 추가</h5>
+                                    <ul>
+                                        <li>인터페이스 정의</li>
+                                        <li>함수 매개변수 타입</li>
+                                        <li>컴포넌트 Props 타입</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. 프로젝트 초기 설정</h3>
+                    <div class="scenario">
+                        <h4>시나리오: 새 React 프로젝트 구조 생성</h4>
+                        
+                        <div class="composer-demo">
+                            <div class="composer-input">
+                                <p class="user-request">
+                                    "전자상거래 웹앱을 위한 React 프로젝트 구조를 만들어줘. 제품 목록, 장바구니, 결제 기능이 필요하고, Redux Toolkit을 사용하고 싶어."
+                                </p>
+                            </div>
+                            
+                            <div class="project-structure">
+                                <pre><code>src/
+├── components/
+│   ├── common/
+│   │   ├── Header.jsx
+│   │   ├── Footer.jsx
+│   │   └── Layout.jsx
+│   ├── product/
+│   │   ├── ProductList.jsx
+│   │   ├── ProductCard.jsx
+│   │   └── ProductDetail.jsx
+│   ├── cart/
+│   │   ├── Cart.jsx
+│   │   └── CartItem.jsx
+│   └── checkout/
+│       └── CheckoutForm.jsx
+├── features/
+│   ├── products/
+│   │   └── productsSlice.js
+│   ├── cart/
+│   │   └── cartSlice.js
+│   └── auth/
+│       └── authSlice.js
+├── services/
+│   ├── api.js
+│   └── payment.js
+├── utils/
+│   └── formatters.js
+├── store/
+│   └── index.js
+└── App.jsx</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-toolbox"></i> Composer 고급 기능</h2>
+
+                <div class="advanced-features">
+                    <h3>1. 파일 컨텍스트 관리</h3>
+                    <div class="context-management">
+                        <h4>작업할 파일 선택하기</h4>
+                        <div class="file-selection-methods">
+                            <div class="method">
+                                <h5>드래그 앤 드롭</h5>
+                                <p>파일 탐색기에서 파일을 Composer로 드래그</p>
+                            </div>
+                            <div class="method">
+                                <h5>@ 멘션</h5>
+                                <p>채팅에서 @filename으로 파일 참조</p>
+                            </div>
+                            <div class="method">
+                                <h5>자동 감지</h5>
+                                <p>열려있는 파일들을 자동으로 컨텍스트에 포함</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. 선택적 변경 적용</h3>
+                    <div class="selective-apply">
+                        <p>Composer가 제안한 변경사항을 검토하고 선택적으로 적용할 수 있습니다:</p>
+                        
+                        <div class="change-review">
+                            <div class="review-interface">
+                                <div class="file-changes-list">
+                                    <div class="change-item">
+                                        <input type="checkbox" checked>
+                                        <span class="change-file">components/Header.jsx</span>
+                                        <span class="change-stats">+45 -10</span>
+                                    </div>
+                                    <div class="change-item">
+                                        <input type="checkbox" checked>
+                                        <span class="change-file">styles/main.css</span>
+                                        <span class="change-stats">+20 -5</span>
+                                    </div>
+                                    <div class="change-item">
+                                        <input type="checkbox">
+                                        <span class="change-file">App.jsx</span>
+                                        <span class="change-stats">+15 -8</span>
+                                    </div>
+                                </div>
+                                <div class="apply-controls">
+                                    <button class="btn-apply">Apply Selected Changes</button>
+                                    <button class="btn-discard">Discard</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. 반복적인 개선</h3>
+                    <div class="iterative-improvement">
+                        <h4>대화를 통한 점진적 개선</h4>
+                        <div class="conversation-flow">
+                            <div class="conv-message user">
+                                <p>"React 컴포넌트들을 만들어줘"</p>
+                            </div>
+                            <div class="conv-message ai">
+                                <p>기본 컴포넌트 구조 생성 완료</p>
+                            </div>
+                            <div class="conv-message user">
+                                <p>"스타일링도 추가해줘. Tailwind CSS 사용하고 싶어"</p>
+                            </div>
+                            <div class="conv-message ai">
+                                <p>Tailwind 클래스 추가 및 스타일 적용 완료</p>
+                            </div>
+                            <div class="conv-message user">
+                                <p>"반응형 디자인도 적용해줘"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-lightbulb"></i> Composer 활용 팁</h2>
+
+                <div class="composer-tips">
+                    <div class="tip-category">
+                        <h3>효과적인 프롬프트 작성</h3>
+                        <div class="prompt-tips">
+                            <div class="good-bad-example">
+                                <div class="good-example">
+                                    <h4>✅ 좋은 예</h4>
+                                    <p>"사용자 프로필 페이지를 만들어줘. 다음 기능이 필요해:</p>
+                                    <ul>
+                                        <li>프로필 정보 표시 (이름, 이메일, 프로필 사진)</li>
+                                        <li>프로필 편집 기능</li>
+                                        <li>비밀번호 변경 폼</li>
+                                        <li>React Hook Form 사용</li>
+                                        <li>기존 UserContext 활용</li>
+                                    </ul>
+                                </div>
+                                <div class="bad-example">
+                                    <h4>❌ 나쁜 예</h4>
+                                    <p>"프로필 페이지 만들어줘"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tip-category">
+                        <h3>작업 범위 관리</h3>
+                        <div class="scope-tips">
+                            <div class="tip">
+                                <h4>1. 단계별 접근</h4>
+                                <p>큰 작업은 여러 단계로 나누어 진행하세요:</p>
+                                <ol>
+                                    <li>기본 구조 생성</li>
+                                    <li>기능 구현</li>
+                                    <li>스타일링</li>
+                                    <li>최적화</li>
+                                </ol>
+                            </div>
+                            <div class="tip">
+                                <h4>2. 관련 파일만 포함</h4>
+                                <p>작업에 필요한 파일만 컨텍스트에 포함시켜 정확도를 높이세요.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tip-category">
+                        <h3>일반적인 사용 패턴</h3>
+                        <div class="patterns">
+                            <div class="pattern">
+                                <h4>🏗️ 스캐폴딩</h4>
+                                <p>프로젝트 초기 구조를 빠르게 생성</p>
+                            </div>
+                            <div class="pattern">
+                                <h4>🔄 마이그레이션</h4>
+                                <p>기술 스택 변경이나 버전 업그레이드</p>
+                            </div>
+                            <div class="pattern">
+                                <h4>🧩 기능 추가</h4>
+                                <p>새로운 기능을 여러 파일에 걸쳐 구현</p>
+                            </div>
+                            <div class="pattern">
+                                <h4>🎨 일관성 유지</h4>
+                                <p>코드 스타일이나 패턴을 전체적으로 통일</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: Composer로 Todo 앱 만들기</h2>
+
+                <div class="practice-content">
+                    <h3>완전한 Todo 애플리케이션 구축</h3>
+                    <p>Composer를 사용해서 처음부터 끝까지 Todo 앱을 만들어봅시다.</p>
+
+                    <div class="practice-steps">
+                        <div class="practice-step">
+                            <h4>Step 1: 프로젝트 구조 생성</h4>
+                            <div class="composer-prompt">
+                                <p>Composer에 입력:</p>
+                                <pre><code>"React Todo 앱의 기본 구조를 만들어줘. 다음이 필요해:
+- Todo 목록 컴포넌트
+- Todo 아이템 컴포넌트  
+- 추가 폼 컴포넌트
+- 로컬 스토리지 저장
+- 기본 CSS 스타일"</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 2: 기능 추가</h4>
+                            <div class="composer-prompt">
+                                <p>이어서 요청:</p>
+                                <pre><code>"다음 기능들을 추가해줘:
+- Todo 완료 토글
+- Todo 삭제
+- 필터링 (전체/완료/미완료)
+- 드래그 앤 드롭으로 순서 변경"</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 3: 상태 관리 개선</h4>
+                            <div class="composer-prompt">
+                                <p>상태 관리 추가:</p>
+                                <pre><code>"Context API를 사용해서 전역 상태 관리를 구현해줘.
+TodoContext를 만들고 모든 컴포넌트에서 사용할 수 있게 해줘."</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 4: UI/UX 개선</h4>
+                            <div class="composer-prompt">
+                                <p>마지막 터치:</p>
+                                <pre><code>"UI를 개선해줘:
+- 애니메이션 추가 (추가/삭제 시)
+- 반응형 디자인
+- 다크 모드 지원
+- 키보드 단축키 (Enter로 추가, Delete로 삭제)"</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expected-result">
+                        <h4>예상 결과물</h4>
+                        <div class="file-tree">
+                            <pre><code>todo-app/
+├── src/
+│   ├── components/
+│   │   ├── TodoList.jsx
+│   │   ├── TodoItem.jsx
+│   │   ├── AddTodoForm.jsx
+│   │   ├── FilterButtons.jsx
+│   │   └── Layout.jsx
+│   ├── contexts/
+│   │   └── TodoContext.jsx
+│   ├── hooks/
+│   │   ├── useLocalStorage.js
+│   │   └── useDarkMode.js
+│   ├── styles/
+│   │   ├── globals.css
+│   │   ├── components.css
+│   │   └── themes.css
+│   ├── utils/
+│   │   └── helpers.js
+│   └── App.jsx
+└── index.html</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="composer-vs-others">
+                <h2><i class="fas fa-balance-scale"></i> Composer vs 다른 기능들</h2>
+
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>상황</th>
+                                <th>사용할 기능</th>
+                                <th>이유</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>단일 파일의 특정 부분 수정</td>
+                                <td><strong>Cmd+K</strong></td>
+                                <td>빠르고 정확한 인라인 편집</td>
+                            </tr>
+                            <tr>
+                                <td>여러 파일에 걸친 기능 구현</td>
+                                <td><strong>Composer</strong></td>
+                                <td>파일 간 일관성 유지</td>
+                            </tr>
+                            <tr>
+                                <td>코드 설명이나 디버깅 도움</td>
+                                <td><strong>Chat</strong></td>
+                                <td>대화형 문제 해결</td>
+                            </tr>
+                            <tr>
+                                <td>새 프로젝트 스캐폴딩</td>
+                                <td><strong>Composer</strong></td>
+                                <td>전체 구조 한번에 생성</td>
+                            </tr>
+                            <tr>
+                                <td>간단한 코드 자동완성</td>
+                                <td><strong>Tab</strong></td>
+                                <td>즉각적인 제안</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>멀티 파일 마스터</h3>
+                        <p>Composer는 여러 파일을 동시에 생성하고 수정할 수 있는 강력한 도구입니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>프로젝트 수준 작업</h3>
+                        <p>단일 파일을 넘어 전체 기능이나 프로젝트 구조를 한 번에 구현할 수 있습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>대화형 개발</h3>
+                        <p>AI와 대화하며 점진적으로 작업을 개선하고 완성도를 높일 수 있습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>선택적 적용</h3>
+                        <p>제안된 변경사항을 검토하고 필요한 부분만 선택적으로 적용할 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 터미널 통합 기능을 활용하여 Cursor 내에서 명령어를 실행하고 개발 워크플로우를 효율화하는 방법을 배웁니다.</p>
+                    <a href="lesson08.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li>Cursor 소개와 설치</li>
+                    <li>첫 번째 AI 자동완성</li>
+                    <li>AI Chat 마스터하기</li>
+                    <li>Cmd+K 완벽 가이드</li>
+                    <li>프로젝트 컨텍스트</li>
+                    <li>AI 모델 선택과 활용</li>
+                    <li class="current">Composer 기능 활용</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-keyboard"></i> Composer 단축키</h3>
+                <div class="shortcut-list">
+                    <div class="shortcut-item">
+                        <kbd>Cmd/Ctrl + I</kbd>
+                        <span>Composer 열기</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd>
+                        <span>Composer 닫기</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Enter</kbd>
+                        <span>변경사항 적용</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 Composer는 파일 간의 의존성을 이해합니다. import 문이나 함수 호출을 자동으로 업데이트해주므로 안심하고 사용하세요.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 23.33%"></div>
+            <span class="progress-text">7/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+    <script>
+        // Interactive Composer demo
+        const fileChanges = document.querySelectorAll('.file-change');
+        fileChanges.forEach((change, index) => {
+            setTimeout(() => {
+                change.classList.add('animate-in');
+            }, index * 200);
+        });
+
+        // Conversation flow animation
+        const convMessages = document.querySelectorAll('.conv-message');
+        convMessages.forEach((msg, index) => {
+            msg.style.opacity = '0';
+            msg.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                msg.style.transition = 'all 0.3s ease';
+                msg.style.opacity = '1';
+                msg.style.transform = 'translateY(0)';
+            }, index * 500);
+        });
+    </script>
+</body>
+</html>

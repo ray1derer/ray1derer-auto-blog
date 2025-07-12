@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제1강: Claude와의 첫 만남 | Claude 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <div id="sidebar-content"></div>
+        </aside>
+        
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <!-- 강의 헤더 -->
+            <header class="lesson-header">
+                <div class="lesson-meta">
+                    <span class="lesson-module">모듈 1: 첫 걸음</span>
+                    <span class="lesson-difficulty">입문</span>
+                    <span class="lesson-duration">30분</span>
+                </div>
+                <h1>제1강: Claude와의 첫 만남</h1>
+                <p class="lesson-subtitle">30분 안에 Claude로 실제 결과물 만들기</p>
+            </header>
+            
+            <!-- 학습 목표 -->
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Claude AI의 기본 개념과 특징을 이해합니다</li>
+                    <li>실제로 Claude와 첫 대화를 시작합니다</li>
+                    <li>30분 안에 자기소개서를 개선하는 경험을 합니다</li>
+                    <li>대화형 AI의 작동 원리를 체험적으로 이해합니다</li>
+                </ul>
+            </section>
+            
+            <!-- 핵심 개념 -->
+            <section class="key-concepts">
+                <h2><i class="fas fa-lightbulb"></i> 핵심 개념</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>Claude란?</h3>
+                        <p>Anthropic이 개발한 AI 어시스턴트로, 안전하고 유용하며 정직한 대화를 목표로 설계되었습니다.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>Constitutional AI</h3>
+                        <p>Claude의 핵심 기술로, AI가 스스로 윤리적 기준을 학습하여 안전한 응답을 생성합니다.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>대화형 인터페이스</h3>
+                        <p>자연스러운 언어로 대화하듯 요청하고, Claude가 맥락을 이해하여 응답합니다.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>컨텍스트 윈도우</h3>
+                        <p>Claude가 한 번에 처리할 수 있는 텍스트 양으로, 100K+ 토큰을 지원합니다.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 실습 섹션 -->
+            <section class="practice-section">
+                <h2><i class="fas fa-laptop-code"></i> 즉시 실습: 자기소개서 업그레이드</h2>
+                <div class="practice-container">
+                    <div class="practice-step">
+                        <h4>Step 1: Claude.ai 접속</h4>
+                        <p>웹 브라우저에서 <a href="https://claude.ai" target="_blank">claude.ai</a>에 접속합니다.</p>
+                        <p>아직 계정이 없다면 무료로 가입합니다.</p>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>Step 2: 첫 대화 시작</h4>
+                        <p>다음과 같이 입력해보세요:</p>
+                        <pre><code>안녕하세요 Claude! 저는 [당신의 직업/전공]입니다. 
+제 자기소개서를 개선하는데 도움을 주실 수 있나요?</code></pre>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>Step 3: 기존 자기소개서 공유</h4>
+                        <p>현재 가지고 있는 자기소개서나 이력서의 일부를 복사해서 붙여넣기 합니다.</p>
+                        <p>없다면 간단한 자기 소개 3-4줄을 작성해서 공유합니다.</p>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>Step 4: 개선 요청</h4>
+                        <p>구체적인 개선 방향을 요청합니다:</p>
+                        <pre><code>이 자기소개서를 다음과 같이 개선해주세요:
+1. 더 임팩트 있는 첫 문장으로 시작
+2. 구체적인 성과와 숫자 포함
+3. [지원 분야]에 맞는 핵심 역량 강조
+4. 전체적으로 더 간결하고 읽기 쉽게</code></pre>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>Step 5: 반복 개선</h4>
+                        <p>Claude의 제안을 검토하고, 추가 수정을 요청합니다:</p>
+                        <pre><code>좋습니다! 그런데 [특정 부분]을 좀 더 [원하는 방향]으로 
+수정해주실 수 있을까요?</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 프로젝트 -->
+            <section class="project-section">
+                <h2><i class="fas fa-project-diagram"></i> 미니 프로젝트</h2>
+                <div class="project-brief">
+                    <h3>🎯 "나만의 자기소개서 완성하기"</h3>
+                    <p>20분 동안 Claude와 함께 자기소개서를 완성해봅시다.</p>
+                    <div class="project-requirements">
+                        <h4>요구사항:</h4>
+                        <ul>
+                            <li>최소 3번의 수정 과정 거치기</li>
+                            <li>구체적인 성과 2개 이상 포함</li>
+                            <li>300-500자 분량으로 완성</li>
+                            <li>지원 분야에 맞는 키워드 포함</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 성과 측정 -->
+            <section class="assessment">
+                <h2><i class="fas fa-chart-bar"></i> 성과 측정</h2>
+                <div class="metrics">
+                    <div class="metric-card">
+                        <div class="metric-value">1</div>
+                        <div class="metric-label">완성된 자기소개서</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">20분</div>
+                        <div class="metric-label">소요 시간</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">3+</div>
+                        <div class="metric-label">개선 횟수</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">∞</div>
+                        <div class="metric-label">가능성 발견</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 팁과 주의사항 -->
+            <section class="tips-section">
+                <h2><i class="fas fa-info-circle"></i> 💡 Pro Tips</h2>
+                <div class="tip-box">
+                    <h4>효과적인 첫 대화를 위한 팁:</h4>
+                    <ul>
+                        <li><strong>구체적으로 요청하기:</strong> "도와주세요"보다 "~를 ~하게 수정해주세요"</li>
+                        <li><strong>맥락 제공하기:</strong> 어떤 회사/직무에 지원하는지 알려주기</li>
+                        <li><strong>단계별로 진행:</strong> 한 번에 모든 것을 요구하지 말고 점진적으로</li>
+                        <li><strong>피드백 주기:</strong> Claude의 제안에 대해 좋은 점과 개선점 말하기</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- 다음 단계 -->
+            <section class="next-steps">
+                <h2><i class="fas fa-forward"></i> 다음 단계</h2>
+                <p>축하합니다! 첫 번째 Claude 프로젝트를 완성했습니다. 🎉</p>
+                <p>다음 강의에서는 Claude를 더 다양한 플랫폼에서 활용하는 방법을 배웁니다.</p>
+                <div class="next-preview">
+                    <h4>제2강 미리보기: "설치 없이 시작하기"</h4>
+                    <ul>
+                        <li>웹, 모바일, 데스크톱에서 Claude 사용하기</li>
+                        <li>무료 vs 유료 플랜 비교</li>
+                        <li>일주일 식단 계획 프로젝트</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- 네비게이션 -->
+            <nav class="lesson-navigation">
+                <a href="../index.html" class="nav-prev">
+                    <i class="fas fa-home"></i> 홈으로
+                </a>
+                <a href="lesson02.html" class="nav-next">
+                    다음 강의 <i class="fas fa-chevron-right"></i>
+                </a>
+            </nav>
+        </main>
+    </div>
+    
+    <script>
+        // 사이드바 로드
+        fetch('../assets/sidebar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('sidebar-content').innerHTML = data;
+                // 현재 페이지 활성화
+                const currentPath = window.location.pathname.split('/').pop();
+                const lessonLinks = document.querySelectorAll('.lesson-link');
+                lessonLinks.forEach(link => {
+                    if (link.getAttribute('href').includes(currentPath)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        
+        // 진도 추적
+        const lessonComplete = localStorage.getItem('lesson01_complete');
+        if (!lessonComplete) {
+            localStorage.setItem('lesson01_complete', 'true');
+            // 진도 업데이트 로직
+        }
+    </script>
+    <script src="../assets/js/navigation.js"></script>
+</body>
+</html>

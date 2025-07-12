@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제5강: 프로젝트 컨텍스트 이해 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-project-diagram"></i> 제5강: 프로젝트 컨텍스트 이해</h1>
+                <p class="lesson-subtitle">AI가 프로젝트 전체를 이해하는 방법과 활용법</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 초급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 35분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 기초</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson04.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제5강: 프로젝트 컨텍스트 이해</span>
+            <a href="lesson06.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cursor의 프로젝트 인덱싱 시스템 이해하기</li>
+                    <li>컨텍스트가 AI 제안에 미치는 영향 파악하기</li>
+                    <li>프로젝트 구조 최적화 방법 익히기</li>
+                    <li>.cursorignore와 설정 파일 활용하기</li>
+                    <li>대규모 프로젝트에서 효율적으로 작업하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-brain"></i> 프로젝트 컨텍스트란?</h2>
+                
+                <div class="info-box">
+                    <p>프로젝트 컨텍스트는 Cursor AI가 전체 코드베이스를 이해하는 방식입니다. 파일 구조, 의존성, 코드 패턴, 그리고 프로젝트의 전반적인 아키텍처를 파악하여 더 정확하고 일관된 코드 제안을 제공합니다.</p>
+                </div>
+
+                <h3>컨텍스트의 구성 요소</h3>
+                <div class="context-components">
+                    <div class="component-card">
+                        <i class="fas fa-folder-tree"></i>
+                        <h4>파일 구조</h4>
+                        <p>프로젝트의 디렉토리 구조와 파일 조직</p>
+                    </div>
+                    <div class="component-card">
+                        <i class="fas fa-code"></i>
+                        <h4>코드 내용</h4>
+                        <p>함수, 클래스, 변수 정의 및 사용 패턴</p>
+                    </div>
+                    <div class="component-card">
+                        <i class="fas fa-link"></i>
+                        <h4>의존성</h4>
+                        <p>import/export 관계와 모듈 간 연결</p>
+                    </div>
+                    <div class="component-card">
+                        <i class="fas fa-cog"></i>
+                        <h4>설정 파일</h4>
+                        <p>package.json, tsconfig 등 프로젝트 설정</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-search"></i> 인덱싱 시스템의 작동 방식</h2>
+
+                <div class="indexing-explanation">
+                    <h3>Cursor의 스마트 인덱싱</h3>
+                    
+                    <div class="indexing-process">
+                        <div class="process-step">
+                            <div class="step-icon"><i class="fas fa-folder-open"></i></div>
+                            <h4>1. 프로젝트 스캔</h4>
+                            <p>프로젝트를 열면 자동으로 모든 파일을 스캔</p>
+                        </div>
+                        <div class="process-arrow">→</div>
+                        <div class="process-step">
+                            <div class="step-icon"><i class="fas fa-database"></i></div>
+                            <h4>2. 인덱스 구축</h4>
+                            <p>코드 구조와 관계를 분석하여 인덱스 생성</p>
+                        </div>
+                        <div class="process-arrow">→</div>
+                        <div class="process-step">
+                            <div class="step-icon"><i class="fas fa-sync"></i></div>
+                            <h4>3. 실시간 업데이트</h4>
+                            <p>파일 변경 시 자동으로 인덱스 갱신</p>
+                        </div>
+                    </div>
+
+                    <h3>인덱싱 상태 확인</h3>
+                    <div class="status-indicator">
+                        <div class="status-example">
+                            <div class="status-bar">
+                                <i class="fas fa-circle-notch fa-spin"></i>
+                                <span>Indexing project... (2,341/5,000 files)</span>
+                            </div>
+                            <p>하단 상태바에서 인덱싱 진행 상황을 확인할 수 있습니다</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-eye"></i> 컨텍스트가 AI에 미치는 영향</h2>
+
+                <div class="context-impact">
+                    <h3>컨텍스트 있을 때 vs 없을 때</h3>
+                    
+                    <div class="comparison-demo">
+                        <div class="with-context">
+                            <h4>✅ 풍부한 컨텍스트</h4>
+                            <div class="project-structure">
+                                <pre><code>my-app/
+├── src/
+│   ├── components/
+│   │   ├── Button.tsx
+│   │   └── Card.tsx
+│   ├── hooks/
+│   │   └── useAuth.ts
+│   └── utils/
+│       └── api.ts
+└── package.json</code></pre>
+                            </div>
+                            <div class="ai-suggestion">
+                                <p>새 컴포넌트 생성 시:</p>
+                                <pre><code>// AI가 프로젝트 스타일을 이해하고 제안
+import React from 'react';
+import { useAuth } from '../hooks/useAuth';
+import Button from './Button';
+
+interface UserProfileProps {
+  userId: string;
+}
+
+const UserProfile: React.FC&lt;UserProfileProps&gt; = ({ userId }) => {
+  const { user, isLoading } = useAuth();
+  
+  // 프로젝트의 API 패턴을 따름
+  const handleUpdate = async () => {
+    await api.updateUser(userId, data);
+  };
+  
+  return (
+    &lt;Card&gt;
+      {/* 기존 컴포넌트 활용 */}
+      &lt;Button onClick={handleUpdate}&gt;Update&lt;/Button&gt;
+    &lt;/Card&gt;
+  );
+};</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="without-context">
+                            <h4>❌ 컨텍스트 부족</h4>
+                            <div class="ai-suggestion">
+                                <p>동일한 요청에 대한 일반적인 제안:</p>
+                                <pre><code>// 일반적인 React 컴포넌트
+function UserProfile({ userId }) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;User Profile&lt;/h1&gt;
+      &lt;p&gt;User ID: {userId}&lt;/p&gt;
+      &lt;button&gt;Update&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-folder-plus"></i> 프로젝트 구조 최적화</h2>
+
+                <div class="optimization-guide">
+                    <h3>AI 친화적인 프로젝트 구조</h3>
+                    
+                    <div class="best-practices">
+                        <div class="practice">
+                            <h4>1. 명확한 폴더 구조</h4>
+                            <pre><code>src/
+├── components/     # UI 컴포넌트
+├── pages/         # 페이지 컴포넌트
+├── hooks/         # 커스텀 훅
+├── utils/         # 유틸리티 함수
+├── services/      # API 서비스
+├── types/         # TypeScript 타입
+└── styles/        # 스타일 파일</code></pre>
+                            <p class="tip">일관된 구조는 AI가 파일의 역할을 쉽게 이해하도록 돕습니다</p>
+                        </div>
+
+                        <div class="practice">
+                            <h4>2. 의미 있는 파일명</h4>
+                            <div class="naming-examples">
+                                <div class="good">
+                                    <p>✅ 좋은 예:</p>
+                                    <ul>
+                                        <li>UserProfileCard.tsx</li>
+                                        <li>useAuthenticationHook.ts</li>
+                                        <li>formatCurrency.util.ts</li>
+                                    </ul>
+                                </div>
+                                <div class="bad">
+                                    <p>❌ 피해야 할 예:</p>
+                                    <ul>
+                                        <li>comp1.tsx</li>
+                                        <li>utils.ts</li>
+                                        <li>helper.js</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="practice">
+                            <h4>3. 모듈화와 관심사 분리</h4>
+                            <pre><code>// ✅ 각 파일이 단일 책임을 가짐
+// services/auth.service.ts
+export const authService = {
+  login: async (credentials) => { /* ... */ },
+  logout: async () => { /* ... */ },
+  refreshToken: async () => { /* ... */ }
+};
+
+// hooks/useAuth.ts
+export const useAuth = () => {
+  const [user, setUser] = useState(null);
+  // auth 로직만 포함
+};
+
+// components/LoginForm.tsx
+export const LoginForm = () => {
+  const { login } = useAuth();
+  // UI 로직만 포함
+};</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-file-alt"></i> .cursorignore 파일 활용</h2>
+
+                <div class="cursorignore-guide">
+                    <h3>.cursorignore란?</h3>
+                    <p>.gitignore와 유사하게, AI가 무시해야 할 파일과 폴더를 지정하는 파일입니다.</p>
+
+                    <div class="cursorignore-example">
+                        <h4>효과적인 .cursorignore 예제</h4>
+                        <pre><code># 빌드 출력물
+dist/
+build/
+out/
+.next/
+
+# 의존성
+node_modules/
+vendor/
+
+# 환경 파일
+.env
+.env.local
+.env.*.local
+
+# 로그 파일
+logs/
+*.log
+npm-debug.log*
+
+# 테스트 커버리지
+coverage/
+.nyc_output/
+
+# IDE 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 대용량 에셋
+*.mp4
+*.mov
+*.zip
+*.tar.gz
+
+# 생성된 파일
+*.min.js
+*.min.css
+generated/</code></pre>
+                    </div>
+
+                    <div class="benefits">
+                        <h4>장점</h4>
+                        <ul>
+                            <li>🚀 인덱싱 속도 향상</li>
+                            <li>💾 메모리 사용량 감소</li>
+                            <li>🎯 더 정확한 컨텍스트</li>
+                            <li>🔒 민감한 정보 보호</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-cogs"></i> 프로젝트별 AI 설정</h2>
+
+                <div class="project-settings">
+                    <h3>.cursor/settings.json</h3>
+                    <p>프로젝트별 AI 동작을 커스터마이징할 수 있습니다:</p>
+
+                    <pre><code>{
+  "ai": {
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "contextWindow": 8192
+  },
+  "features": {
+    "tabAutocomplete": {
+      "enabled": true,
+      "delay": 200,
+      "maxSuggestionLength": 500
+    },
+    "chat": {
+      "defaultContext": ["*.ts", "*.tsx", "README.md"],
+      "excludePatterns": ["*.test.ts", "*.spec.ts"]
+    }
+  },
+  "codebase": {
+    "language": "typescript",
+    "framework": "react",
+    "style": {
+      "quotes": "single",
+      "semicolons": true,
+      "indentation": 2
+    }
+  }
+}</code></pre>
+
+                    <h3>커스텀 컨텍스트 규칙</h3>
+                    <div class="context-rules">
+                        <h4>.cursorrules 파일</h4>
+                        <pre><code># 프로젝트 규칙
+- 모든 컴포넌트는 함수형으로 작성
+- TypeScript 엄격 모드 사용
+- 상태 관리는 Zustand 사용
+- API 호출은 반드시 try-catch로 감싸기
+- 모든 함수에 JSDoc 주석 추가
+
+# 코딩 스타일
+- camelCase for 변수와 함수
+- PascalCase for 컴포넌트와 타입
+- UPPER_SNAKE_CASE for 상수
+
+# 금지 사항
+- var 키워드 사용 금지
+- any 타입 사용 최소화
+- console.log는 개발 중에만</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-chart-line"></i> 대규모 프로젝트 최적화</h2>
+
+                <div class="large-project-tips">
+                    <h3>성능 최적화 전략</h3>
+
+                    <div class="optimization-strategies">
+                        <div class="strategy">
+                            <h4>1. 선택적 인덱싱</h4>
+                            <p>작업 중인 모듈만 집중적으로 인덱싱:</p>
+                            <pre><code># .cursorignore에 추가
+# 현재 작업하지 않는 모듈
+legacy/
+archived/
+experiments/</code></pre>
+                        </div>
+
+                        <div class="strategy">
+                            <h4>2. 워크스페이스 분리</h4>
+                            <p>모노레포의 경우 개별 워크스페이스로 작업:</p>
+                            <pre><code>// 각 패키지를 별도로 열기
+cursor packages/frontend
+cursor packages/backend
+cursor packages/shared</code></pre>
+                        </div>
+
+                        <div class="strategy">
+                            <h4>3. 심볼릭 링크 활용</h4>
+                            <p>자주 참조하는 파일들을 가까이 배치:</p>
+                            <pre><code># 중요한 참조 파일 링크
+ln -s ../../shared/types ./src/types
+ln -s ../../shared/utils ./src/utils</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 프로젝트 컨텍스트 최적화</h2>
+
+                <div class="practice-content">
+                    <h3>React 프로젝트 설정하기</h3>
+                    <p>AI가 최대한 효과적으로 도와줄 수 있도록 프로젝트를 구성해봅시다.</p>
+
+                    <div class="practice-steps">
+                        <div class="practice-step">
+                            <h4>Step 1: 프로젝트 구조 생성</h4>
+                            <pre><code>mkdir my-react-app && cd my-react-app
+npx create-react-app . --template typescript
+cursor .</code></pre>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 2: .cursorignore 생성</h4>
+                            <pre><code># .cursorignore
+node_modules/
+build/
+coverage/
+.env
+*.log
+
+# React 관련 무시 파일
+public/
+src/serviceWorker.ts
+src/setupTests.ts
+src/logo.svg</code></pre>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 3: .cursorrules 작성</h4>
+                            <pre><code># React 프로젝트 규칙
+- React 18+ 기능 활용
+- 함수형 컴포넌트와 Hooks 사용
+- TypeScript strict 모드
+- CSS Modules 또는 styled-components
+
+# 폴더 구조
+- components/: 재사용 가능한 UI 컴포넌트
+- pages/: 라우트별 페이지 컴포넌트
+- hooks/: 커스텀 React Hooks
+- utils/: 유틸리티 함수
+- services/: API 통신 로직
+
+# 네이밍 컨벤션
+- 컴포넌트: PascalCase (예: UserProfile.tsx)
+- 훅: camelCase with 'use' prefix (예: useAuth.ts)
+- 유틸: camelCase (예: formatDate.ts)</code></pre>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 4: 컨텍스트 테스트</h4>
+                            <p>AI Chat을 열고 다음을 질문해보세요:</p>
+                            <div class="test-prompts">
+                                <p>"이 프로젝트의 구조를 설명해줘"</p>
+                                <p>"Button 컴포넌트를 프로젝트 스타일에 맞게 만들어줘"</p>
+                                <p>"현재 프로젝트에서 사용 중인 의존성 목록을 보여줘"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="troubleshooting">
+                <h2><i class="fas fa-tools"></i> 문제 해결</h2>
+
+                <div class="common-issues">
+                    <div class="issue">
+                        <h3>인덱싱이 너무 오래 걸려요</h3>
+                        <ul>
+                            <li>불필요한 파일을 .cursorignore에 추가</li>
+                            <li>node_modules나 dist 폴더가 포함되지 않았는지 확인</li>
+                            <li>프로젝트를 더 작은 워크스페이스로 분리</li>
+                        </ul>
+                    </div>
+
+                    <div class="issue">
+                        <h3>AI가 프로젝트 스타일을 따르지 않아요</h3>
+                        <ul>
+                            <li>.cursorrules 파일 생성 및 규칙 명시</li>
+                            <li>예제 코드를 충분히 작성하여 패턴 학습</li>
+                            <li>일관된 코딩 스타일 유지</li>
+                        </ul>
+                    </div>
+
+                    <div class="issue">
+                        <h3>특정 파일이 인덱싱되지 않아요</h3>
+                        <ul>
+                            <li>.cursorignore에 해당 파일이 포함되지 않았는지 확인</li>
+                            <li>파일 크기가 너무 크지 않은지 확인 (10MB 이상)</li>
+                            <li>파일 인코딩이 UTF-8인지 확인</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>프로젝트 전체 이해</h3>
+                        <p>Cursor는 단순히 현재 파일만이 아닌 전체 프로젝트의 구조와 패턴을 이해합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>컨텍스트가 품질을 결정</h3>
+                        <p>풍부한 컨텍스트는 더 정확하고 프로젝트에 맞는 코드 제안으로 이어집니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>최적화는 필수</h3>
+                        <p>.cursorignore와 프로젝트 구조 최적화로 성능과 정확도를 크게 향상시킬 수 있습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>커스터마이징 가능</h3>
+                        <p>프로젝트별 설정과 규칙으로 AI의 동작을 세밀하게 조정할 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 GPT-4, Claude 등 다양한 AI 모델을 선택하고 활용하는 방법을 배웁니다.</p>
+                    <a href="lesson06.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li>Cursor 소개와 설치</li>
+                    <li>첫 번째 AI 자동완성</li>
+                    <li>AI Chat 마스터하기</li>
+                    <li>Cmd+K 완벽 가이드</li>
+                    <li class="current">프로젝트 컨텍스트</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-file-code"></i> 핵심 파일</h3>
+                <div class="key-files">
+                    <div class="file-item">
+                        <code>.cursorignore</code>
+                        <span>인덱싱 제외 파일</span>
+                    </div>
+                    <div class="file-item">
+                        <code>.cursorrules</code>
+                        <span>프로젝트 규칙</span>
+                    </div>
+                    <div class="file-item">
+                        <code>.cursor/settings.json</code>
+                        <span>AI 설정</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 프로젝트를 처음 열 때 인덱싱이 완료될 때까지 기다리면, AI의 제안 품질이 크게 향상됩니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 16.67%"></div>
+            <span class="progress-text">5/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제17강: 백엔드 프레임워크와 Cursor AI | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-server"></i> 제17강: 백엔드 프레임워크와 Cursor AI</h1>
+                <p class="lesson-subtitle">Node.js, Python, Java로 구축하는 AI 지원 서버 개발</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 55분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson16.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제17강: 백엔드 프레임워크와 Cursor AI</span>
+            <a href="lesson18.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 Express.js/NestJS 서버 구축하기</li>
+                    <li>FastAPI/Django로 Python 백엔드 개발하기</li>
+                    <li>Spring Boot 엔터프라이즈 애플리케이션 구축하기</li>
+                    <li>마이크로서비스 아키텍처 설계와 구현</li>
+                    <li>실시간 통신과 메시지 큐 시스템 통합하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-node-js"></i> Node.js 백엔드 개발</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 Express.js와 NestJS의 구조를 이해하고, 확장 가능한 백엔드 서비스를 자동으로 생성합니다. 미들웨어, 라우팅, 데이터베이스 연동까지 모든 과정을 지원합니다.</p>
+                </div>
+
+                <h3>Express.js 서버 구축</h3>
+                <div class="express-example">
+                    <div class="server-request">
+                        <h4>요구사항: JWT 인증이 있는 RESTful API 서버</h4>
+                        <p>AI에게 요청: "JWT 인증, 파일 업로드, 실시간 알림이 있는 Express 서버를 만들어줘"</p>
+                    </div>
+
+                    <div class="ai-generated-server">
+                        <h4>AI가 생성한 Express 서버</h4>
+                        <pre><code>// server.ts
+import express, { Application } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { config } from './config';
+import { errorHandler } from './middleware/errorHandler';
+import { authMiddleware } from './middleware/auth';
+import routes from './routes';
+import { connectDatabase } from './database';
+import { initializeSocketHandlers } from './socket/handlers';
+import { logger } from './utils/logger';
+
+class App {
+    private app: Application;
+    private server: any;
+    private io: Server;
+    private port: number;
+
+    constructor() {
+        this.app = express();
+        this.port = config.port || 3000;
+        this.server = createServer(this.app);
+        this.io = new Server(this.server, {
+            cors: {
+                origin: config.clientUrl,
+                credentials: true
+            }
+        });
+
+        this.initializeMiddlewares();
+        this.initializeRoutes();
+        this.initializeSocketIO();
+        this.initializeErrorHandling();
+    }
+
+    private initializeMiddlewares(): void {
+        // 보안 헤더
+        this.app.use(helmet({
+            contentSecurityPolicy: {
+                directives: {
+                    defaultSrc: ["'self'"],
+                    styleSrc: ["'self'", "'unsafe-inline'"],
+                    scriptSrc: ["'self'"],
+                    imgSrc: ["'self'", "data:", "https:"],
+                },
+            },
+        }));
+
+        // CORS 설정
+        this.app.use(cors({
+            origin: config.allowedOrigins,
+            credentials: true,
+            optionsSuccessStatus: 200
+        }));
+
+        // 요청 로깅
+        this.app.use(morgan('combined', {
+            stream: {
+                write: (message: string) => logger.info(message.trim())
+            }
+        }));
+
+        // Body 파싱
+        this.app.use(express.json({ limit: '10mb' }));
+        this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+        // 압축
+        this.app.use(compression());
+
+        // Rate limiting
+        const limiter = rateLimit({
+            windowMs: 15 * 60 * 1000, // 15분
+            max: 100, // 최대 100개 요청
+            message: 'Too many requests from this IP',
+            standardHeaders: true,
+            legacyHeaders: false,
+        });
+
+        this.app.use('/api/', limiter);
+
+        // 정적 파일 제공
+        this.app.use('/uploads', express.static('uploads'));
+    }
+
+    private initializeRoutes(): void {
+        // Health check
+        this.app.get('/health', (req, res) => {
+            res.json({
+                status: 'ok',
+                timestamp: new Date().toISOString(),
+                uptime: process.uptime()
+            });
+        });
+
+        // API 라우트
+        this.app.use('/api', routes);
+
+        // 404 처리
+        this.app.use('*', (req, res) => {
+            res.status(404).json({
+                success: false,
+                message: 'Resource not found'
+            });
+        });
+    }
+
+    private initializeSocketIO(): void {
+        // Socket.IO 인증
+        this.io.use(async (socket, next) => {
+            try {
+                const token = socket.handshake.auth.token;
+                const user = await authMiddleware.verifyToken(token);
+                socket.data.user = user;
+                next();
+            } catch (error) {
+                next(new Error('Authentication failed'));
+            }
+        });
+
+        // Socket 핸들러 초기화
+        initializeSocketHandlers(this.io);
+    }
+
+    private initializeErrorHandling(): void {
+        this.app.use(errorHandler);
+
+        // 처리되지 않은 예외 처리
+        process.on('uncaughtException', (error: Error) => {
+            logger.error('Uncaught Exception:', error);
+            process.exit(1);
+        });
+
+        process.on('unhandledRejection', (reason: any) => {
+            logger.error('Unhandled Rejection:', reason);
+            process.exit(1);
+        });
+    }
+
+    public async start(): Promise<void> {
+        try {
+            // 데이터베이스 연결
+            await connectDatabase();
+            
+            // 서버 시작
+            this.server.listen(this.port, () => {
+                logger.info(`🚀 Server is running on port ${this.port}`);
+                logger.info(`📱 Socket.IO is ready for connections`);
+            });
+        } catch (error) {
+            logger.error('Failed to start server:', error);
+            process.exit(1);
+        }
+    }
+
+    public getApp(): Application {
+        return this.app;
+    }
+
+    public getSocketIO(): Server {
+        return this.io;
+    }
+}
+
+export default new App();</code></pre>
+                    </div>
+
+                    <div class="auth-middleware">
+                        <h4>JWT 인증 미들웨어</h4>
+                        <pre><code>// middleware/auth.ts
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { config } from '../config';
+import { UserService } from '../services/user.service';
+import { logger } from '../utils/logger';
+
+interface JwtPayload {
+    userId: string;
+    email: string;
+    role: string;
+}
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: JwtPayload;
+        }
+    }
+}
+
+export class AuthMiddleware {
+    private userService: UserService;
+
+    constructor() {
+        this.userService = new UserService();
+    }
+
+    async authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const token = this.extractToken(req);
+            
+            if (!token) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'No authentication token provided'
+                });
+            }
+
+            const decoded = await this.verifyToken(token);
+            
+            // 사용자 존재 확인
+            const user = await this.userService.findById(decoded.userId);
+            if (!user || !user.isActive) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'User not found or inactive'
+                });
+            }
+
+            req.user = decoded;
+            next();
+        } catch (error) {
+            logger.error('Authentication error:', error);
+            
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Token has expired',
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
+            
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid authentication token'
+            });
+        }
+    }
+
+    authorize(...roles: string[]) {
+        return (req: Request, res: Response, next: NextFunction) => {
+            if (!req.user) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Authentication required'
+                });
+            }
+
+            if (roles.length && !roles.includes(req.user.role)) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Insufficient permissions'
+                });
+            }
+
+            next();
+        };
+    }
+
+    private extractToken(req: Request): string | null {
+        const authHeader = req.headers.authorization;
+        
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            return authHeader.substring(7);
+        }
+        
+        // 쿠키에서도 토큰 확인
+        return req.cookies?.token || null;
+    }
+
+    async verifyToken(token: string): Promise<JwtPayload> {
+        return new Promise((resolve, reject) => {
+            jwt.verify(token, config.jwtSecret, (err, decoded) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(decoded as JwtPayload);
+                }
+            });
+        });
+    }
+
+    generateToken(payload: JwtPayload): string {
+        return jwt.sign(payload, config.jwtSecret, {
+            expiresIn: config.jwtExpiresIn || '7d'
+        });
+    }
+
+    generateRefreshToken(userId: string): string {
+        return jwt.sign({ userId }, config.jwtRefreshSecret, {
+            expiresIn: '30d'
+        });
+    }
+}
+
+export const authMiddleware = new AuthMiddleware();</code></pre>
+                    </div>
+
+                    <div class="file-upload">
+                        <h4>파일 업로드 처리</h4>
+                        <pre><code>// routes/upload.routes.ts
+import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { authMiddleware } from '../middleware/auth';
+import { uploadController } from '../controllers/upload.controller';
+
+const router = Router();
+
+// Multer 설정
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, '../../uploads');
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    }
+});
+
+const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const allowedMimes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Invalid file type'));
+    }
+};
+
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB
+    }
+});
+
+// 라우트 정의
+router.post(
+    '/single',
+    authMiddleware.authenticate,
+    upload.single('file'),
+    uploadController.uploadSingle
+);
+
+router.post(
+    '/multiple',
+    authMiddleware.authenticate,
+    upload.array('files', 5),
+    uploadController.uploadMultiple
+);
+
+router.delete(
+    '/:fileId',
+    authMiddleware.authenticate,
+    uploadController.deleteFile
+);
+
+export default router;</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-python"></i> Python 백엔드 개발</h2>
+
+                <div class="python-examples">
+                    <h3>FastAPI 고성능 API 서버</h3>
+                    
+                    <div class="fastapi-server">
+                        <h4>AI가 생성한 FastAPI 서버</h4>
+                        <pre><code># main.py
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from contextlib import asynccontextmanager
+from typing import List, Optional
+import uvicorn
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.config import settings
+from app.core.database import engine, get_db
+from app.core.security import verify_token
+from app.models import Base
+from app.routers import auth, users, products, orders
+from app.middleware.logging import LoggingMiddleware
+from app.utils.redis_client import redis_client
+from app.websocket.manager import connection_manager
+
+# Lifespan 이벤트 핸들러
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 시작 시
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    await redis_client.connect()
+    print("✅ Database connected")
+    print("✅ Redis connected")
+    
+    yield
+    
+    # 종료 시
+    await redis_client.close()
+    await engine.dispose()
+    print("👋 Shutting down...")
+
+# FastAPI 앱 생성
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
+)
+
+# 미들웨어 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.ALLOWED_HOSTS
+)
+
+app.add_middleware(LoggingMiddleware)
+
+# Security
+security = HTTPBearer()
+
+# 헬스 체크
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION
+    }
+
+# 보호된 엔드포인트 예시
+@app.get("/api/v1/protected")
+async def protected_route(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
+    token = credentials.credentials
+    user = await verify_token(token, db)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials"
+        )
+    
+    return {"message": f"Hello {user.email}!"}
+
+# 라우터 포함
+app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
+app.include_router(products.router, prefix=f"{settings.API_V1_STR}/products", tags=["products"])
+app.include_router(orders.router, prefix=f"{settings.API_V1_STR}/orders", tags=["orders"])
+
+# WebSocket 엔드포인트
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    await connection_manager.connect(websocket, client_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await connection_manager.broadcast(f"Client {client_id}: {data}")
+    except WebSocketDisconnect:
+        connection_manager.disconnect(client_id)
+        await connection_manager.broadcast(f"Client {client_id} left the chat")
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=settings.PORT,
+        reload=settings.DEBUG,
+        log_config={
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "default": {
+                    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                },
+            },
+        }
+    )</code></pre>
+                    </div>
+
+                    <div class="async-models">
+                        <h4>비동기 데이터베이스 모델</h4>
+                        <pre><code># models/user.py
+from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+import uuid
+from datetime import datetime
+from passlib.context import CryptContext
+
+from app.models.base import Base
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(String, unique=True, index=True, nullable=False)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String, nullable=False)
+    full_name = Column(String)
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 관계
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+    addresses = relationship("Address", back_populates="user", cascade="all, delete-orphan")
+    reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan")
+    
+    def verify_password(self, plain_password: str) -> bool:
+        return pwd_context.verify(plain_password, self.hashed_password)
+    
+    @classmethod
+    def get_password_hash(cls, password: str) -> str:
+        return pwd_context.hash(password)
+    
+    @hybrid_property
+    def is_verified(self):
+        # 이메일 인증 로직
+        return self.email_verified_at is not None
+    
+    def to_dict(self, include_sensitive=False):
+        data = {
+            "id": str(self.id),
+            "email": self.email,
+            "username": self.username,
+            "full_name": self.full_name,
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
+        
+        if include_sensitive:
+            data["is_superuser"] = self.is_superuser
+            
+        return data</code></pre>
+                    </div>
+
+                    <div class="async-crud">
+                        <h4>비동기 CRUD 작업</h4>
+                        <pre><code># repositories/user_repository.py
+from typing import Optional, List
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update, delete
+from sqlalchemy.orm import selectinload
+import uuid
+
+from app.models.user import User
+from app.schemas.user import UserCreate, UserUpdate
+from app.core.security import get_password_hash
+
+class UserRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+    
+    async def create(self, user_data: UserCreate) -> User:
+        """새 사용자 생성"""
+        user = User(
+            email=user_data.email,
+            username=user_data.username,
+            hashed_password=get_password_hash(user_data.password),
+            full_name=user_data.full_name
+        )
+        
+        self.db.add(user)
+        await self.db.commit()
+        await self.db.refresh(user)
+        
+        return user
+    
+    async def get_by_id(self, user_id: uuid.UUID) -> Optional[User]:
+        """ID로 사용자 조회"""
+        query = select(User).where(User.id == user_id)
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+    
+    async def get_by_email(self, email: str) -> Optional[User]:
+        """이메일로 사용자 조회"""
+        query = select(User).where(User.email == email)
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+    
+    async def get_all(
+        self, 
+        skip: int = 0, 
+        limit: int = 100,
+        include_inactive: bool = False
+    ) -> List[User]:
+        """모든 사용자 조회 (페이지네이션)"""
+        query = select(User)
+        
+        if not include_inactive:
+            query = query.where(User.is_active == True)
+        
+        query = query.offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        
+        return result.scalars().all()
+    
+    async def update(
+        self, 
+        user_id: uuid.UUID, 
+        user_update: UserUpdate
+    ) -> Optional[User]:
+        """사용자 정보 업데이트"""
+        update_data = user_update.dict(exclude_unset=True)
+        
+        if "password" in update_data:
+            update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+        
+        query = (
+            update(User)
+            .where(User.id == user_id)
+            .values(**update_data)
+            .returning(User)
+        )
+        
+        result = await self.db.execute(query)
+        await self.db.commit()
+        
+        return result.scalar_one_or_none()
+    
+    async def delete(self, user_id: uuid.UUID) -> bool:
+        """사용자 삭제"""
+        query = delete(User).where(User.id == user_id)
+        result = await self.db.execute(query)
+        await self.db.commit()
+        
+        return result.rowcount > 0
+    
+    async def get_with_orders(self, user_id: uuid.UUID) -> Optional[User]:
+        """주문 정보와 함께 사용자 조회"""
+        query = (
+            select(User)
+            .options(selectinload(User.orders))
+            .where(User.id == user_id)
+        )
+        
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fab fa-java"></i> Spring Boot 엔터프라이즈 개발</h2>
+
+                <div class="spring-examples">
+                    <h3>Spring Boot 마이크로서비스</h3>
+                    
+                    <div class="spring-service">
+                        <h4>AI가 생성한 Spring Boot 서비스</h4>
+                        <pre><code>// OrderService.java
+package com.example.ecommerce.service;
+
+import com.example.ecommerce.dto.OrderDTO;
+import com.example.ecommerce.dto.OrderItemDTO;
+import com.example.ecommerce.entity.Order;
+import com.example.ecommerce.entity.OrderItem;
+import com.example.ecommerce.entity.Product;
+import com.example.ecommerce.entity.User;
+import com.example.ecommerce.exception.InsufficientStockException;
+import com.example.ecommerce.exception.ResourceNotFoundException;
+import com.example.ecommerce.mapper.OrderMapper;
+import com.example.ecommerce.repository.OrderRepository;
+import com.example.ecommerce.repository.ProductRepository;
+import com.example.ecommerce.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+    
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final OrderMapper orderMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final InventoryService inventoryService;
+    private final PaymentService paymentService;
+    
+    @Transactional
+    public OrderDTO createOrder(OrderDTO orderDTO, String userId) {
+        log.info("Creating order for user: {}", userId);
+        
+        // 사용자 확인
+        User user = userRepository.findById(UUID.fromString(userId))
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        // 주문 생성
+        Order order = new Order();
+        order.setUser(user);
+        order.setOrderNumber(generateOrderNumber());
+        order.setStatus(Order.OrderStatus.PENDING);
+        order.setCreatedAt(LocalDateTime.now());
+        
+        // 주문 항목 처리
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        
+        for (OrderItemDTO itemDTO : orderDTO.getItems()) {
+            Product product = productRepository.findById(itemDTO.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+            
+            // 재고 확인
+            if (!inventoryService.checkStock(product.getId(), itemDTO.getQuantity())) {
+                throw new InsufficientStockException(
+                    "Insufficient stock for product: " + product.getName()
+                );
+            }
+            
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setQuantity(itemDTO.getQuantity());
+            orderItem.setPrice(product.getPrice());
+            orderItem.setSubtotal(
+                product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity()))
+            );
+            
+            order.getItems().add(orderItem);
+            totalAmount = totalAmount.add(orderItem.getSubtotal());
+        }
+        
+        order.setTotalAmount(totalAmount);
+        
+        // 재고 차감
+        for (OrderItem item : order.getItems()) {
+            inventoryService.decreaseStock(
+                item.getProduct().getId(), 
+                item.getQuantity()
+            );
+        }
+        
+        // 주문 저장
+        Order savedOrder = orderRepository.save(order);
+        
+        // 결제 처리
+        try {
+            PaymentResult paymentResult = paymentService.processPayment(
+                savedOrder.getId(),
+                totalAmount,
+                orderDTO.getPaymentMethod()
+            );
+            
+            if (paymentResult.isSuccess()) {
+                savedOrder.setStatus(Order.OrderStatus.PAID);
+                savedOrder.setPaymentId(paymentResult.getTransactionId());
+            } else {
+                // 재고 복원
+                rollbackInventory(savedOrder);
+                savedOrder.setStatus(Order.OrderStatus.PAYMENT_FAILED);
+            }
+        } catch (Exception e) {
+            log.error("Payment processing failed", e);
+            rollbackInventory(savedOrder);
+            savedOrder.setStatus(Order.OrderStatus.PAYMENT_FAILED);
+        }
+        
+        savedOrder = orderRepository.save(savedOrder);
+        
+        // 이벤트 발행
+        publishOrderEvent(savedOrder);
+        
+        return orderMapper.toDTO(savedOrder);
+    }
+    
+    @Transactional(readOnly = true)
+    @Cacheable(value = "orders", key = "#orderId")
+    public OrderDTO getOrder(String orderId) {
+        Order order = orderRepository.findById(UUID.fromString(orderId))
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        
+        return orderMapper.toDTO(order);
+    }
+    
+    @Transactional(readOnly = true)
+    public Page<OrderDTO> getUserOrders(String userId, Pageable pageable) {
+        Page<Order> orders = orderRepository.findByUserIdOrderByCreatedAtDesc(
+            UUID.fromString(userId), 
+            pageable
+        );
+        
+        return orders.map(orderMapper::toDTO);
+    }
+    
+    @Transactional
+    @CacheEvict(value = "orders", key = "#orderId")
+    public OrderDTO updateOrderStatus(String orderId, Order.OrderStatus status) {
+        Order order = orderRepository.findById(UUID.fromString(orderId))
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        
+        Order.OrderStatus previousStatus = order.getStatus();
+        order.setStatus(status);
+        order.setUpdatedAt(LocalDateTime.now());
+        
+        // 상태 변경에 따른 처리
+        switch (status) {
+            case SHIPPED:
+                order.setShippedAt(LocalDateTime.now());
+                sendShipmentNotification(order);
+                break;
+            case DELIVERED:
+                order.setDeliveredAt(LocalDateTime.now());
+                sendDeliveryNotification(order);
+                break;
+            case CANCELLED:
+                handleOrderCancellation(order);
+                break;
+        }
+        
+        Order updatedOrder = orderRepository.save(order);
+        
+        // 상태 변경 이벤트 발행
+        publishStatusChangeEvent(updatedOrder, previousStatus);
+        
+        return orderMapper.toDTO(updatedOrder);
+    }
+    
+    @Transactional
+    public void cancelOrder(String orderId, String reason) {
+        Order order = orderRepository.findById(UUID.fromString(orderId))
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        
+        // 취소 가능 상태 확인
+        if (!order.isCancellable()) {
+            throw new IllegalStateException(
+                "Order cannot be cancelled in current status: " + order.getStatus()
+            );
+        }
+        
+        // 재고 복원
+        rollbackInventory(order);
+        
+        // 환불 처리
+        if (order.getPaymentId() != null) {
+            paymentService.refund(order.getPaymentId(), order.getTotalAmount());
+        }
+        
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        order.setCancellationReason(reason);
+        order.setCancelledAt(LocalDateTime.now());
+        
+        orderRepository.save(order);
+        
+        // 취소 알림
+        sendCancellationNotification(order);
+    }
+    
+    private String generateOrderNumber() {
+        return "ORD-" + System.currentTimeMillis() + "-" + 
+               UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+    
+    private void rollbackInventory(Order order) {
+        for (OrderItem item : order.getItems()) {
+            inventoryService.increaseStock(
+                item.getProduct().getId(), 
+                item.getQuantity()
+            );
+        }
+    }
+    
+    private void publishOrderEvent(Order order) {
+        OrderEvent event = new OrderEvent(
+            order.getId(),
+            order.getOrderNumber(),
+            order.getStatus(),
+            order.getTotalAmount(),
+            order.getUser().getEmail()
+        );
+        
+        kafkaTemplate.send("order-events", event);
+    }
+    
+    private void publishStatusChangeEvent(Order order, Order.OrderStatus previousStatus) {
+        StatusChangeEvent event = new StatusChangeEvent(
+            order.getId(),
+            previousStatus,
+            order.getStatus(),
+            LocalDateTime.now()
+        );
+        
+        kafkaTemplate.send("order-status-events", event);
+    }
+    
+    private void sendShipmentNotification(Order order) {
+        // 배송 알림 로직
+    }
+    
+    private void sendDeliveryNotification(Order order) {
+        // 배달 완료 알림 로직
+    }
+    
+    private void sendCancellationNotification(Order order) {
+        // 취소 알림 로직
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="spring-config">
+                        <h4>Spring Security 설정</h4>
+                        <pre><code>// SecurityConfig.java
+package com.example.ecommerce.config;
+
+import com.example.ecommerce.security.JwtAuthenticationFilter;
+import com.example.ecommerce.security.JwtAuthenticationEntryPoint;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
+public class SecurityConfig {
+    
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+    
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/products/**").permitAll()
+                .requestMatchers("/health", "/actuator/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            );
+        
+        http.addFilterBefore(jwtAuthenticationFilter, 
+                           UsernamePasswordAuthenticationFilter.class);
+        
+        return http.build();
+    }
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "https://yourdomain.com"
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-cubes"></i> 마이크로서비스 아키텍처</h2>
+
+                <div class="microservices">
+                    <h3>마이크로서비스 설계 패턴</h3>
+                    
+                    <div class="api-gateway">
+                        <h4>API Gateway (Node.js)</h4>
+                        <pre><code>// gateway/index.js
+import express from 'express';
+import httpProxy from 'http-proxy-middleware';
+import rateLimit from 'express-rate-limit';
+import CircuitBreaker from 'opossum';
+import { authenticateRequest } from './middleware/auth';
+import { logger } from './utils/logger';
+
+const app = express();
+
+// 서비스 정의
+const services = {
+    auth: {
+        url: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
+        breaker: new CircuitBreaker(httpProxy.createProxyMiddleware, {
+            timeout: 3000,
+            errorThresholdPercentage: 50,
+            resetTimeout: 30000
+        })
+    },
+    user: {
+        url: process.env.USER_SERVICE_URL || 'http://user-service:3002',
+        breaker: new CircuitBreaker(httpProxy.createProxyMiddleware, {
+            timeout: 3000,
+            errorThresholdPercentage: 50,
+            resetTimeout: 30000
+        })
+    },
+    product: {
+        url: process.env.PRODUCT_SERVICE_URL || 'http://product-service:3003',
+        breaker: new CircuitBreaker(httpProxy.createProxyMiddleware, {
+            timeout: 3000,
+            errorThresholdPercentage: 50,
+            resetTimeout: 30000
+        })
+    },
+    order: {
+        url: process.env.ORDER_SERVICE_URL || 'http://order-service:3004',
+        breaker: new CircuitBreaker(httpProxy.createProxyMiddleware, {
+            timeout: 3000,
+            errorThresholdPercentage: 50,
+            resetTimeout: 30000
+        })
+    }
+};
+
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use(limiter);
+
+// 헬스 체크
+app.get('/health', (req, res) => {
+    const healthStatus = {
+        gateway: 'healthy',
+        services: {}
+    };
+    
+    Object.keys(services).forEach(service => {
+        healthStatus.services[service] = {
+            state: services[service].breaker.stats.state,
+            failures: services[service].breaker.stats.failures,
+            successes: services[service].breaker.stats.successes
+        };
+    });
+    
+    res.json(healthStatus);
+});
+
+// 서비스 라우팅
+Object.keys(services).forEach(serviceName => {
+    const service = services[serviceName];
+    const path = `/api/${serviceName}`;
+    
+    app.use(path, async (req, res, next) => {
+        try {
+            // 인증이 필요한 서비스 확인
+            if (serviceName !== 'auth' && !req.path.includes('/public')) {
+                await authenticateRequest(req, res, next);
+            }
+            
+            // Circuit Breaker를 통한 프록시
+            const proxy = await service.breaker.fire({
+                target: service.url,
+                changeOrigin: true,
+                pathRewrite: {
+                    [`^/api/${serviceName}`]: ''
+                },
+                onProxyReq: (proxyReq, req) => {
+                    // 사용자 정보 전달
+                    if (req.user) {
+                        proxyReq.setHeader('X-User-Id', req.user.id);
+                        proxyReq.setHeader('X-User-Role', req.user.role);
+                    }
+                },
+                onError: (err, req, res) => {
+                    logger.error(`Proxy error for ${serviceName}:`, err);
+                    res.status(503).json({
+                        error: 'Service temporarily unavailable',
+                        service: serviceName
+                    });
+                }
+            });
+            
+            proxy(req, res, next);
+        } catch (error) {
+            logger.error(`Circuit breaker open for ${serviceName}`);
+            res.status(503).json({
+                error: 'Service unavailable due to circuit breaker',
+                service: serviceName
+            });
+        }
+    });
+});
+
+// 에러 핸들링
+app.use((error, req, res, next) => {
+    logger.error('Gateway error:', error);
+    res.status(500).json({
+        error: 'Internal gateway error',
+        message: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    logger.info(`API Gateway running on port ${PORT}`);
+});</code></pre>
+                    </div>
+
+                    <div class="message-queue">
+                        <h4>메시지 큐 통합 (RabbitMQ)</h4>
+                        <pre><code>// services/messageQueue.js
+import amqp from 'amqplib';
+import { logger } from '../utils/logger';
+
+class MessageQueue {
+    constructor() {
+        this.connection = null;
+        this.channel = null;
+        this.queues = {};
+    }
+
+    async connect() {
+        try {
+            this.connection = await amqp.connect(process.env.RABBITMQ_URL);
+            this.channel = await this.connection.createChannel();
+            
+            // 연결 에러 처리
+            this.connection.on('error', (err) => {
+                logger.error('RabbitMQ connection error:', err);
+                setTimeout(() => this.connect(), 5000);
+            });
+            
+            this.connection.on('close', () => {
+                logger.info('RabbitMQ connection closed, reconnecting...');
+                setTimeout(() => this.connect(), 5000);
+            });
+            
+            logger.info('Connected to RabbitMQ');
+            
+            // 기본 큐 설정
+            await this.setupQueues();
+        } catch (error) {
+            logger.error('Failed to connect to RabbitMQ:', error);
+            setTimeout(() => this.connect(), 5000);
+        }
+    }
+
+    async setupQueues() {
+        // 주문 이벤트 큐
+        await this.createQueue('order.created', { durable: true });
+        await this.createQueue('order.updated', { durable: true });
+        await this.createQueue('order.cancelled', { durable: true });
+        
+        // 재고 이벤트 큐
+        await this.createQueue('inventory.updated', { durable: true });
+        await this.createQueue('inventory.low', { durable: true });
+        
+        // 알림 큐
+        await this.createQueue('notification.email', { durable: true });
+        await this.createQueue('notification.sms', { durable: true });
+        
+        // Dead Letter Queue
+        await this.createQueue('dlq', { 
+            durable: true,
+            arguments: {
+                'x-message-ttl': 86400000 // 24시간
+            }
+        });
+    }
+
+    async createQueue(queueName, options = {}) {
+        await this.channel.assertQueue(queueName, options);
+        this.queues[queueName] = true;
+    }
+
+    async publish(queue, message, options = {}) {
+        if (!this.queues[queue]) {
+            await this.createQueue(queue);
+        }
+        
+        const messageBuffer = Buffer.from(JSON.stringify(message));
+        
+        return this.channel.sendToQueue(queue, messageBuffer, {
+            persistent: true,
+            timestamp: Date.now(),
+            ...options
+        });
+    }
+
+    async subscribe(queue, handler, options = {}) {
+        if (!this.queues[queue]) {
+            await this.createQueue(queue);
+        }
+        
+        await this.channel.prefetch(options.prefetch || 1);
+        
+        return this.channel.consume(queue, async (msg) => {
+            if (!msg) return;
+            
+            try {
+                const content = JSON.parse(msg.content.toString());
+                await handler(content, msg);
+                
+                // 메시지 확인
+                this.channel.ack(msg);
+            } catch (error) {
+                logger.error(`Error processing message from ${queue}:`, error);
+                
+                // 재시도 로직
+                const retryCount = (msg.properties.headers['x-retry-count'] || 0) + 1;
+                
+                if (retryCount <= 3) {
+                    // 재시도
+                    await this.publish(queue, JSON.parse(msg.content.toString()), {
+                        headers: {
+                            'x-retry-count': retryCount,
+                            'x-original-error': error.message
+                        }
+                    });
+                } else {
+                    // Dead Letter Queue로 이동
+                    await this.publish('dlq', {
+                        originalQueue: queue,
+                        message: JSON.parse(msg.content.toString()),
+                        error: error.message,
+                        timestamp: new Date()
+                    });
+                }
+                
+                // 메시지 거부 (재큐잉하지 않음)
+                this.channel.nack(msg, false, false);
+            }
+        });
+    }
+
+    async publishEvent(eventType, data) {
+        const event = {
+            type: eventType,
+            data,
+            timestamp: new Date(),
+            correlationId: data.correlationId || this.generateCorrelationId()
+        };
+        
+        await this.publish(`${eventType}`, event);
+        logger.info(`Event published: ${eventType}`);
+    }
+
+    generateCorrelationId() {
+        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+}
+
+export default new MessageQueue();</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 풀스택 애플리케이션 구축</h2>
+
+                <div class="practice-content">
+                    <h3>실시간 채팅 애플리케이션 만들기</h3>
+                    <p>AI와 함께 WebSocket을 활용한 실시간 채팅 서버를 구축해봅시다.</p>
+
+                    <div class="chat-requirements">
+                        <h4>요구사항</h4>
+                        <ul>
+                            <li>실시간 메시지 전송/수신</li>
+                            <li>채팅방 생성 및 관리</li>
+                            <li>사용자 인증 및 권한</li>
+                            <li>메시지 히스토리 저장</li>
+                            <li>파일/이미지 공유</li>
+                            <li>온라인 상태 표시</li>
+                        </ul>
+                    </div>
+
+                    <div class="implementation-guide">
+                        <h4>구현 가이드</h4>
+                        
+                        <div class="step">
+                            <h5>1. 백엔드 선택</h5>
+                            <p>선호하는 백엔드 프레임워크 선택 (Node.js, Python, Java)</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>2. WebSocket 서버</h5>
+                            <p>Chat에 요청: "Socket.IO를 사용한 실시간 채팅 서버 구조를 만들어줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>3. 데이터베이스 설계</h5>
+                            <p>Cmd+K: "채팅 메시지와 채팅방을 위한 데이터베이스 스키마 설계해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>4. 인증 시스템</h5>
+                            <p>Composer로 JWT 기반 인증 구현</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>5. 메시지 큐 통합</h5>
+                            <p>AI에게: "대규모 메시지 처리를 위한 큐 시스템 추가해줘"</p>
+                        </div>
+                    </div>
+
+                    <div class="architecture-tips">
+                        <h4>🏗️ 아키텍처 팁</h4>
+                        <ul>
+                            <li>Redis로 세션 관리 및 캐싱</li>
+                            <li>MongoDB나 Cassandra로 메시지 저장</li>
+                            <li>Nginx로 WebSocket 로드밸런싱</li>
+                            <li>Docker Compose로 개발 환경 구성</li>
+                            <li>Kubernetes로 프로덕션 배포</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>프레임워크별 최적화</h3>
+                        <p>각 백엔드 프레임워크의 특성을 이해하고 최적의 코드를 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>마이크로서비스 설계</h3>
+                        <p>분산 시스템의 복잡성을 AI가 관리하며 효율적인 아키텍처를 구성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>실시간 통신 구현</h3>
+                        <p>WebSocket, 메시지 큐 등 실시간 기능을 쉽게 구현합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>엔터프라이즈급 보안</h3>
+                        <p>인증, 인가, 암호화 등 보안 요구사항을 자동으로 적용합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 Docker와 Kubernetes를 활용한 컨테이너화와 배포를 배웁니다.</p>
+                    <a href="lesson18.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="completed">API 개발과 문서화</li>
+                    <li class="completed">데이터베이스 설계와 최적화</li>
+                    <li class="completed">프론트엔드 프레임워크와 Cursor AI</li>
+                    <li class="current">백엔드 프레임워크와 Cursor AI</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-server"></i> 백엔드 기술 스택</h3>
+                <div class="tech-stack">
+                    <div class="stack-category">
+                        <h4>Node.js</h4>
+                        <span class="tech-badge">Express</span>
+                        <span class="tech-badge">NestJS</span>
+                        <span class="tech-badge">Fastify</span>
+                    </div>
+                    <div class="stack-category">
+                        <h4>Python</h4>
+                        <span class="tech-badge">FastAPI</span>
+                        <span class="tech-badge">Django</span>
+                        <span class="tech-badge">Flask</span>
+                    </div>
+                    <div class="stack-category">
+                        <h4>Java</h4>
+                        <span class="tech-badge">Spring Boot</span>
+                        <span class="tech-badge">Micronaut</span>
+                        <span class="tech-badge">Quarkus</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 마이크로서비스를 시작할 때는 모놀리스로 시작하여 점진적으로 분리하는 것이 좋습니다. Cursor AI가 리팩토링 과정을 도와줄 것입니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 56.67%"></div>
+            <span class="progress-text">17/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

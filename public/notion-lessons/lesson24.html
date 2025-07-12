@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24강: 모듈 4 복습 및 미니 프로젝트</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- 사이드바 내용은 index.html에서 동적으로 로드 -->
+        </aside>
+        <main class="main-content">
+            <h1>24강: 모듈 4 복습 및 미니 프로젝트</h1>
+            <p>모듈 4에서는 Notion Formula 2.0의 고급 기능과 노션 자동화, 그리고 외부 서비스와의 연동을 통한 확장 가능성을 탐구했습니다. 이제 이 모든 지식을 결합하여 간단하지만 실용적인 '청구서 추적기' 데이터베이스를 구축하는 미니 프로젝트를 진행합니다. 이 프로젝트를 통해 고급 수식과 자동화 개념을 실제 워크플로우에 적용하는 방법을 익히게 될 것입니다.</p>
+            
+            <h2>학습 목표</h2>
+            <ul>
+                <li>고급 수식과 자동화 개념을 결합합니다.</li>
+            </ul>
+
+            <h2>실습 과제</h2>
+            <p><strong>'청구서 추적기'</strong> 데이터베이스를 구축합니다. 다음 속성들을 추가하고, 제시된 수식과 자동화를 구현해 보세요:</p>
+            <ul>
+                <li><strong>속성:</strong> 클라이언트명 (제목), 금액 (숫자), 상태 (선택: 초안, 발송, 지불 완료), 마감일 (날짜)</li>
+                <li><strong>수식 1: '연체 상태'</strong>
+                    <ul>
+                        <li>'상태'가 '지불 완료'가 아니고 '마감일'이 과거이면 <strong>"🔴 연체"</strong>를 표시합니다.</li>
+                        <li>그 외의 경우에는 빈 칸으로 둡니다.</li>
+                        <li><strong>힌트:</strong> <code>now()</code>, <code>prop("마감일")</code>, <code>prop("상태")</code> 속성을 활용하고 <code>if()</code> 함수를 사용합니다.</li>
+                    </ul>
+                </li>
+                <li><strong>자동화:</strong>
+                    <ul>
+                        <li>청구서가 <strong>'발송'</strong> 상태로 변경될 때, 웹훅 기반 자동화를 통해 클라이언트에게 이메일을 보내는 개념을 시연합니다. (실제 이메일 발송은 Zapier 또는 Make.com과 같은 외부 자동화 도구와 연동해야 합니다. 여기서는 개념과 설정 방법을 설명합니다.)</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="navigation">
+                <!-- 이전/다음 강의 링크 -->
+            </div>
+        </main>
+    </div>
+</body>
+</html>

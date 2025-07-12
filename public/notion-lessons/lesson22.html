@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>22강: 노션 자동화 입문</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- 사이드바 내용은 index.html에서 동적으로 로드 -->
+        </aside>
+        <main class="main-content">
+            <h1>22강: 노션 자동화 입문</h1>
+            <p>노션은 단순한 문서 및 데이터베이스 도구를 넘어, 반복적인 작업을 자동화하여 생산성을 크게 향상시킬 수 있는 기능을 제공합니다. 이 강의에서는 노션의 네이티브 자동화 기능을 사용하여 데이터베이스 항목의 속성을 자동으로 변경하거나, 특정 이벤트 발생 시 알림을 보내는 등 간단한 워크플로우를 자동화하는 방법을 배웁니다.</p>
+            
+            <h2>학습 목표</h2>
+            <ul>
+                <li>데이터베이스 자동화의 개념을 이해합니다.</li>
+                <li>속성을 변경하거나 알림을 보내는 간단한 자동화를 생성합니다.</li>
+            </ul>
+
+            <h2>주요 개념</h2>
+            <ul>
+                <li><strong>데이터베이스 자동화 (Database Automation):</strong> 데이터베이스 내에서 특정 조건이 충족될 때 자동으로 작업을 수행하도록 설정하는 기능입니다.</li>
+                <li><strong>트리거 (Trigger):</strong> 자동화를 실행시키는 조건 또는 이벤트입니다. 예를 들어, '상태' 속성이 변경되거나, 새로운 항목이 추가될 때 등을 트리거로 설정할 수 있습니다.</li>
+                <li><strong>액션 (Action):</strong> 트리거가 발생했을 때 자동으로 수행되는 작업입니다. 예를 들어, 속성 값 변경, 알림 보내기, 페이지 추가 등이 있습니다.</li>
+            </ul>
+
+            <h2>실습 과제</h2>
+            <p><strong>'업무'</strong> 데이터베이스를 생성합니다. <strong>'상태'</strong>(할 일, 진행 중, 완료)와 <strong>'완료일'</strong>(날짜) 속성을 추가합니다. 다음 자동화를 설정해 보세요:</p>
+            <ul>
+                <li>'상태'가 <strong>'완료'</strong>로 변경될 때, '완료일' 속성을 <strong>'오늘'</strong>로 자동으로 설정합니다.</li>
+                <li>(선택 사항) '완료' 상태로 변경될 때, 특정 Slack 채널로 알림을 보내는 자동화를 만듭니다. (Slack 통합이 필요하며, 이는 23강에서 더 자세히 다룹니다.)</li>
+            </ul>
+
+            <div class="navigation">
+                <!-- 이전/다음 강의 링크 -->
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제3강: AI Chat 마스터하기 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-comments"></i> 제3강: AI Chat 마스터하기</h1>
+                <p class="lesson-subtitle">코드와 대화하며 문제를 해결하는 새로운 방법</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 초급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 45분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 기초</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson02.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제3강: AI Chat 마스터하기</span>
+            <a href="lesson04.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cursor AI Chat의 핵심 기능 이해하기</li>
+                    <li>효과적인 질문 방법 익히기</li>
+                    <li>코드 설명, 디버깅, 리팩토링에 활용하기</li>
+                    <li>컨텍스트를 활용한 대화 기법 마스터하기</li>
+                    <li>Chat과 코드 에디터의 시너지 극대화하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-robot"></i> AI Chat이란?</h2>
+                
+                <div class="info-box">
+                    <p>Cursor의 AI Chat은 단순한 Q&A 도구가 아닙니다. 전체 프로젝트를 이해하고, 코드를 분석하며, 즉시 적용 가능한 솔루션을 제공하는 지능형 코딩 파트너입니다.</p>
+                </div>
+
+                <h3>Chat의 주요 특징</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-brain"></i>
+                        <h4>프로젝트 인식</h4>
+                        <p>열려있는 파일, 프로젝트 구조, 의존성을 모두 이해합니다</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-edit"></i>
+                        <h4>즉시 적용</h4>
+                        <p>제안된 코드를 클릭 한 번으로 에디터에 적용할 수 있습니다</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-history"></i>
+                        <h4>대화 기록</h4>
+                        <p>이전 대화를 기억하여 연속적인 작업이 가능합니다</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-code"></i>
+                        <h4>코드 참조</h4>
+                        <p>특정 코드를 선택하여 질문하거나 수정을 요청할 수 있습니다</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-comment-dots"></i> Chat 시작하기</h2>
+
+                <div class="chat-guide">
+                    <h3>Chat 열기</h3>
+                    <div class="open-methods">
+                        <div class="method">
+                            <div class="shortcut"><kbd>Cmd/Ctrl</kbd> + <kbd>L</kbd></div>
+                            <p>가장 빠른 방법: 언제든지 Chat을 열 수 있습니다</p>
+                        </div>
+                        <div class="method">
+                            <div class="shortcut"><i class="fas fa-mouse-pointer"></i> 사이드바 클릭</div>
+                            <p>오른쪽 사이드바의 Chat 아이콘을 클릭합니다</p>
+                        </div>
+                    </div>
+
+                    <h3>첫 번째 대화</h3>
+                    <div class="chat-demo-container">
+                        <div class="chat-window">
+                            <div class="chat-header">
+                                <i class="fas fa-robot"></i> Cursor AI Chat
+                            </div>
+                            <div class="chat-messages">
+                                <div class="message user">
+                                    <p>현재 프로젝트의 구조를 설명해줘</p>
+                                </div>
+                                <div class="message ai">
+                                    <p>현재 프로젝트는 React 기반의 Todo 애플리케이션입니다:</p>
+                                    <pre><code>프로젝트 구조:
+├── src/
+│   ├── components/
+│   │   ├── TodoList.js
+│   │   └── TodoItem.js
+│   ├── App.js
+│   └── index.js
+├── package.json
+└── README.md
+
+주요 특징:
+- React 18.2.0 사용
+- 함수형 컴포넌트와 Hooks 활용
+- 로컬 상태 관리 (useState)</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-tasks"></i> Chat 활용 시나리오</h2>
+
+                <div class="scenarios">
+                    <h3>1. 코드 설명 요청하기</h3>
+                    <div class="scenario-example">
+                        <p>복잡한 코드를 이해하고 싶을 때:</p>
+                        
+                        <div class="code-with-chat">
+                            <div class="code-section">
+                                <pre><code>// 복잡한 reduce 함수
+const result = data
+  .filter(item => item.active)
+  .reduce((acc, item) => {
+    const key = item.category;
+    if (!acc[key]) {
+      acc[key] = { items: [], total: 0 };
+    }
+    acc[key].items.push(item);
+    acc[key].total += item.value;
+    return acc;
+  }, {});</code></pre>
+                            </div>
+                            
+                            <div class="chat-section">
+                                <div class="message user">
+                                    <p>이 코드가 뭘 하는지 설명해줘</p>
+                                </div>
+                                <div class="message ai">
+                                    <p>이 코드는 데이터를 카테고리별로 그룹화하고 집계하는 작업을 수행합니다:</p>
+                                    <ol>
+                                        <li><strong>필터링</strong>: active가 true인 항목만 선택</li>
+                                        <li><strong>그룹화</strong>: category를 키로 사용하여 객체로 변환</li>
+                                        <li><strong>집계</strong>: 각 카테고리별로 items 배열과 total 합계 계산</li>
+                                    </ol>
+                                    <p>예시 결과:</p>
+                                    <pre><code>{
+  "electronics": { items: [...], total: 1500 },
+  "clothing": { items: [...], total: 800 }
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. 버그 수정 요청</h3>
+                    <div class="scenario-example">
+                        <p>에러가 발생한 코드를 수정하고 싶을 때:</p>
+                        
+                        <div class="error-fix-demo">
+                            <div class="error-code">
+                                <pre><code class="has-error">// TypeError: Cannot read property 'map' of undefined
+function renderList(items) {
+  return items.map(item => &lt;li&gt;{item.name}&lt;/li&gt;);
+}</code></pre>
+                            </div>
+                            
+                            <div class="chat-fix">
+                                <div class="message user">
+                                    <p>이 함수에서 "Cannot read property 'map' of undefined" 에러가 발생해. 어떻게 수정하면 될까?</p>
+                                </div>
+                                <div class="message ai">
+                                    <p>items가 undefined일 때 발생하는 에러입니다. 다음과 같이 수정하세요:</p>
+                                    <pre><code>function renderList(items) {
+  // 방법 1: 기본값 설정
+  return (items || []).map(item => &lt;li&gt;{item.name}&lt;/li&gt;);
+}
+
+// 방법 2: 조건부 렌더링
+function renderList(items) {
+  if (!items || !Array.isArray(items)) {
+    return &lt;li&gt;No items available&lt;/li&gt;;
+  }
+  return items.map(item => &lt;li&gt;{item.name}&lt;/li&gt;);
+}
+
+// 방법 3: 옵셔널 체이닝 (최신 문법)
+function renderList(items) {
+  return items?.map(item => &lt;li&gt;{item.name}&lt;/li&gt;) || [];
+}</code></pre>
+                                    <button class="apply-button">Apply Fix</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. 코드 리팩토링</h3>
+                    <div class="scenario-example">
+                        <p>기존 코드를 개선하고 싶을 때:</p>
+                        
+                        <div class="refactor-demo">
+                            <div class="original-code">
+                                <h4>원본 코드</h4>
+                                <pre><code>function calculatePrice(price, discount, tax) {
+  let discountedPrice = price;
+  if (discount > 0) {
+    discountedPrice = price - (price * discount / 100);
+  }
+  let finalPrice = discountedPrice;
+  if (tax > 0) {
+    finalPrice = discountedPrice + (discountedPrice * tax / 100);
+  }
+  return Math.round(finalPrice * 100) / 100;
+}</code></pre>
+                            </div>
+                            
+                            <div class="chat-refactor">
+                                <div class="message user">
+                                    <p>이 함수를 더 깔끔하고 읽기 쉽게 리팩토링해줘</p>
+                                </div>
+                                <div class="message ai">
+                                    <p>함수를 더 간결하고 읽기 쉽게 리팩토링했습니다:</p>
+                                    <pre><code>function calculatePrice(price, discount = 0, tax = 0) {
+  const discountMultiplier = 1 - (discount / 100);
+  const taxMultiplier = 1 + (tax / 100);
+  
+  const finalPrice = price * discountMultiplier * taxMultiplier;
+  
+  return Math.round(finalPrice * 100) / 100;
+}
+
+// 더 나아가서, 유틸리티 함수로 분리
+const toPercentageMultiplier = (percentage, isDiscount = false) => 
+  isDiscount ? 1 - (percentage / 100) : 1 + (percentage / 100);
+
+const roundToTwoDecimals = (num) => 
+  Math.round(num * 100) / 100;
+
+function calculatePrice(price, discount = 0, tax = 0) {
+  const afterDiscount = price * toPercentageMultiplier(discount, true);
+  const afterTax = afterDiscount * toPercentageMultiplier(tax);
+  
+  return roundToTwoDecimals(afterTax);
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>4. 새 기능 구현</h3>
+                    <div class="scenario-example">
+                        <p>새로운 기능을 추가하고 싶을 때:</p>
+                        
+                        <div class="feature-request">
+                            <div class="message user">
+                                <p>현재 TodoList 컴포넌트에 검색 기능을 추가하고 싶어. 실시간으로 필터링되도록 구현해줘.</p>
+                            </div>
+                            <div class="message ai">
+                                <p>TodoList에 실시간 검색 기능을 추가하겠습니다:</p>
+                                <pre><code>import React, { useState, useMemo } from 'react';
+
+function TodoList({ todos }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // useMemo로 검색 결과 최적화
+  const filteredTodos = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return todos;
+    }
+    
+    return todos.filter(todo =>
+      todo.text.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [todos, searchTerm]);
+  
+  return (
+    &lt;div className="todo-list"&gt;
+      &lt;div className="search-box"&gt;
+        &lt;input
+          type="text"
+          placeholder="Search todos..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        /&gt;
+        {searchTerm && (
+          &lt;button 
+            onClick={() => setSearchTerm('')}
+            className="clear-button"
+          &gt;
+            Clear
+          &lt;/button&gt;
+        )}
+      &lt;/div&gt;
+      
+      &lt;div className="results-info"&gt;
+        {searchTerm && (
+          &lt;p&gt;Found {filteredTodos.length} of {todos.length} todos&lt;/p&gt;
+        )}
+      &lt;/div&gt;
+      
+      &lt;ul className="todo-items"&gt;
+        {filteredTodos.map(todo => (
+          &lt;TodoItem key={todo.id} todo={todo} /&gt;
+        ))}
+      &lt;/ul&gt;
+      
+      {searchTerm && filteredTodos.length === 0 && (
+        &lt;p className="no-results"&gt;No todos found matching "{searchTerm}"&lt;/p&gt;
+      )}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                                <p>추가로 CSS도 제공합니다:</p>
+                                <pre><code>.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.clear-button {
+  padding: 10px 20px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.results-info {
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.no-results {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-magic"></i> 고급 Chat 기능</h2>
+
+                <div class="advanced-features">
+                    <h3>1. 코드 선택과 함께 질문하기</h3>
+                    <div class="code-selection-demo">
+                        <p>특정 코드를 선택한 후 Chat을 열면 해당 코드에 대해 질문할 수 있습니다:</p>
+                        <div class="selection-example">
+                            <pre><code class="selected">const memoizedValue = useMemo(() => {
+  return expensiveCalculation(a, b);
+}, [a, b]);</code></pre>
+                            <p class="selection-hint">↑ 이 코드를 선택하고 Cmd/Ctrl + L</p>
+                        </div>
+                        <div class="chat-context">
+                            <div class="message user">
+                                <p>선택한 코드에서 useMemo를 사용하는 이유가 뭐야?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. 파일 참조하기</h3>
+                    <div class="file-reference">
+                        <p>@파일명으로 특정 파일을 참조할 수 있습니다:</p>
+                        <div class="message user">
+                            <p>@TodoList.js 파일의 성능을 개선할 방법을 제안해줘</p>
+                        </div>
+                    </div>
+
+                    <h3>3. 멀티턴 대화</h3>
+                    <div class="multi-turn">
+                        <p>이전 대화를 기반으로 연속적인 작업이 가능합니다:</p>
+                        <div class="conversation-flow">
+                            <div class="message user">
+                                <p>User 타입을 TypeScript로 정의해줘</p>
+                            </div>
+                            <div class="message ai">
+                                <pre><code>interface User {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: Date;
+}</code></pre>
+                            </div>
+                            <div class="message user">
+                                <p>여기에 role과 permissions도 추가해줘</p>
+                            </div>
+                            <div class="message ai">
+                                <pre><code>interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  permissions: Permission[];
+  createdAt: Date;
+}
+
+enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
+  GUEST = 'guest'
+}
+
+interface Permission {
+  resource: string;
+  actions: string[];
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-bullhorn"></i> 효과적인 프롬프트 작성법</h2>
+
+                <div class="prompt-guide">
+                    <h3>좋은 프롬프트 vs 나쁜 프롬프트</h3>
+                    
+                    <div class="prompt-comparison">
+                        <div class="bad-prompt">
+                            <h4>❌ 피해야 할 프롬프트</h4>
+                            <ul>
+                                <li>"코드 고쳐줘" - 너무 모호함</li>
+                                <li>"에러 났어" - 정보 부족</li>
+                                <li>"더 좋게 만들어줘" - 구체성 없음</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="good-prompt">
+                            <h4>✅ 권장하는 프롬프트</h4>
+                            <ul>
+                                <li>"이 함수의 시간 복잡도를 O(n)으로 개선해줘"</li>
+                                <li>"useState 대신 useReducer를 사용하도록 리팩토링해줘"</li>
+                                <li>"이 API 호출에 에러 처리와 로딩 상태를 추가해줘"</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3>프롬프트 템플릿</h3>
+                    <div class="prompt-templates">
+                        <div class="template">
+                            <h4>🐛 디버깅 요청</h4>
+                            <p>"[에러 메시지]가 발생하는데, [상황 설명]. 어떻게 해결하면 될까?"</p>
+                        </div>
+                        <div class="template">
+                            <h4>🔧 리팩토링 요청</h4>
+                            <p>"이 코드를 [목적/원칙]에 맞게 리팩토링해줘. 특히 [관심사항]을 개선하고 싶어."</p>
+                        </div>
+                        <div class="template">
+                            <h4>📚 설명 요청</h4>
+                            <p>"[코드/개념]이 어떻게 작동하는지 설명해줘. 특히 [궁금한 부분]이 이해가 안 돼."</p>
+                        </div>
+                        <div class="template">
+                            <h4>✨ 기능 추가</h4>
+                            <p>"현재 코드에 [기능]을 추가하고 싶어. [제약사항]을 고려해서 구현해줘."</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: Chat으로 미니 프로젝트 완성하기</h2>
+
+                <div class="practice-content">
+                    <h3>Weather App 만들기</h3>
+                    <p>AI Chat만을 사용해서 날씨 앱을 만들어봅시다.</p>
+
+                    <div class="practice-steps">
+                        <div class="practice-step">
+                            <h4>Step 1: 기본 구조 생성</h4>
+                            <div class="chat-prompt">
+                                <p>"React로 날씨 앱의 기본 구조를 만들어줘. OpenWeatherMap API를 사용할 예정이야."</p>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 2: API 연동</h4>
+                            <div class="chat-prompt">
+                                <p>"OpenWeatherMap API를 호출하는 함수를 만들어줘. API 키는 환경변수로 관리하고 싶어."</p>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 3: UI 개선</h4>
+                            <div class="chat-prompt">
+                                <p>"날씨 정보를 보여주는 카드 컴포넌트를 만들어줘. 온도, 습도, 날씨 아이콘을 표시하고 싶어."</p>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 4: 에러 처리</h4>
+                            <div class="chat-prompt">
+                                <p>"API 호출 실패, 도시를 찾을 수 없음, 네트워크 에러 등을 처리하는 코드를 추가해줘."</p>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 5: 기능 추가</h4>
+                            <div class="chat-prompt">
+                                <p>"최근 검색한 도시 5개를 localStorage에 저장하고 빠르게 선택할 수 있는 기능을 추가해줘."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-box">
+                        <h4>🏆 보너스 도전</h4>
+                        <ul>
+                            <li>5일 날씨 예보 추가</li>
+                            <li>현재 위치 기반 날씨 표시</li>
+                            <li>다크 모드 지원</li>
+                            <li>날씨에 따른 배경 이미지 변경</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tips-tricks">
+                <h2><i class="fas fa-lightbulb"></i> Chat 활용 팁</h2>
+
+                <div class="tips-grid">
+                    <div class="tip">
+                        <h3>💡 컨텍스트 활용</h3>
+                        <p>현재 열려있는 파일들이 자동으로 컨텍스트에 포함됩니다. 관련 파일을 미리 열어두세요.</p>
+                    </div>
+                    <div class="tip">
+                        <h3>💡 단계별 접근</h3>
+                        <p>복잡한 작업은 여러 단계로 나누어 질문하세요. AI가 더 정확한 답변을 제공합니다.</p>
+                    </div>
+                    <div class="tip">
+                        <h3>💡 코드 적용</h3>
+                        <p>AI가 제안한 코드 블록의 "Apply" 버튼을 클릭하면 현재 커서 위치에 즉시 삽입됩니다.</p>
+                    </div>
+                    <div class="tip">
+                        <h3>💡 히스토리 활용</h3>
+                        <p>이전 대화 내용을 참고하여 연속적인 작업을 수행할 수 있습니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>대화형 코딩</h3>
+                        <p>AI Chat은 코드를 이해하고, 설명하고, 개선하는 강력한 대화형 도구입니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>컨텍스트가 핵심</h3>
+                        <p>프로젝트 전체를 이해하고 있어 더 정확하고 적절한 솔루션을 제공합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>즉시 적용 가능</h3>
+                        <p>제안된 코드를 바로 에디터에 적용할 수 있어 작업 흐름이 끊기지 않습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>학습 도구</h3>
+                        <p>코드를 설명받고 이해하는 과정에서 자연스럽게 학습이 이루어집니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 Cmd+K 기능을 통해 선택한 코드를 즉시 편집하고 변환하는 방법을 배웁니다.</p>
+                    <a href="lesson04.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li>Cursor 소개와 설치</li>
+                    <li>첫 번째 AI 자동완성</li>
+                    <li class="current">AI Chat 마스터하기</li>
+                    <li>Cmd+K 완벽 가이드</li>
+                    <li>프로젝트 컨텍스트</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-keyboard"></i> Chat 단축키</h3>
+                <div class="shortcut-summary">
+                    <div class="shortcut-item">
+                        <kbd>Cmd/Ctrl + L</kbd> - Chat 열기
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Cmd/Ctrl + Shift + L</kbd> - 새 Chat
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Enter</kbd> - 메시지 전송
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Shift + Enter</kbd> - 줄바꿈
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 코드를 선택한 상태에서 Chat을 열면, AI가 해당 코드의 컨텍스트를 자동으로 이해합니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 10%"></div>
+            <span class="progress-text">3/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

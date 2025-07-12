@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제8강: 터미널 통합과 명령어 실행 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-terminal"></i> 제8강: 터미널 통합과 명령어 실행</h1>
+                <p class="lesson-subtitle">Cursor 안에서 모든 개발 작업을 완성하는 통합 환경</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 초급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 35분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 기초</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson07.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제8강: 터미널 통합</span>
+            <a href="lesson09.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cursor의 통합 터미널 기능 이해하기</li>
+                    <li>AI 지원 명령어 실행 방법 익히기</li>
+                    <li>터미널과 에디터 간 시너지 활용하기</li>
+                    <li>자동화된 개발 워크플로우 구축하기</li>
+                    <li>문제 해결을 위한 터미널 활용법 마스터하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-desktop"></i> Cursor 터미널 소개</h2>
+                
+                <div class="info-box">
+                    <p>Cursor의 통합 터미널은 단순한 명령줄 인터페이스가 아닙니다. AI가 명령어를 제안하고, 오류를 해결하며, 복잡한 작업을 자동화할 수 있는 지능형 터미널입니다.</p>
+                </div>
+
+                <h3>터미널의 주요 특징</h3>
+                <div class="terminal-features">
+                    <div class="feature-card">
+                        <i class="fas fa-robot"></i>
+                        <h4>AI 명령어 제안</h4>
+                        <p>상황에 맞는 명령어를 자동으로 제안</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h4>에러 자동 해결</h4>
+                        <p>오류 발생 시 AI가 해결책 제시</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-link"></i>
+                        <h4>에디터 연동</h4>
+                        <p>터미널 출력을 바로 코드에 반영</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-history"></i>
+                        <h4>명령어 히스토리</h4>
+                        <p>프로젝트별 명령어 기록 관리</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-play"></i> 터미널 기본 사용법</h2>
+
+                <div class="terminal-basics">
+                    <h3>터미널 열기</h3>
+                    <div class="open-terminal">
+                        <div class="method">
+                            <div class="shortcut"><kbd>Cmd/Ctrl</kbd> + <kbd>`</kbd></div>
+                            <p>가장 빠른 방법: 백틱 키로 즉시 열기</p>
+                        </div>
+                        <div class="method">
+                            <div class="menu-path">View → Terminal</div>
+                            <p>메뉴를 통한 열기</p>
+                        </div>
+                    </div>
+
+                    <h3>터미널 인터페이스</h3>
+                    <div class="terminal-interface">
+                        <div class="terminal-mockup">
+                            <div class="terminal-header">
+                                <span class="terminal-title">터미널</span>
+                                <div class="terminal-controls">
+                                    <button class="term-btn">+</button>
+                                    <button class="term-btn">↓</button>
+                                    <button class="term-btn">🗑️</button>
+                                    <button class="term-btn">×</button>
+                                </div>
+                            </div>
+                            <div class="terminal-body">
+                                <div class="terminal-line">
+                                    <span class="prompt">~/my-project $</span>
+                                    <span class="command">npm install</span>
+                                </div>
+                                <div class="terminal-output">
+                                    <pre>added 1350 packages, and audited 1351 packages in 45s
+found 0 vulnerabilities</pre>
+                                </div>
+                                <div class="terminal-suggestion">
+                                    <span class="ai-icon">🤖</span>
+                                    <span class="suggestion-text">다음 명령어를 실행하시겠습니까? <code>npm run dev</code></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-magic"></i> AI 지원 기능</h2>
+
+                <div class="ai-terminal-features">
+                    <h3>1. 자연어로 명령어 요청</h3>
+                    <div class="natural-language-demo">
+                        <p>복잡한 명령어를 외울 필요 없이 자연어로 요청하세요:</p>
+                        
+                        <div class="nl-example">
+                            <div class="user-input">
+                                <span class="ai-trigger">@</span>
+                                <span class="nl-request">"3일 이내에 수정된 .js 파일 찾아줘"</span>
+                            </div>
+                            <div class="ai-response">
+                                <p>다음 명령어를 실행합니다:</p>
+                                <code>find . -name "*.js" -mtime -3</code>
+                            </div>
+                        </div>
+
+                        <div class="nl-example">
+                            <div class="user-input">
+                                <span class="ai-trigger">@</span>
+                                <span class="nl-request">"현재 브랜치에서 main 브랜치와 다른 파일들 보여줘"</span>
+                            </div>
+                            <div class="ai-response">
+                                <p>다음 명령어를 실행합니다:</p>
+                                <code>git diff --name-only main</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. 에러 자동 해결</h3>
+                    <div class="error-resolution">
+                        <div class="error-scenario">
+                            <div class="terminal-error">
+                                <pre class="error-output">$ npm start
+npm ERR! missing script: start</pre>
+                            </div>
+                            <div class="ai-solution">
+                                <div class="solution-header">
+                                    <span class="ai-icon">🤖</span> AI 해결책
+                                </div>
+                                <p>package.json에 start 스크립트가 없습니다. 다음 중 하나를 선택하세요:</p>
+                                <div class="solution-options">
+                                    <button class="solution-btn">package.json에 스크립트 추가</button>
+                                    <button class="solution-btn">다른 스크립트 확인 (npm run)</button>
+                                    <button class="solution-btn">개발 서버 실행 (npm run dev)</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. 명령어 체인 생성</h3>
+                    <div class="command-chain">
+                        <p>여러 명령어를 연결하여 복잡한 작업을 자동화:</p>
+                        
+                        <div class="chain-example">
+                            <div class="user-request">
+                                <p>"프로젝트를 빌드하고, 테스트 실행한 다음, 성공하면 배포해줘"</p>
+                            </div>
+                            <div class="ai-chain">
+                                <pre><code>npm run build && npm test && npm run deploy</code></pre>
+                                <p class="chain-explanation">
+                                    <strong>설명:</strong>
+                                    <ul>
+                                        <li><code>&&</code> 연산자로 이전 명령이 성공할 때만 다음 실행</li>
+                                        <li>빌드 → 테스트 → 배포 순서로 진행</li>
+                                        <li>어느 단계에서든 실패하면 중단</li>
+                                    </ul>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-cogs"></i> 실전 활용 시나리오</h2>
+
+                <div class="practical-scenarios">
+                    <h3>1. 프로젝트 초기 설정</h3>
+                    <div class="scenario-card">
+                        <div class="scenario-flow">
+                            <div class="step">
+                                <h4>자연어 요청</h4>
+                                <p>"새 React 프로젝트를 TypeScript로 설정하고 필요한 라이브러리 설치해줘"</p>
+                            </div>
+                            <div class="arrow">↓</div>
+                            <div class="step">
+                                <h4>AI가 생성한 명령어</h4>
+                                <pre><code># React + TypeScript 프로젝트 생성
+npx create-react-app my-app --template typescript
+
+# 프로젝트 디렉토리로 이동
+cd my-app
+
+# 추가 라이브러리 설치
+npm install axios react-router-dom @types/react-router-dom
+
+# ESLint와 Prettier 설정
+npm install --save-dev eslint prettier eslint-config-prettier
+
+# 개발 서버 시작
+npm start</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. Git 워크플로우</h3>
+                    <div class="scenario-card">
+                        <h4>브랜치 관리와 커밋</h4>
+                        <div class="git-workflow">
+                            <div class="workflow-item">
+                                <p class="user-says">"새 기능을 위한 브랜치 만들고 체크아웃해줘"</p>
+                                <code>git checkout -b feature/user-authentication</code>
+                            </div>
+                            <div class="workflow-item">
+                                <p class="user-says">"변경사항 확인하고 커밋 준비해줘"</p>
+                                <code>git status && git diff</code>
+                            </div>
+                            <div class="workflow-item">
+                                <p class="user-says">"모든 변경사항을 의미있는 메시지로 커밋해줘"</p>
+                                <code>git add . && git commit -m "feat: Add user authentication with JWT"</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. 디버깅과 로그 분석</h3>
+                    <div class="scenario-card">
+                        <h4>에러 추적과 해결</h4>
+                        <div class="debugging-example">
+                            <div class="log-search">
+                                <p>"에러 로그에서 'undefined' 관련 내용 찾아줘"</p>
+                                <code>grep -n "undefined" logs/*.log | tail -20</code>
+                            </div>
+                            <div class="process-check">
+                                <p>"3000번 포트를 사용 중인 프로세스 확인해줘"</p>
+                                <code>lsof -i :3000</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-sync"></i> 터미널과 에디터 연동</h2>
+
+                <div class="terminal-editor-integration">
+                    <h3>출력 결과를 코드로 변환</h3>
+                    <div class="output-to-code">
+                        <div class="integration-example">
+                            <div class="terminal-output">
+                                <p class="command">$ npm list --depth=0</p>
+                                <pre>my-app@1.0.0
+├── react@18.2.0
+├── react-dom@18.2.0
+├── axios@1.4.0
+└── react-router-dom@6.11.0</pre>
+                            </div>
+                            <div class="ai-action">
+                                <p>AI: "이 의존성 목록을 README.md에 추가할까요?"</p>
+                                <button class="action-btn">예, 추가하기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>터미널 명령어로 코드 생성</h3>
+                    <div class="command-code-generation">
+                        <div class="generation-example">
+                            <p class="scenario">환경 변수 파일 생성</p>
+                            <div class="terminal-input">
+                                <code>echo "REACT_APP_API_URL=http://localhost:3001" > .env</code>
+                            </div>
+                            <div class="ai-suggestion">
+                                <p>AI: ".env 파일이 생성되었습니다. .gitignore에 추가하시겠습니까?"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-toolbox"></i> 고급 터미널 기능</h2>
+
+                <div class="advanced-features">
+                    <h3>1. 멀티 터미널 관리</h3>
+                    <div class="multi-terminal">
+                        <p>여러 터미널을 동시에 실행하여 효율적으로 작업:</p>
+                        <div class="terminal-layout">
+                            <div class="terminal-split">
+                                <div class="term-pane">
+                                    <p class="pane-title">터미널 1: 개발 서버</p>
+                                    <code>npm run dev</code>
+                                </div>
+                                <div class="term-pane">
+                                    <p class="pane-title">터미널 2: 테스트 감시</p>
+                                    <code>npm test -- --watch</code>
+                                </div>
+                                <div class="term-pane">
+                                    <p class="pane-title">터미널 3: 빌드 프로세스</p>
+                                    <code>npm run build:watch</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. 커스텀 스크립트 자동화</h3>
+                    <div class="script-automation">
+                        <p>자주 사용하는 명령어를 스크립트로 저장:</p>
+                        <div class="script-example">
+                            <h4>package.json 스크립트</h4>
+                            <pre><code>{
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "setup": "npm install && npm run db:migrate && npm run seed",
+    "deploy": "npm run test && npm run build && npm run deploy:prod",
+    "clean": "rm -rf node_modules dist && npm cache clean --force"
+  }
+}</code></pre>
+                            <p class="ai-tip">💡 AI 팁: "복잡한 작업을 위한 스크립트를 만들어달라고 요청하세요"</p>
+                        </div>
+                    </div>
+
+                    <h3>3. 터미널 출력 파싱</h3>
+                    <div class="output-parsing">
+                        <p>AI가 터미널 출력을 분석하여 인사이트 제공:</p>
+                        <div class="parsing-example">
+                            <div class="webpack-output">
+                                <pre>webpack 5.91.0 compiled with 3 warnings in 2456 ms
+WARNING in asset size limit: bundle.js (1.2 MiB)
+WARNING in entrypoint size limit: main (1.2 MiB)</pre>
+                            </div>
+                            <div class="ai-analysis">
+                                <p><strong>AI 분석:</strong></p>
+                                <ul>
+                                    <li>번들 크기가 1.2MB로 권장 크기를 초과</li>
+                                    <li>코드 스플리팅 적용 권장</li>
+                                    <li>불필요한 의존성 제거 필요</li>
+                                </ul>
+                                <button class="fix-btn">최적화 적용하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 풀스택 프로젝트 설정</h2>
+
+                <div class="practice-content">
+                    <h3>터미널을 활용한 완전한 개발 환경 구축</h3>
+                    <p>AI 지원 터미널을 사용하여 풀스택 프로젝트를 처음부터 설정해봅시다.</p>
+
+                    <div class="practice-steps">
+                        <div class="practice-step">
+                            <h4>Step 1: 프로젝트 구조 생성</h4>
+                            <div class="terminal-task">
+                                <p>자연어로 요청:</p>
+                                <code>"fullstack-app이라는 폴더를 만들고 client와 server 서브폴더 구조를 만들어줘"</code>
+                                <p>예상 명령어:</p>
+                                <pre><code>mkdir fullstack-app && cd fullstack-app
+mkdir client server
+touch README.md .gitignore
+echo "# Fullstack App" > README.md</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 2: 백엔드 설정</h4>
+                            <div class="terminal-task">
+                                <p>server 폴더에서:</p>
+                                <code>"Express 서버를 TypeScript로 설정하고 필요한 미들웨어 설치해줘"</code>
+                                <p>AI가 다음과 같은 명령어들을 실행할 것입니다:</p>
+                                <pre><code>cd server
+npm init -y
+npm install express cors dotenv
+npm install -D typescript @types/express @types/node @types/cors nodemon ts-node
+npx tsc --init</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 3: 프론트엔드 설정</h4>
+                            <div class="terminal-task">
+                                <p>client 폴더에서:</p>
+                                <code>"React 앱을 Vite로 생성하고 Tailwind CSS 설정해줘"</code>
+                            </div>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 4: 동시 실행 설정</h4>
+                            <div class="terminal-task">
+                                <p>루트 폴더에서:</p>
+                                <code>"client와 server를 동시에 실행할 수 있는 스크립트 만들어줘"</code>
+                                <p>결과:</p>
+                                <pre><code>npm install -D concurrently
+# package.json에 스크립트 추가
+"scripts": {
+  "dev": "concurrently \"npm run server\" \"npm run client\"",
+  "server": "cd server && npm run dev",
+  "client": "cd client && npm run dev"
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="practice-challenge">
+                        <h4>🏆 도전 과제</h4>
+                        <ul>
+                            <li>Docker 설정 추가하기</li>
+                            <li>GitHub Actions CI/CD 파이프라인 설정</li>
+                            <li>데이터베이스 마이그레이션 스크립트 작성</li>
+                            <li>환경별 설정 파일 관리</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="troubleshooting">
+                <h2><i class="fas fa-wrench"></i> 문제 해결 팁</h2>
+
+                <div class="terminal-tips">
+                    <div class="tip-card">
+                        <h3>권한 오류 해결</h3>
+                        <div class="solution">
+                            <p>문제: "Permission denied" 오류</p>
+                            <code>sudo npm install -g package-name</code>
+                            <p>더 나은 해결책: npm 전역 디렉토리 변경</p>
+                            <code>npm config set prefix ~/.npm-global</code>
+                        </div>
+                    </div>
+
+                    <div class="tip-card">
+                        <h3>포트 충돌 해결</h3>
+                        <div class="solution">
+                            <p>문제: "Port 3000 is already in use"</p>
+                            <p>AI에게 요청: "3000번 포트 사용 중인 프로세스 종료해줘"</p>
+                            <code>kill -9 $(lsof -t -i:3000)</code>
+                        </div>
+                    </div>
+
+                    <div class="tip-card">
+                        <h3>느린 npm install 개선</h3>
+                        <div class="solution">
+                            <p>캐시 정리 및 재설치:</p>
+                            <code>npm cache clean --force && rm -rf node_modules && npm install</code>
+                            <p>또는 yarn이나 pnpm 사용 고려</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>AI 지원 터미널</h3>
+                        <p>자연어로 명령어를 요청하고, AI가 복잡한 명령어를 생성해줍니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>에러 자동 해결</h3>
+                        <p>터미널 오류 발생 시 AI가 즉시 해결책을 제시하고 적용할 수 있습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>통합 개발 환경</h3>
+                        <p>터미널과 에디터가 긴밀하게 연동되어 효율적인 개발 워크플로우를 구축할 수 있습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>자동화 가능</h3>
+                        <p>반복적인 작업을 스크립트로 만들고 AI가 최적화된 명령어 체인을 생성합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 디버깅과 에러 해결을 위한 Cursor의 고급 기능들을 배웁니다.</p>
+                    <a href="lesson09.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li>Cursor 소개와 설치</li>
+                    <li>첫 번째 AI 자동완성</li>
+                    <li>AI Chat 마스터하기</li>
+                    <li>Cmd+K 완벽 가이드</li>
+                    <li>프로젝트 컨텍스트</li>
+                    <li>AI 모델 선택과 활용</li>
+                    <li>Composer 기능 활용</li>
+                    <li class="current">터미널 통합</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-terminal"></i> 유용한 명령어</h3>
+                <div class="command-reference">
+                    <div class="cmd-item">
+                        <code>npm init -y</code>
+                        <span>빠른 프로젝트 초기화</span>
+                    </div>
+                    <div class="cmd-item">
+                        <code>npx</code>
+                        <span>패키지 설치 없이 실행</span>
+                    </div>
+                    <div class="cmd-item">
+                        <code>&&</code>
+                        <span>명령어 연결 (성공 시)</span>
+                    </div>
+                    <div class="cmd-item">
+                        <code>||</code>
+                        <span>명령어 연결 (실패 시)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 터미널에서 @ 기호로 시작하면 AI에게 자연어로 명령을 요청할 수 있습니다. 복잡한 명령어를 기억할 필요가 없어집니다!</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 26.67%"></div>
+            <span class="progress-text">8/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+    <script>
+        // Terminal animation
+        const terminalLines = document.querySelectorAll('.terminal-line');
+        terminalLines.forEach((line, index) => {
+            line.style.opacity = '0';
+            setTimeout(() => {
+                line.style.transition = 'opacity 0.3s ease';
+                line.style.opacity = '1';
+            }, index * 300);
+        });
+
+        // Interactive terminal demo
+        const terminalBody = document.querySelector('.terminal-body');
+        if (terminalBody) {
+            terminalBody.addEventListener('click', () => {
+                const cursor = document.createElement('span');
+                cursor.className = 'terminal-cursor';
+                cursor.textContent = '█';
+                terminalBody.appendChild(cursor);
+                
+                // Blinking cursor
+                setInterval(() => {
+                    cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+                }, 500);
+            });
+        }
+    </script>
+</body>
+</html>

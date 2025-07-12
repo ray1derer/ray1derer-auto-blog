@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>18강: 모듈 3 복습 및 미니 프로젝트</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- 사이드바 내용은 index.html에서 동적으로 로드 -->
+        </aside>
+        <main class="main-content">
+            <h1>18강: 모듈 3 복습 및 미니 프로젝트</h1>
+            <p>모듈 3에서는 노션 데이터베이스의 핵심 기능인 속성, 보기, 관계형, 롤업, 템플릿을 심층적으로 다루었습니다. 이제 이 모든 지식을 통합하여 간단하지만 기능적인 '고객 관계 관리(CRM)' 시스템을 구축하는 미니 프로젝트를 진행합니다. 이 프로젝트를 통해 관계형 데이터베이스의 진정한 힘을 경험하고, 복잡한 정보를 효율적으로 관리하는 방법을 익히게 될 것입니다.</p>
+            
+            <h2>학습 목표</h2>
+            <ul>
+                <li>완전한 관계형 데이터베이스 시스템을 구축합니다.</li>
+            </ul>
+
+            <h2>실습 과제</h2>
+            <p>간단한 <strong>'고객 관계 관리(CRM)'</strong> 시스템을 구축합니다. 다음 3개의 데이터베이스를 생성하고 서로 연결해 보세요:</p>
+            <ul>
+                <li><strong>데이터베이스 1: '회사'</strong>
+                    <ul>
+                        <li>속성: 회사명 (제목), 산업 (선택)</li>
+                    </ul>
+                </li>
+                <li><strong>데이터베이스 2: '연락처'</strong>
+                    <ul>
+                        <li>속성: 이름 (제목), 이메일 (이메일), <strong>'회사'</strong> 데이터베이스와 관계형 연결</li>
+                    </ul>
+                </li>
+                <li><strong>데이터베이스 3: '회의록'</strong>
+                    <ul>
+                        <li>속성: 회의 날짜 (날짜), 노트 (텍스트), <strong>'연락처'</strong> 데이터베이스와 관계형 연결</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>추가적으로, <strong>'회사'</strong> 데이터베이스에 롤업 속성을 추가합니다. 이 롤업이 연결된 '연락처' 데이터베이스를 참조하여, 각 회사와 관련된 연락처들의 '마지막 회의 날짜'를 표시하도록 설정합니다. 이를 통해 특정 회사와 마지막으로 소통한 시점을 한눈에 파악할 수 있습니다.</p>
+
+            <div class="navigation">
+                <!-- 이전/다음 강의 링크 -->
+            </div>
+        </main>
+    </div>
+</body>
+</html>

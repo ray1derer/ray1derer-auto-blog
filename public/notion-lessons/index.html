@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion 완전 정복 강의</title>
+    <style>
+        body { display: flex; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #sidebar { width: 280px; background-color: #f4f7f6; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); overflow-y: auto; height: 100vh; box-sizing: border-box; }
+        #sidebar h2 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        #sidebar ul { list-style: none; padding: 0; }
+        #sidebar ul li { margin-bottom: 10px; }
+        #sidebar ul li a { text-decoration: none; color: #34495e; display: block; padding: 8px 10px; border-radius: 5px; transition: background-color 0.3s ease; }
+        #sidebar ul li a:hover { background-color: #e0e6e5; }
+        #sidebar ul li a.active { background-color: #3498db; color: white; }
+        #content-frame { flex-grow: 1; border: none; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h2>Notion 완전 정복 강의</h2>
+        <ul>
+            <li><a href="1_notion_why.html" target="content-frame" class="active">1강: Notion, 왜 필요할까요?</a></li>
+            <li><a href="2_notion_install.html" target="content-frame">2강: Notion 설치 및 첫 워크스페이스 만들기</a></li>
+            <li><a href="3_notion_memo.html" target="content-frame">3강: 나만의 '메모장' 만들기</a></li>
+            <li><a href="4_notion_calendar.html" target="content-frame">4강: '캘린더' 만들기</a></li>
+            <li><a href="5_notion_external_integration.html" target="content-frame">5강: 외부 서비스 연동 맛보기</a></li>
+            <li><a href="6_notion_blocks.html" target="content-frame">6강: '블록' 개념 완벽 이해</a></li>
+            <li><a href="7_notion_customize_page.html" target="content-frame">7강: 페이지 예쁘게 꾸미기</a></li>
+            <li><a href="8_notion_advanced_blocks.html" target="content-frame">8강: 다양한 블록 활용하기</a></li>
+            <li><a href="9_notion_subpages.html" target="content-frame">9강: 페이지 안에 페이지 만들기</a></li>
+            <li><a href="10_notion_basic_templates.html" target="content-frame">10강: 템플릿 활용의 시작</a></li>
+            <li><a href="11_notion_sync_linked_pages.html" target="content-frame">11강: 동기화 블록과 연결된 페이지</a></li>
+            <li><a href="12_notion_comments_mentions.html" target="content-frame">12강: 댓글과 멘션으로 소통하기</a></li>
+            <li><a href="13_notion_database_intro.html" target="content-frame">13강: 데이터베이스란 무엇인가?</a></li>
+            <li><a href="14_notion_database_create.html" target="content-frame">14강: 첫 데이터베이스 만들기</a></li>
+            <li><a href="15_notion_database_advanced.html" target="content-frame">15강: 데이터베이스 고급 활용</a></li>
+            <li><a href="16_notion_relational_db_1.html" target="content-frame">16강: 관계형 데이터베이스 (1)</a></li>
+            <li><a href="17_notion_relational_db_2_rollup.html" target="content-frame">17강: 관계형 데이터베이스 (2) - 롤업</a></li>
+            <li><a href="18_notion_dashboard.html" target="content-frame">18강: 실전! 프로젝트 관리 대시보드</a></li>
+            <li><a href="19_notion_formula_intro.html" target="content-frame">19강: 수식(Formula) 기초</a></li>
+            <li><a href="20_notion_formula_advanced.html" target="content-frame">20강: 수식(Formula) 심화</a></li>
+            <li><a href="21_notion_project_finance.html" target="content-frame">21강: 실전! 가계부 만들기</a></li>
+            <li><a href="22_notion_api_intro.html" target="content-frame">22강: Notion API 기초</a></li>
+            <li><a href="23_notion_api_python_create.html" target="content-frame">23강: API 실전 (Python 페이지 생성)</a></li>
+            <li><a href="24_notion_api_python_read_update.html" target="content-frame">24강: API 실전 (Python 읽기/수정)</a></li>
+            <li><a href="25_notion_automation_make_zapier.html" target="content-frame">25강: 코드 없이 자동화하기</a></li>
+            <li><a href="26_notion_web_features.html" target="content-frame">26강: 웹 클리퍼와 임베드</a></li>
+            <li><a href="27_notion_team_collaboration_1.html" target="content-frame">27강: 팀 협업 (1) - 멤버와 권한</a></li>
+            <li><a href="28_notion_team_collaboration_2.html" target="content-frame">28강: 팀 협업 (2) - 소통 기능</a></li>
+            <li><a href="29_notion_project_meeting_notes.html" target="content-frame">29강: 실전! 팀 회의록 시스템</a></li>
+            <li><a href="30_notion_personal_dashboard.html" target="content-frame">30강: 나만의 개인 대시보드</a></li>
+            <li><a href="31_notion_tips_and_tricks.html" target="content-frame">31강: 생산성 꿀팁 모음</a></li>
+            <li><a href="32_notion_summary_and_future.html" target="content-frame">32강: 총정리 및 마무리</a></li>
+        </ul>
+    </div>
+    <iframe id="content-frame" name="content-frame" src="1_notion_why.html"></iframe>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarLinks = document.querySelectorAll('#sidebar ul li a');
+            const contentFrame = document.getElementById('content-frame');
+
+            // Set initial active link based on iframe src
+            const initialSrc = contentFrame.getAttribute('src') || '1_notion_why.html';
+            sidebarLinks.forEach(link => {
+                if (link.getAttribute('href') === initialSrc) {
+                    link.classList.add('active');
+                }
+            });
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    // Remove active class from all links
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    // Add active class to the clicked link
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

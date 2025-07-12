@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제20강: 대규모 프로젝트 아키텍처 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-building"></i> 제20강: 대규모 프로젝트 아키텍처</h1>
+                <p class="lesson-subtitle">AI와 함께 설계하는 확장 가능한 시스템 아키텍처</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 65분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson19.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제20강: 대규모 프로젝트 아키텍처</span>
+            <a href="lesson21.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 시스템 아키텍처 설계 원칙 이해하기</li>
+                    <li>마이크로서비스 vs 모놀리스 선택과 전환 전략</li>
+                    <li>이벤트 주도 아키텍처와 CQRS 패턴 구현하기</li>
+                    <li>도메인 주도 설계(DDD)와 헥사고날 아키텍처 적용하기</li>
+                    <li>분산 시스템의 복잡성 관리와 모니터링 구축하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-project-diagram"></i> 시스템 아키텍처 설계</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 프로젝트의 요구사항을 분석하여 최적의 아키텍처를 제안합니다. 확장성, 유지보수성, 성능을 모두 고려한 설계를 자동으로 생성합니다.</p>
+                </div>
+
+                <h3>이커머스 플랫폼 아키텍처</h3>
+                <div class="architecture-example">
+                    <div class="architecture-request">
+                        <h4>요구사항: 대규모 이커머스 플랫폼 설계</h4>
+                        <p>AI에게 요청: "일일 100만 주문을 처리할 수 있는 이커머스 아키텍처를 설계해줘"</p>
+                    </div>
+
+                    <div class="ai-architecture">
+                        <h4>AI가 제안한 시스템 아키텍처</h4>
+                        <pre><code>// architecture/system-design.md
+# 대규모 이커머스 플랫폼 아키텍처
+
+## 1. 전체 시스템 구조
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        WEB[Web App]
+        MOBILE[Mobile App]
+        ADMIN[Admin Portal]
+    end
+    
+    subgraph "API Gateway Layer"
+        KONG[Kong API Gateway]
+        AUTH[Auth Service]
+    end
+    
+    subgraph "Service Layer"
+        USER[User Service]
+        PRODUCT[Product Service]
+        ORDER[Order Service]
+        PAYMENT[Payment Service]
+        INVENTORY[Inventory Service]
+        NOTIFICATION[Notification Service]
+        SEARCH[Search Service]
+        RECOMMENDATION[Recommendation Service]
+    end
+    
+    subgraph "Message Layer"
+        KAFKA[Apache Kafka]
+        REDIS_PUBSUB[Redis Pub/Sub]
+    end
+    
+    subgraph "Data Layer"
+        POSTGRES[(PostgreSQL)]
+        MONGODB[(MongoDB)]
+        ELASTICSEARCH[(Elasticsearch)]
+        REDIS[(Redis Cache)]
+        S3[AWS S3]
+    end
+    
+    subgraph "Infrastructure"
+        K8S[Kubernetes]
+        PROMETHEUS[Prometheus]
+        GRAFANA[Grafana]
+        ELK[ELK Stack]
+    end
+```
+
+## 2. 서비스별 상세 설계
+
+### 2.1 User Service
+- **책임**: 사용자 인증/인가, 프로필 관리
+- **기술 스택**: Node.js, PostgreSQL, Redis
+- **API 설계**:
+  ```yaml
+  /api/v1/users:
+    post:
+      summary: 사용자 등록
+    get:
+      summary: 사용자 목록 조회
+  
+  /api/v1/users/{userId}:
+    get:
+      summary: 사용자 정보 조회
+    put:
+      summary: 사용자 정보 수정
+    delete:
+      summary: 사용자 삭제
+  
+  /api/v1/auth/login:
+    post:
+      summary: 로그인
+  
+  /api/v1/auth/refresh:
+    post:
+      summary: 토큰 갱신
+  ```
+
+### 2.2 Order Service
+- **책임**: 주문 생성, 처리, 상태 관리
+- **기술 스택**: Java Spring Boot, PostgreSQL, Kafka
+- **이벤트 기반 처리**:
+  - OrderCreated
+  - OrderPaid
+  - OrderShipped
+  - OrderDelivered
+  - OrderCancelled
+
+### 2.3 Payment Service
+- **책임**: 결제 처리, 환불, 정산
+- **기술 스택**: Go, PostgreSQL, Redis
+- **외부 연동**: Stripe, PayPal, 국내 PG사
+
+## 3. 데이터베이스 설계
+
+### 3.1 분산 데이터 관리
+- **CQRS 패턴 적용**
+  - Command: PostgreSQL (트랜잭션 보장)
+  - Query: Elasticsearch (빠른 조회)
+  
+### 3.2 데이터베이스 샤딩
+- User DB: user_id 기반 샤딩
+- Order DB: 날짜 기반 파티셔닝
+- Product DB: category_id 기반 샤딩
+
+## 4. 확장성 전략
+
+### 4.1 수평 확장
+- Kubernetes HPA 기반 자동 스케일링
+- 서비스별 독립적 확장 가능
+- 데이터베이스 읽기 복제본 활용
+
+### 4.2 캐싱 전략
+- L1 Cache: 애플리케이션 메모리 (LRU)
+- L2 Cache: Redis Cluster
+- CDN: 정적 자원 및 API 응답 캐싱
+
+## 5. 안정성 보장
+
+### 5.1 서킷 브레이커
+- Hystrix/Resilience4j 적용
+- 장애 전파 방지
+- 우아한 성능 저하
+
+### 5.2 재시도 및 타임아웃
+- Exponential Backoff
+- Dead Letter Queue
+- 비동기 처리
+
+## 6. 모니터링 및 관찰성
+
+### 6.1 메트릭
+- Prometheus + Grafana
+- 커스텀 비즈니스 메트릭
+- SLI/SLO 대시보드
+
+### 6.2 로깅
+- ELK Stack (Elasticsearch, Logstash, Kibana)
+- 구조화된 로깅
+- 분산 추적 (Jaeger)
+
+### 6.3 알림
+- PagerDuty 연동
+- Slack 알림
+- 자동 인시던트 생성</code></pre>
+                    </div>
+
+                    <div class="microservices-code">
+                        <h4>마이크로서비스 구현 예시</h4>
+                        <pre><code>// services/order-service/src/main/java/com/ecommerce/order/OrderService.java
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class OrderService {
+    private final OrderRepository orderRepository;
+    private final InventoryServiceClient inventoryClient;
+    private final PaymentServiceClient paymentClient;
+    private final KafkaTemplate<String, OrderEvent> kafkaTemplate;
+    private final CircuitBreaker circuitBreaker;
+    
+    @Transactional
+    public OrderResponse createOrder(CreateOrderRequest request) {
+        log.info("Creating order for user: {}", request.getUserId());
+        
+        // 1. 재고 확인 (Circuit Breaker 적용)
+        boolean stockAvailable = circuitBreaker.executeSupplier(() -> 
+            inventoryClient.checkStock(request.getItems())
+        );
+        
+        if (!stockAvailable) {
+            throw new InsufficientStockException("Some items are out of stock");
+        }
+        
+        // 2. 주문 생성
+        Order order = Order.builder()
+            .userId(request.getUserId())
+            .items(mapToOrderItems(request.getItems()))
+            .status(OrderStatus.PENDING)
+            .totalAmount(calculateTotal(request.getItems()))
+            .build();
+        
+        Order savedOrder = orderRepository.save(order);
+        
+        // 3. 재고 예약 (Saga 패턴)
+        CompletableFuture<Void> inventoryReservation = CompletableFuture.runAsync(() -> {
+            try {
+                inventoryClient.reserveStock(savedOrder.getId(), request.getItems());
+            } catch (Exception e) {
+                log.error("Failed to reserve inventory", e);
+                compensateOrder(savedOrder.getId());
+                throw new OrderProcessingException("Inventory reservation failed");
+            }
+        });
+        
+        // 4. 결제 처리
+        CompletableFuture<PaymentResult> paymentProcessing = CompletableFuture.supplyAsync(() -> {
+            try {
+                return paymentClient.processPayment(
+                    savedOrder.getId(),
+                    savedOrder.getTotalAmount(),
+                    request.getPaymentMethod()
+                );
+            } catch (Exception e) {
+                log.error("Payment processing failed", e);
+                compensateInventory(savedOrder.getId());
+                compensateOrder(savedOrder.getId());
+                throw new PaymentException("Payment failed");
+            }
+        });
+        
+        // 5. 비동기 처리 완료 대기
+        try {
+            CompletableFuture.allOf(inventoryReservation, paymentProcessing).join();
+            PaymentResult paymentResult = paymentProcessing.get();
+            
+            // 6. 주문 상태 업데이트
+            savedOrder.setStatus(OrderStatus.CONFIRMED);
+            savedOrder.setPaymentId(paymentResult.getTransactionId());
+            orderRepository.save(savedOrder);
+            
+            // 7. 이벤트 발행
+            publishOrderEvent(new OrderCreatedEvent(savedOrder));
+            
+            return OrderResponse.from(savedOrder);
+            
+        } catch (Exception e) {
+            // 보상 트랜잭션
+            compensateAll(savedOrder.getId());
+            throw new OrderCreationException("Failed to create order", e);
+        }
+    }
+    
+    private void publishOrderEvent(OrderEvent event) {
+        kafkaTemplate.send("order-events", event.getOrderId(), event)
+            .addCallback(
+                result -> log.info("Event published: {}", event),
+                ex -> log.error("Failed to publish event", ex)
+            );
+    }
+    
+    // Saga 보상 로직
+    private void compensateOrder(String orderId) {
+        orderRepository.findById(orderId).ifPresent(order -> {
+            order.setStatus(OrderStatus.CANCELLED);
+            orderRepository.save(order);
+            publishOrderEvent(new OrderCancelledEvent(order));
+        });
+    }
+    
+    private void compensateInventory(String orderId) {
+        try {
+            inventoryClient.releaseStock(orderId);
+        } catch (Exception e) {
+            log.error("Failed to compensate inventory", e);
+            // Dead Letter Queue로 전송
+            sendToDeadLetterQueue("inventory-compensation", orderId);
+        }
+    }
+}
+
+// Domain Event
+@Value
+@Builder
+public class OrderCreatedEvent implements OrderEvent {
+    String eventId = UUID.randomUUID().toString();
+    String orderId;
+    String userId;
+    Instant timestamp = Instant.now();
+    List<OrderItem> items;
+    BigDecimal totalAmount;
+    
+    @Override
+    public String getEventType() {
+        return "ORDER_CREATED";
+    }
+}
+
+// Event Handler
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class OrderEventHandler {
+    private final NotificationService notificationService;
+    private final AnalyticsService analyticsService;
+    private final RecommendationService recommendationService;
+    
+    @KafkaListener(topics = "order-events")
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
+    public void handleOrderEvent(OrderEvent event) {
+        log.info("Processing event: {} for order: {}", 
+            event.getEventType(), event.getOrderId());
+        
+        switch (event.getEventType()) {
+            case "ORDER_CREATED":
+                handleOrderCreated((OrderCreatedEvent) event);
+                break;
+            case "ORDER_CANCELLED":
+                handleOrderCancelled((OrderCancelledEvent) event);
+                break;
+            default:
+                log.warn("Unknown event type: {}", event.getEventType());
+        }
+    }
+    
+    private void handleOrderCreated(OrderCreatedEvent event) {
+        // 알림 발송
+        CompletableFuture.runAsync(() -> 
+            notificationService.sendOrderConfirmation(event)
+        );
+        
+        // 분석 데이터 수집
+        CompletableFuture.runAsync(() -> 
+            analyticsService.trackOrderCreated(event)
+        );
+        
+        // 추천 시스템 업데이트
+        CompletableFuture.runAsync(() -> 
+            recommendationService.updateUserPreferences(event)
+        );
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-hexagon"></i> 헥사고날 아키텍처</h2>
+
+                <div class="hexagonal-architecture">
+                    <h3>포트와 어댑터 패턴</h3>
+                    
+                    <div class="hexagonal-structure">
+                        <h4>프로젝트 구조</h4>
+                        <pre><code>// 헥사고날 아키텍처 프로젝트 구조
+src/
+├── domain/                 # 비즈니스 로직 (핵심)
+│   ├── models/            # 도메인 엔티티
+│   ├── ports/             # 인터페이스 정의
+│   │   ├── in/           # 인바운드 포트 (Use Cases)
+│   │   └── out/          # 아웃바운드 포트 (Repository)
+│   └── services/          # 도메인 서비스
+├── application/           # 애플리케이션 서비스
+│   ├── usecases/         # 유스케이스 구현
+│   └── dto/              # DTO 정의
+├── adapters/             # 어댑터 (외부 세계와의 연결)
+│   ├── in/              # 인바운드 어댑터
+│   │   ├── web/        # REST API
+│   │   ├── grpc/      # gRPC
+│   │   └── graphql/   # GraphQL
+│   └── out/             # 아웃바운드 어댑터
+│       ├── persistence/ # 데이터베이스
+│       ├── messaging/   # 메시지 큐
+│       └── external/    # 외부 API
+└── infrastructure/       # 인프라 설정
+    ├── config/          # 설정 파일
+    └── security/        # 보안 설정</code></pre>
+                    </div>
+
+                    <div class="hexagonal-implementation">
+                        <h4>헥사고날 아키텍처 구현</h4>
+                        <pre><code>// domain/models/Product.ts
+export class Product {
+    private constructor(
+        private readonly id: ProductId,
+        private name: string,
+        private description: string,
+        private price: Money,
+        private stock: number,
+        private category: Category,
+        private status: ProductStatus
+    ) {
+        this.validate();
+    }
+
+    static create(props: CreateProductProps): Product {
+        const productId = ProductId.generate();
+        return new Product(
+            productId,
+            props.name,
+            props.description,
+            Money.fromAmount(props.price),
+            props.stock,
+            props.category,
+            ProductStatus.ACTIVE
+        );
+    }
+
+    updatePrice(newPrice: Money): void {
+        if (newPrice.isNegative()) {
+            throw new InvalidPriceException('Price cannot be negative');
+        }
+        this.price = newPrice;
+    }
+
+    decreaseStock(quantity: number): void {
+        if (this.stock < quantity) {
+            throw new InsufficientStockException(
+                `Insufficient stock. Available: ${this.stock}, Requested: ${quantity}`
+            );
+        }
+        this.stock -= quantity;
+    }
+
+    private validate(): void {
+        if (!this.name || this.name.length < 3) {
+            throw new ValidationException('Product name must be at least 3 characters');
+        }
+        if (this.stock < 0) {
+            throw new ValidationException('Stock cannot be negative');
+        }
+    }
+}
+
+// domain/ports/in/ManageProductUseCase.ts
+export interface ManageProductUseCase {
+    createProduct(command: CreateProductCommand): Promise<ProductId>;
+    updateProduct(command: UpdateProductCommand): Promise<void>;
+    deleteProduct(productId: ProductId): Promise<void>;
+}
+
+// domain/ports/out/ProductRepository.ts
+export interface ProductRepository {
+    save(product: Product): Promise<void>;
+    findById(id: ProductId): Promise<Product | null>;
+    findByCategory(category: Category): Promise<Product[]>;
+    delete(id: ProductId): Promise<void>;
+}
+
+// application/usecases/ManageProductService.ts
+@Injectable()
+export class ManageProductService implements ManageProductUseCase {
+    constructor(
+        private readonly productRepository: ProductRepository,
+        private readonly eventPublisher: EventPublisher,
+        private readonly validator: ProductValidator
+    ) {}
+
+    async createProduct(command: CreateProductCommand): Promise<ProductId> {
+        // 비즈니스 규칙 검증
+        await this.validator.validateCreateProduct(command);
+
+        // 도메인 객체 생성
+        const product = Product.create({
+            name: command.name,
+            description: command.description,
+            price: command.price,
+            stock: command.stock,
+            category: command.category
+        });
+
+        // 저장
+        await this.productRepository.save(product);
+
+        // 이벤트 발행
+        await this.eventPublisher.publish(
+            new ProductCreatedEvent(product.getId(), product.getName())
+        );
+
+        return product.getId();
+    }
+
+    async updateProduct(command: UpdateProductCommand): Promise<void> {
+        const product = await this.productRepository.findById(command.productId);
+        
+        if (!product) {
+            throw new ProductNotFoundException(command.productId);
+        }
+
+        // 도메인 로직 실행
+        if (command.price) {
+            product.updatePrice(Money.fromAmount(command.price));
+        }
+        
+        if (command.stock !== undefined) {
+            product.updateStock(command.stock);
+        }
+
+        // 저장
+        await this.productRepository.save(product);
+
+        // 이벤트 발행
+        await this.eventPublisher.publish(
+            new ProductUpdatedEvent(product.getId(), command)
+        );
+    }
+}
+
+// adapters/in/web/ProductController.ts
+@Controller('/api/v1/products')
+@UseGuards(AuthGuard)
+export class ProductController {
+    constructor(
+        private readonly manageProductUseCase: ManageProductUseCase,
+        private readonly queryProductUseCase: QueryProductUseCase
+    ) {}
+
+    @Post()
+    @UseInterceptors(ValidationInterceptor)
+    async createProduct(@Body() dto: CreateProductDto): Promise<ProductResponse> {
+        const command = CreateProductCommand.fromDto(dto);
+        const productId = await this.manageProductUseCase.createProduct(command);
+        
+        return {
+            id: productId.getValue(),
+            message: 'Product created successfully'
+        };
+    }
+
+    @Get(':id')
+    async getProduct(@Param('id') id: string): Promise<ProductDto> {
+        const query = new GetProductQuery(ProductId.fromString(id));
+        const product = await this.queryProductUseCase.getProduct(query);
+        
+        return ProductDto.fromDomain(product);
+    }
+
+    @Put(':id')
+    async updateProduct(
+        @Param('id') id: string,
+        @Body() dto: UpdateProductDto
+    ): Promise<void> {
+        const command = UpdateProductCommand.fromDto(id, dto);
+        await this.manageProductUseCase.updateProduct(command);
+    }
+}
+
+// adapters/out/persistence/ProductPersistenceAdapter.ts
+@Injectable()
+export class ProductPersistenceAdapter implements ProductRepository {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly mapper: ProductMapper
+    ) {}
+
+    async save(product: Product): Promise<void> {
+        const data = this.mapper.toPersistence(product);
+        
+        await this.prisma.product.upsert({
+            where: { id: data.id },
+            create: data,
+            update: data
+        });
+    }
+
+    async findById(id: ProductId): Promise<Product | null> {
+        const data = await this.prisma.product.findUnique({
+            where: { id: id.getValue() },
+            include: {
+                category: true,
+                reviews: true
+            }
+        });
+
+        return data ? this.mapper.toDomain(data) : null;
+    }
+
+    async findByCategory(category: Category): Promise<Product[]> {
+        const data = await this.prisma.product.findMany({
+            where: {
+                categoryId: category.getId().getValue(),
+                status: 'ACTIVE'
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return data.map(item => this.mapper.toDomain(item));
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-stream"></i> 이벤트 주도 아키텍처</h2>
+
+                <div class="event-driven">
+                    <h3>Event Sourcing과 CQRS</h3>
+                    
+                    <div class="event-sourcing">
+                        <h4>이벤트 소싱 구현</h4>
+                        <pre><code>// domain/aggregates/Order.ts
+export class Order extends AggregateRoot {
+    private orderId: OrderId;
+    private customerId: CustomerId;
+    private items: OrderItem[] = [];
+    private status: OrderStatus;
+    private totalAmount: Money;
+    private version: number = 0;
+
+    // 이벤트 소싱: 이벤트에서 상태 복원
+    static fromEvents(events: DomainEvent[]): Order {
+        const order = new Order();
+        
+        events.forEach(event => {
+            order.apply(event, false);
+        });
+        
+        return order;
+    }
+
+    // 명령 처리
+    placeOrder(command: PlaceOrderCommand): void {
+        // 비즈니스 규칙 검증
+        if (this.items.length === 0) {
+            throw new EmptyOrderException();
+        }
+
+        // 이벤트 생성 및 적용
+        const event = new OrderPlacedEvent({
+            orderId: this.orderId,
+            customerId: this.customerId,
+            items: this.items,
+            totalAmount: this.calculateTotal(),
+            timestamp: new Date()
+        });
+
+        this.apply(event);
+    }
+
+    cancelOrder(reason: string): void {
+        if (!this.canBeCancelled()) {
+            throw new OrderCannotBeCancelledException(this.status);
+        }
+
+        const event = new OrderCancelledEvent({
+            orderId: this.orderId,
+            reason,
+            timestamp: new Date()
+        });
+
+        this.apply(event);
+    }
+
+    // 이벤트 적용
+    protected when(event: DomainEvent): void {
+        switch (event.constructor) {
+            case OrderPlacedEvent:
+                this.onOrderPlaced(event as OrderPlacedEvent);
+                break;
+            case OrderCancelledEvent:
+                this.onOrderCancelled(event as OrderCancelledEvent);
+                break;
+            case OrderShippedEvent:
+                this.onOrderShipped(event as OrderShippedEvent);
+                break;
+        }
+    }
+
+    private onOrderPlaced(event: OrderPlacedEvent): void {
+        this.orderId = event.orderId;
+        this.customerId = event.customerId;
+        this.items = event.items;
+        this.status = OrderStatus.PLACED;
+        this.totalAmount = event.totalAmount;
+    }
+
+    private onOrderCancelled(event: OrderCancelledEvent): void {
+        this.status = OrderStatus.CANCELLED;
+    }
+}
+
+// infrastructure/eventstore/EventStore.ts
+export interface EventStore {
+    saveEvents(aggregateId: string, events: DomainEvent[], expectedVersion: number): Promise<void>;
+    getEvents(aggregateId: string): Promise<DomainEvent[]>;
+    getEventsFromSnapshot(aggregateId: string, version: number): Promise<DomainEvent[]>;
+    saveSnapshot(aggregateId: string, snapshot: AggregateSnapshot): Promise<void>;
+}
+
+@Injectable()
+export class PostgresEventStore implements EventStore {
+    constructor(
+        private readonly db: DatabaseConnection,
+        private readonly serializer: EventSerializer
+    ) {}
+
+    async saveEvents(
+        aggregateId: string, 
+        events: DomainEvent[], 
+        expectedVersion: number
+    ): Promise<void> {
+        const client = await this.db.getClient();
+        
+        try {
+            await client.query('BEGIN');
+
+            // 낙관적 동시성 제어
+            const result = await client.query(
+                'SELECT MAX(version) as version FROM events WHERE aggregate_id = $1',
+                [aggregateId]
+            );
+
+            const currentVersion = result.rows[0]?.version || 0;
+            
+            if (currentVersion !== expectedVersion) {
+                throw new ConcurrencyException(
+                    `Expected version ${expectedVersion} but was ${currentVersion}`
+                );
+            }
+
+            // 이벤트 저장
+            for (const event of events) {
+                const eventData = this.serializer.serialize(event);
+                
+                await client.query(
+                    `INSERT INTO events 
+                     (event_id, aggregate_id, event_type, event_data, version, timestamp)
+                     VALUES ($1, $2, $3, $4, $5, $6)`,
+                    [
+                        event.eventId,
+                        aggregateId,
+                        event.constructor.name,
+                        eventData,
+                        ++currentVersion,
+                        event.timestamp
+                    ]
+                );
+            }
+
+            await client.query('COMMIT');
+            
+            // 이벤트 발행
+            await this.publishEvents(events);
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    async getEvents(aggregateId: string): Promise<DomainEvent[]> {
+        const result = await this.db.query(
+            `SELECT event_type, event_data, version, timestamp 
+             FROM events 
+             WHERE aggregate_id = $1 
+             ORDER BY version`,
+            [aggregateId]
+        );
+
+        return result.rows.map(row => 
+            this.serializer.deserialize(row.event_type, row.event_data)
+        );
+    }
+}
+
+// application/commands/OrderCommandHandler.ts
+@Injectable()
+export class OrderCommandHandler {
+    constructor(
+        private readonly eventStore: EventStore,
+        private readonly orderRepository: OrderRepository
+    ) {}
+
+    async handle(command: PlaceOrderCommand): Promise<void> {
+        // 이벤트 스토어에서 현재 상태 로드
+        const events = await this.eventStore.getEvents(command.orderId);
+        const order = events.length > 0 
+            ? Order.fromEvents(events)
+            : Order.create(command);
+
+        // 명령 실행
+        order.placeOrder(command);
+
+        // 새 이벤트 저장
+        const uncommittedEvents = order.getUncommittedEvents();
+        await this.eventStore.saveEvents(
+            command.orderId,
+            uncommittedEvents,
+            order.getVersion()
+        );
+
+        // Read Model 업데이트 (CQRS)
+        await this.updateReadModel(order);
+    }
+
+    private async updateReadModel(order: Order): Promise<void> {
+        // 읽기 전용 모델 업데이트
+        const orderView = OrderView.fromAggregate(order);
+        await this.orderRepository.save(orderView);
+    }
+}
+
+// application/queries/OrderQueryHandler.ts
+@Injectable()
+export class OrderQueryHandler {
+    constructor(
+        private readonly readDb: ReadDatabaseConnection,
+        private readonly cache: CacheService
+    ) {}
+
+    async getOrderById(orderId: string): Promise<OrderView> {
+        // 캐시 확인
+        const cached = await this.cache.get(`order:${orderId}`);
+        if (cached) return cached;
+
+        // Read DB에서 조회
+        const result = await this.readDb.query(
+            `SELECT * FROM order_views WHERE order_id = $1`,
+            [orderId]
+        );
+
+        if (!result.rows[0]) {
+            throw new OrderNotFoundException(orderId);
+        }
+
+        const orderView = OrderView.fromDb(result.rows[0]);
+        
+        // 캐시 저장
+        await this.cache.set(`order:${orderId}`, orderView, 300);
+        
+        return orderView;
+    }
+
+    async getOrdersByCustomer(
+        customerId: string, 
+        pagination: PaginationParams
+    ): Promise<PagedResult<OrderView>> {
+        const result = await this.readDb.query(
+            `SELECT * FROM order_views 
+             WHERE customer_id = $1 
+             ORDER BY created_at DESC 
+             LIMIT $2 OFFSET $3`,
+            [customerId, pagination.limit, pagination.offset]
+        );
+
+        const countResult = await this.readDb.query(
+            `SELECT COUNT(*) FROM order_views WHERE customer_id = $1`,
+            [customerId]
+        );
+
+        return {
+            items: result.rows.map(row => OrderView.fromDb(row)),
+            total: parseInt(countResult.rows[0].count),
+            page: pagination.page,
+            pageSize: pagination.limit
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="saga-pattern">
+                        <h4>Saga 패턴 구현</h4>
+                        <pre><code>// sagas/OrderSaga.ts
+export class OrderSaga {
+    private readonly steps: SagaStep[] = [];
+    private readonly compensations: Map<string, CompensationAction> = new Map();
+
+    constructor(
+        private readonly orderService: OrderService,
+        private readonly inventoryService: InventoryService,
+        private readonly paymentService: PaymentService,
+        private readonly shippingService: ShippingService
+    ) {
+        this.defineSteps();
+    }
+
+    private defineSteps(): void {
+        // Step 1: 주문 생성
+        this.addStep({
+            name: 'CREATE_ORDER',
+            action: async (context: OrderContext) => {
+                const order = await this.orderService.createOrder(context.orderData);
+                context.orderId = order.id;
+                return order;
+            },
+            compensation: async (context: OrderContext) => {
+                if (context.orderId) {
+                    await this.orderService.cancelOrder(context.orderId);
+                }
+            }
+        });
+
+        // Step 2: 재고 예약
+        this.addStep({
+            name: 'RESERVE_INVENTORY',
+            action: async (context: OrderContext) => {
+                const reservation = await this.inventoryService.reserveItems(
+                    context.orderId,
+                    context.orderData.items
+                );
+                context.reservationId = reservation.id;
+                return reservation;
+            },
+            compensation: async (context: OrderContext) => {
+                if (context.reservationId) {
+                    await this.inventoryService.releaseReservation(context.reservationId);
+                }
+            }
+        });
+
+        // Step 3: 결제 처리
+        this.addStep({
+            name: 'PROCESS_PAYMENT',
+            action: async (context: OrderContext) => {
+                const payment = await this.paymentService.processPayment({
+                    orderId: context.orderId,
+                    amount: context.orderData.totalAmount,
+                    paymentMethod: context.orderData.paymentMethod
+                });
+                context.paymentId = payment.transactionId;
+                return payment;
+            },
+            compensation: async (context: OrderContext) => {
+                if (context.paymentId) {
+                    await this.paymentService.refund(context.paymentId);
+                }
+            }
+        });
+
+        // Step 4: 배송 준비
+        this.addStep({
+            name: 'PREPARE_SHIPPING',
+            action: async (context: OrderContext) => {
+                const shipping = await this.shippingService.createShipment({
+                    orderId: context.orderId,
+                    address: context.orderData.shippingAddress,
+                    items: context.orderData.items
+                });
+                context.shipmentId = shipping.id;
+                return shipping;
+            },
+            compensation: async (context: OrderContext) => {
+                if (context.shipmentId) {
+                    await this.shippingService.cancelShipment(context.shipmentId);
+                }
+            }
+        });
+    }
+
+    async execute(orderData: CreateOrderData): Promise<OrderResult> {
+        const context: OrderContext = { orderData };
+        const executedSteps: string[] = [];
+
+        try {
+            // 각 스텝 실행
+            for (const step of this.steps) {
+                log.info(`Executing saga step: ${step.name}`);
+                
+                await step.action(context);
+                executedSteps.push(step.name);
+                
+                // 스텝 완료 이벤트 발행
+                await this.publishStepCompleted(step.name, context);
+            }
+
+            // 성공 시 완료 이벤트 발행
+            await this.publishSagaCompleted(context);
+            
+            return {
+                success: true,
+                orderId: context.orderId,
+                message: 'Order processed successfully'
+            };
+
+        } catch (error) {
+            log.error(`Saga failed at step: ${executedSteps[executedSteps.length - 1]}`, error);
+            
+            // 보상 트랜잭션 실행
+            await this.compensate(executedSteps, context);
+            
+            // 실패 이벤트 발행
+            await this.publishSagaFailed(context, error);
+            
+            throw new SagaExecutionException('Order processing failed', error);
+        }
+    }
+
+    private async compensate(executedSteps: string[], context: OrderContext): Promise<void> {
+        // 역순으로 보상 실행
+        for (let i = executedSteps.length - 1; i >= 0; i--) {
+            const stepName = executedSteps[i];
+            const compensation = this.compensations.get(stepName);
+            
+            if (compensation) {
+                try {
+                    log.info(`Executing compensation for: ${stepName}`);
+                    await compensation(context);
+                } catch (error) {
+                    log.error(`Compensation failed for: ${stepName}`, error);
+                    // 보상 실패는 Dead Letter Queue로
+                    await this.sendToDeadLetterQueue(stepName, context, error);
+                }
+            }
+        }
+    }
+}
+
+// Orchestrator 기반 Saga
+@Injectable()
+export class OrderSagaOrchestrator {
+    constructor(
+        private readonly sagaRepository: SagaRepository,
+        private readonly eventBus: EventBus
+    ) {}
+
+    @EventHandler(OrderCreatedEvent)
+    async handleOrderCreated(event: OrderCreatedEvent): Promise<void> {
+        // Saga 인스턴스 생성
+        const saga = await this.sagaRepository.create({
+            sagaId: generateSagaId(),
+            orderId: event.orderId,
+            status: SagaStatus.STARTED,
+            currentStep: 'ORDER_CREATED'
+        });
+
+        // 다음 스텝 실행
+        await this.executeNextStep(saga);
+    }
+
+    private async executeNextStep(saga: SagaInstance): Promise<void> {
+        const nextStep = this.getNextStep(saga.currentStep);
+        
+        if (!nextStep) {
+            // Saga 완료
+            saga.status = SagaStatus.COMPLETED;
+            await this.sagaRepository.update(saga);
+            return;
+        }
+
+        try {
+            // 스텝 실행
+            await this.executeStep(nextStep, saga);
+            
+            // 상태 업데이트
+            saga.currentStep = nextStep;
+            await this.sagaRepository.update(saga);
+            
+        } catch (error) {
+            // 실패 처리
+            saga.status = SagaStatus.COMPENSATING;
+            await this.sagaRepository.update(saga);
+            
+            // 보상 시작
+            await this.startCompensation(saga);
+        }
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-chart-network"></i> 분산 시스템 패턴</h2>
+
+                <div class="distributed-patterns">
+                    <h3>분산 시스템 핵심 패턴</h3>
+                    
+                    <div class="service-mesh">
+                        <h4>Service Mesh 구현</h4>
+                        <pre><code># istio-service-mesh.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: order-service
+  namespace: production
+spec:
+  hosts:
+  - order-service
+  http:
+  - match:
+    - headers:
+        x-version:
+          exact: v2
+    route:
+    - destination:
+        host: order-service
+        subset: v2
+      weight: 100
+  - route:
+    - destination:
+        host: order-service
+        subset: v1
+      weight: 90
+    - destination:
+        host: order-service
+        subset: v2
+      weight: 10
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: order-service
+  namespace: production
+spec:
+  host: order-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+    loadBalancer:
+      consistentHash:
+        httpCookie:
+          name: "session-affinity"
+          ttl: 3600s
+    outlierDetection:
+      consecutiveErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 50
+  - name: v2
+    labels:
+      version: v2
+
+---
+# Circuit Breaker
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: payment-service
+spec:
+  hosts:
+  - payment-service
+  http:
+  - fault:
+      delay:
+        percentage:
+          value: 0.1
+        fixedDelay: 5s
+      abort:
+        percentage:
+          value: 0.1
+        httpStatus: 503
+    route:
+    - destination:
+        host: payment-service
+
+---
+# Distributed Tracing
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jaeger-config
+data:
+  sampling.json: |
+    {
+      "service_strategies": [
+        {
+          "service": "order-service",
+          "type": "probabilistic",
+          "param": 0.1
+        },
+        {
+          "service": "payment-service",
+          "type": "adaptive",
+          "max_traces_per_second": 100
+        }
+      ],
+      "default_strategy": {
+        "type": "probabilistic",
+        "param": 0.01
+      }
+    }</code></pre>
+                    </div>
+
+                    <div class="distributed-locking">
+                        <h4>분산 락과 리더 선출</h4>
+                        <pre><code>// distributed/DistributedLock.ts
+export class RedisDistributedLock {
+    private readonly redis: RedisClient;
+    private readonly defaultTTL = 30000; // 30초
+
+    async acquireLock(
+        key: string, 
+        ttl: number = this.defaultTTL
+    ): Promise<Lock | null> {
+        const lockId = generateLockId();
+        const lockKey = `lock:${key}`;
+        
+        // SET NX EX 원자적 연산
+        const acquired = await this.redis.set(
+            lockKey,
+            lockId,
+            'PX',
+            ttl,
+            'NX'
+        );
+
+        if (!acquired) {
+            return null;
+        }
+
+        return new Lock(lockKey, lockId, ttl);
+    }
+
+    async releaseLock(lock: Lock): Promise<boolean> {
+        // Lua 스크립트로 원자적 해제
+        const script = `
+            if redis.call("get", KEYS[1]) == ARGV[1] then
+                return redis.call("del", KEYS[1])
+            else
+                return 0
+            end
+        `;
+
+        const result = await this.redis.eval(
+            script,
+            1,
+            lock.key,
+            lock.id
+        );
+
+        return result === 1;
+    }
+
+    async extendLock(lock: Lock, ttl: number): Promise<boolean> {
+        const script = `
+            if redis.call("get", KEYS[1]) == ARGV[1] then
+                return redis.call("pexpire", KEYS[1], ARGV[2])
+            else
+                return 0
+            end
+        `;
+
+        const result = await this.redis.eval(
+            script,
+            1,
+            lock.key,
+            lock.id,
+            ttl
+        );
+
+        return result === 1;
+    }
+}
+
+// 리더 선출
+export class LeaderElection {
+    private readonly lockKey = 'leader-election';
+    private readonly heartbeatInterval = 5000; // 5초
+    private isLeader = false;
+    private heartbeatTimer?: NodeJS.Timer;
+
+    constructor(
+        private readonly lock: DistributedLock,
+        private readonly nodeId: string
+    ) {}
+
+    async start(onBecomeLeader: () => void, onLoseLeadership: () => void): Promise<void> {
+        while (true) {
+            try {
+                // 리더 선출 시도
+                const acquired = await this.lock.acquireLock(
+                    this.lockKey,
+                    this.heartbeatInterval * 2
+                );
+
+                if (acquired) {
+                    this.isLeader = true;
+                    log.info(`Node ${this.nodeId} became leader`);
+                    
+                    onBecomeLeader();
+                    
+                    // 하트비트 시작
+                    this.startHeartbeat(acquired);
+                    
+                    // 리더십 유지
+                    await this.maintainLeadership(acquired, onLoseLeadership);
+                } else {
+                    // 팔로워로 대기
+                    await this.waitAsFollower();
+                }
+            } catch (error) {
+                log.error('Leader election error:', error);
+                await this.delay(this.heartbeatInterval);
+            }
+        }
+    }
+
+    private async maintainLeadership(
+        lock: Lock, 
+        onLoseLeadership: () => void
+    ): Promise<void> {
+        while (this.isLeader) {
+            try {
+                // 락 갱신
+                const extended = await this.lock.extendLock(
+                    lock,
+                    this.heartbeatInterval * 2
+                );
+
+                if (!extended) {
+                    // 리더십 상실
+                    this.isLeader = false;
+                    this.stopHeartbeat();
+                    onLoseLeadership();
+                    break;
+                }
+
+                await this.delay(this.heartbeatInterval);
+            } catch (error) {
+                log.error('Failed to maintain leadership:', error);
+                this.isLeader = false;
+                this.stopHeartbeat();
+                onLoseLeadership();
+                break;
+            }
+        }
+    }
+}
+
+// 분산 합의 (Raft 간단 구현)
+export class SimpleRaft {
+    private state: 'follower' | 'candidate' | 'leader' = 'follower';
+    private currentTerm = 0;
+    private votedFor: string | null = null;
+    private log: LogEntry[] = [];
+    private commitIndex = 0;
+
+    constructor(
+        private readonly nodeId: string,
+        private readonly peers: string[],
+        private readonly rpc: RaftRPC
+    ) {}
+
+    // 리더 선출
+    private async startElection(): Promise<void> {
+        this.state = 'candidate';
+        this.currentTerm++;
+        this.votedFor = this.nodeId;
+        
+        const votes = 1; // 자신의 표
+        const majority = Math.floor(this.peers.length / 2) + 1;
+
+        // 동시에 모든 노드에 투표 요청
+        const votePromises = this.peers.map(peer => 
+            this.requestVote(peer)
+        );
+
+        const results = await Promise.allSettled(votePromises);
+        const approvals = results.filter(r => 
+            r.status === 'fulfilled' && r.value.voteGranted
+        ).length;
+
+        if (votes + approvals >= majority) {
+            this.becomeLeader();
+        } else {
+            this.state = 'follower';
+        }
+    }
+
+    private async requestVote(peer: string): Promise<VoteResponse> {
+        return this.rpc.requestVote(peer, {
+            term: this.currentTerm,
+            candidateId: this.nodeId,
+            lastLogIndex: this.log.length - 1,
+            lastLogTerm: this.log[this.log.length - 1]?.term || 0
+        });
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 마이크로서비스 설계</h2>
+
+                <div class="practice-content">
+                    <h3>온라인 뱅킹 시스템 설계</h3>
+                    <p>AI와 함께 대규모 온라인 뱅킹 시스템을 설계해봅시다.</p>
+
+                    <div class="banking-requirements">
+                        <h4>시스템 요구사항</h4>
+                        <ul>
+                            <li>일일 1000만 거래 처리</li>
+                            <li>99.99% 가용성 보장</li>
+                            <li>강력한 보안과 규정 준수</li>
+                            <li>실시간 잔액 업데이트</li>
+                            <li>다중 통화 지원</li>
+                            <li>사기 탐지 시스템</li>
+                        </ul>
+                    </div>
+
+                    <div class="design-steps">
+                        <h4>설계 단계</h4>
+                        
+                        <div class="step">
+                            <h5>1. 도메인 분석</h5>
+                            <p>Chat에 요청: "온라인 뱅킹의 핵심 도메인과 바운디드 컨텍스트를 정의해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>2. 서비스 분해</h5>
+                            <p>Cmd+K: "각 도메인별 마이크로서비스 구조 설계"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>3. 데이터 전략</h5>
+                            <p>Composer로 CQRS와 이벤트 소싱 구현</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>4. 보안 아키텍처</h5>
+                            <p>AI에게: "금융 규정을 준수하는 보안 아키텍처 설계해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>5. 장애 대응</h5>
+                            <p>복원력 있는 시스템을 위한 패턴 적용</p>
+                        </div>
+                    </div>
+
+                    <div class="architecture-patterns">
+                        <h4>🏛️ 적용 패턴</h4>
+                        <ul>
+                            <li><strong>Event Sourcing:</strong> 모든 거래 내역 추적</li>
+                            <li><strong>CQRS:</strong> 읽기/쓰기 분리</li>
+                            <li><strong>Saga:</strong> 분산 트랜잭션 관리</li>
+                            <li><strong>Circuit Breaker:</strong> 장애 격리</li>
+                            <li><strong>Bulkhead:</strong> 리소스 격리</li>
+                            <li><strong>Service Mesh:</strong> 서비스 간 통신 관리</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>지능적인 아키텍처 설계</h3>
+                        <p>AI가 프로젝트 요구사항을 분석하여 최적의 아키텍처를 제안합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>패턴 자동 적용</h3>
+                        <p>헥사고날, 이벤트 소싱, CQRS 등 복잡한 패턴을 쉽게 구현합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>분산 시스템 관리</h3>
+                        <p>마이크로서비스의 복잡성을 AI가 관리하고 최적화합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>확장 가능한 설계</h3>
+                        <p>처음부터 확장성을 고려한 아키텍처를 구축합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 AI 활용 고급 기법을 배웁니다.</p>
+                    <a href="lesson21.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="completed">API 개발과 문서화</li>
+                    <li class="completed">데이터베이스 설계와 최적화</li>
+                    <li class="completed">프론트엔드 프레임워크와 Cursor AI</li>
+                    <li class="completed">백엔드 프레임워크와 Cursor AI</li>
+                    <li class="completed">Docker와 Kubernetes 배포</li>
+                    <li class="completed">성능 최적화와 보안</li>
+                    <li class="current">대규모 프로젝트 아키텍처</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-shapes"></i> 아키텍처 패턴</h3>
+                <div class="pattern-list">
+                    <div class="pattern-category">
+                        <h4>구조적 패턴</h4>
+                        <span class="pattern-badge">Layered</span>
+                        <span class="pattern-badge">Hexagonal</span>
+                        <span class="pattern-badge">Microservices</span>
+                    </div>
+                    <div class="pattern-category">
+                        <h4>행동 패턴</h4>
+                        <span class="pattern-badge">Event Sourcing</span>
+                        <span class="pattern-badge">CQRS</span>
+                        <span class="pattern-badge">Saga</span>
+                    </div>
+                    <div class="pattern-category">
+                        <h4>복원력 패턴</h4>
+                        <span class="pattern-badge">Circuit Breaker</span>
+                        <span class="pattern-badge">Retry</span>
+                        <span class="pattern-badge">Bulkhead</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 아키텍처는 진화합니다. 처음부터 완벽한 설계를 추구하기보다는, 변경 가능한 구조를 만들고 점진적으로 개선하세요. AI가 리팩토링을 도와줄 것입니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 66.67%"></div>
+            <span class="progress-text">20/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

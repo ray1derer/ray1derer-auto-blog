@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제33강: 커뮤니티와 리소스 | 옵시디언 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-users"></i> 제33강: 커뮤니티와 리소스</h1>
+                <p class="lesson-subtitle">옵시디언 생태계와 함께 성장하기</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 60분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 커뮤니티</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson32.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제33강: 커뮤니티와 리소스</span>
+            <a href="lesson34.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>옵시디언 공식 커뮤니티 채널 활용하기</li>
+                    <li>유용한 플러그인과 테마 찾는 방법 익히기</li>
+                    <li>커뮤니티 기여 방법 이해하기</li>
+                    <li>학습 리소스와 튜토리얼 활용하기</li>
+                    <li>옵시디언 관련 도구와 서비스 탐색하기</li>
+                    <li>네트워킹과 지식 공유 참여하기</li>
+                </ul>
+            </section>
+
+            <section class="official-community">
+                <h2><i class="fas fa-home"></i> 공식 커뮤니티 채널</h2>
+                
+                <div class="community-channels">
+                    <div class="channel-card">
+                        <div class="channel-icon">
+                            <i class="fab fa-discord"></i>
+                        </div>
+                        <h3>옵시디언 Discord</h3>
+                        <p class="member-count">50,000+ 멤버</p>
+                        <div class="channel-details">
+                            <h4>주요 채널</h4>
+                            <ul>
+                                <li><strong>#general:</strong> 일반 토론</li>
+                                <li><strong>#showcase:</strong> 작품 공유</li>
+                                <li><strong>#knowledge-management:</strong> PKM 토론</li>
+                                <li><strong>#developers:</strong> 플러그인 개발</li>
+                                <li><strong>#mobile:</strong> 모바일 관련</li>
+                            </ul>
+                            <h4>활용 팁</h4>
+                            <ul>
+                                <li>질문 전 검색으로 중복 확인</li>
+                                <li>스크린샷으로 문제 명확히 설명</li>
+                                <li>해결된 문제는 공유하기</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="channel-card">
+                        <div class="channel-icon">
+                            <i class="fab fa-reddit"></i>
+                        </div>
+                        <h3>r/ObsidianMD</h3>
+                        <p class="member-count">100,000+ 구독자</p>
+                        <div class="channel-details">
+                            <h4>인기 포스트 유형</h4>
+                            <ul>
+                                <li>워크플로우 공유</li>
+                                <li>플러그인 추천</li>
+                                <li>설정 가이드</li>
+                                <li>문제 해결</li>
+                                <li>주간 스레드</li>
+                            </ul>
+                            <h4>플레어 활용</h4>
+                            <ul>
+                                <li><span class="flair showcase">Showcase</span> 작품 전시</li>
+                                <li><span class="flair question">Question</span> 질문</li>
+                                <li><span class="flair plugin">Plugin</span> 플러그인</li>
+                                <li><span class="flair css">CSS</span> 스타일링</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="channel-card">
+                        <div class="channel-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3>옵시디언 포럼</h3>
+                        <p class="member-count">공식 토론 포럼</p>
+                        <div class="channel-details">
+                            <h4>주요 카테고리</h4>
+                            <ul>
+                                <li><strong>Feature Requests:</strong> 기능 요청</li>
+                                <li><strong>Bug Reports:</strong> 버그 신고</li>
+                                <li><strong>Share & Showcase:</strong> 공유</li>
+                                <li><strong>Resolved Help:</strong> 해결된 도움</li>
+                            </ul>
+                            <h4>포럼 에티켓</h4>
+                            <ul>
+                                <li>명확한 제목 작성</li>
+                                <li>버전 정보 포함</li>
+                                <li>해결 시 [Solved] 표시</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="plugin-ecosystem">
+                <h2><i class="fas fa-puzzle-piece"></i> 플러그인 생태계</h2>
+                
+                <div class="plugin-discovery">
+                    <h3>플러그인 찾기와 평가</h3>
+                    
+                    <div class="plugin-sources">
+                        <h4>플러그인 탐색 방법</h4>
+                        <div class="source-grid">
+                            <div class="source-item">
+                                <h5>1. 공식 플러그인 마켓</h5>
+                                <p>설정 → 커뮤니티 플러그인 → 탐색</p>
+                                <ul>
+                                    <li>다운로드 수로 정렬</li>
+                                    <li>최신 업데이트 확인</li>
+                                    <li>별점과 리뷰 참고</li>
+                                </ul>
+                            </div>
+
+                            <div class="source-item">
+                                <h5>2. GitHub 탐색</h5>
+                                <p>obsidian-plugin 토픽 검색</p>
+                                <ul>
+                                    <li>스타 수 확인</li>
+                                    <li>이슈와 PR 활동성</li>
+                                    <li>최근 커밋 날짜</li>
+                                </ul>
+                            </div>
+
+                            <div class="source-item">
+                                <h5>3. 커뮤니티 추천</h5>
+                                <p>Discord, Reddit의 추천</p>
+                                <ul>
+                                    <li>실사용자 후기</li>
+                                    <li>워크플로우 예시</li>
+                                    <li>대안 플러그인 비교</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plugin-categories">
+                        <h4>카테고리별 필수 플러그인</h4>
+                        
+                        <div class="category-grid">
+                            <div class="category-box">
+                                <h5>📝 노트 작성</h5>
+                                <ul>
+                                    <li>Templater</li>
+                                    <li>Natural Language Dates</li>
+                                    <li>Auto Link Title</li>
+                                    <li>Various Complements</li>
+                                </ul>
+                            </div>
+
+                            <div class="category-box">
+                                <h5>🔍 검색과 탐색</h5>
+                                <ul>
+                                    <li>Quick Switcher++</li>
+                                    <li>Omnisearch</li>
+                                    <li>Recent Files</li>
+                                    <li>Starred</li>
+                                </ul>
+                            </div>
+
+                            <div class="category-box">
+                                <h5>📊 시각화</h5>
+                                <ul>
+                                    <li>Dataview</li>
+                                    <li>Charts</li>
+                                    <li>Mind Map</li>
+                                    <li>Kanban</li>
+                                </ul>
+                            </div>
+
+                            <div class="category-box">
+                                <h5>🎨 UI/UX</h5>
+                                <ul>
+                                    <li>Style Settings</li>
+                                    <li>Minimal Theme Settings</li>
+                                    <li>Sliding Panes</li>
+                                    <li>Hider</li>
+                                </ul>
+                            </div>
+
+                            <div class="category-box">
+                                <h5>🔄 동기화</h5>
+                                <ul>
+                                    <li>Obsidian Git</li>
+                                    <li>Remotely Save</li>
+                                    <li>Self-hosted LiveSync</li>
+                                    <li>Google Drive Sync</li>
+                                </ul>
+                            </div>
+
+                            <div class="category-box">
+                                <h5>🤖 자동화</h5>
+                                <ul>
+                                    <li>QuickAdd</li>
+                                    <li>Commander</li>
+                                    <li>Macro</li>
+                                    <li>Buttons</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plugin-evaluation">
+                        <h4>플러그인 평가 체크리스트</h4>
+                        <div class="checklist-box">
+                            <ul class="evaluation-list">
+                                <li>
+                                    <input type="checkbox">
+                                    <label>최근 3개월 내 업데이트 여부</label>
+                                </li>
+                                <li>
+                                    <input type="checkbox">
+                                    <label>1000+ 다운로드 또는 신뢰할 수 있는 개발자</label>
+                                </li>
+                                <li>
+                                    <input type="checkbox">
+                                    <label>명확한 문서와 사용법</label>
+                                </li>
+                                <li>
+                                    <input type="checkbox">
+                                    <label>활발한 이슈 대응</label>
+                                </li>
+                                <li>
+                                    <input type="checkbox">
+                                    <label>다른 플러그인과 충돌 없음</label>
+                                </li>
+                                <li>
+                                    <input type="checkbox">
+                                    <label>성능 영향 최소화</label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="theme-resources">
+                <h2><i class="fas fa-paint-brush"></i> 테마와 스타일링</h2>
+                
+                <div class="theme-showcase">
+                    <h3>인기 테마 소개</h3>
+                    
+                    <div class="theme-grid">
+                        <div class="theme-card">
+                            <h4>Minimal</h4>
+                            <div class="theme-preview minimal-preview"></div>
+                            <p>깔끔하고 모던한 디자인</p>
+                            <ul>
+                                <li>다양한 색상 스키마</li>
+                                <li>Style Settings 완벽 지원</li>
+                                <li>모바일 최적화</li>
+                            </ul>
+                        </div>
+
+                        <div class="theme-card">
+                            <h4>Blue Topaz</h4>
+                            <div class="theme-preview blue-topaz-preview"></div>
+                            <p>기능이 풍부한 테마</p>
+                            <ul>
+                                <li>다양한 레이아웃 옵션</li>
+                                <li>애니메이션 효과</li>
+                                <li>커스터마이징 용이</li>
+                            </ul>
+                        </div>
+
+                        <div class="theme-card">
+                            <h4>Yin and Yang</h4>
+                            <div class="theme-preview yin-yang-preview"></div>
+                            <p>미니멀한 흑백 테마</p>
+                            <ul>
+                                <li>집중력 향상 디자인</li>
+                                <li>읽기 모드 최적화</li>
+                                <li>눈의 피로 감소</li>
+                            </ul>
+                        </div>
+
+                        <div class="theme-card">
+                            <h4>Cybertron</h4>
+                            <div class="theme-preview cybertron-preview"></div>
+                            <p>사이버펑크 스타일</p>
+                            <ul>
+                                <li>네온 색상 강조</li>
+                                <li>코드 하이라이팅</li>
+                                <li>다크 모드 전용</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="css-snippets">
+                    <h3>유용한 CSS 스니펫</h3>
+                    
+                    <div class="snippet-collection">
+                        <div class="snippet-item">
+                            <h4>체크박스 스타일링</h4>
+                            <pre><code class="language-css">/* 컬러풀한 체크박스 */
+input[type='checkbox']:checked {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+}
+
+.markdown-preview-view ul > li.task-list-item.is-checked {
+    text-decoration: line-through;
+    opacity: 0.7;
+}</code></pre>
+                        </div>
+
+                        <div class="snippet-item">
+                            <h4>폴더 아이콘</h4>
+                            <pre><code class="language-css">/* 폴더별 커스텀 아이콘 */
+.nav-folder-title[data-path="Projects"] .nav-folder-title-content:before {
+    content: "📁 ";
+}
+
+.nav-folder-title[data-path="Daily Notes"] .nav-folder-title-content:before {
+    content: "📅 ";
+}</code></pre>
+                        </div>
+
+                        <div class="snippet-item">
+                            <h4>태그 색상</h4>
+                            <pre><code class="language-css">/* 태그별 색상 지정 */
+.tag[href="#important"] {
+    background-color: #ff6b6b;
+    color: white;
+}
+
+.tag[href="#idea"] {
+    background-color: #4ecdc4;
+    color: white;
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="learning-resources">
+                <h2><i class="fas fa-book-open"></i> 학습 리소스</h2>
+                
+                <div class="resource-categories">
+                    <div class="resource-section">
+                        <h3>📺 비디오 튜토리얼</h3>
+                        
+                        <div class="video-channels">
+                            <div class="channel">
+                                <h4>추천 YouTube 채널</h4>
+                                <ul>
+                                    <li>
+                                        <strong>Linking Your Thinking</strong>
+                                        <p>Nick Milo의 PKM 방법론</p>
+                                    </li>
+                                    <li>
+                                        <strong>Bryan Jenks</strong>
+                                        <p>생산성과 워크플로우</p>
+                                    </li>
+                                    <li>
+                                        <strong>Sergio</strong>
+                                        <p>플러그인 리뷰와 튜토리얼</p>
+                                    </li>
+                                    <li>
+                                        <strong>FromSergio</strong>
+                                        <p>고급 기능과 팁</p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resource-section">
+                        <h3>📚 문서와 가이드</h3>
+                        
+                        <div class="documentation-links">
+                            <div class="doc-category">
+                                <h4>공식 문서</h4>
+                                <ul>
+                                    <li><a href="#">옵시디언 도움말</a></li>
+                                    <li><a href="#">API 문서</a></li>
+                                    <li><a href="#">플러그인 개발 가이드</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="doc-category">
+                                <h4>커뮤니티 가이드</h4>
+                                <ul>
+                                    <li>Obsidian Hub</li>
+                                    <li>Eleanor's Obsidian Guide</li>
+                                    <li>Obsidian Rocks</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resource-section">
+                        <h3>🎓 온라인 코스</h3>
+                        
+                        <div class="course-list">
+                            <div class="course-item">
+                                <h4>Linking Your Thinking Workshop</h4>
+                                <p>체계적인 PKM 구축 방법론</p>
+                                <span class="course-type">유료</span>
+                            </div>
+
+                            <div class="course-item">
+                                <h4>Obsidian Flight School</h4>
+                                <p>초보자를 위한 단계별 가이드</p>
+                                <span class="course-type">무료</span>
+                            </div>
+
+                            <div class="course-item">
+                                <h4>Second Brain Course</h4>
+                                <p>Tiago Forte의 PARA 방법론</p>
+                                <span class="course-type">유료</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="community-contribution">
+                <h2><i class="fas fa-hands-helping"></i> 커뮤니티 기여하기</h2>
+                
+                <div class="contribution-ways">
+                    <div class="contribution-card">
+                        <div class="contrib-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>플러그인 개발</h3>
+                        <div class="contrib-details">
+                            <h4>시작하기</h4>
+                            <ol>
+                                <li>TypeScript 기초 학습</li>
+                                <li>옵시디언 API 문서 읽기</li>
+                                <li>샘플 플러그인으로 시작</li>
+                                <li>간단한 기능부터 구현</li>
+                            </ol>
+                            <h4>아이디어</h4>
+                            <ul>
+                                <li>자주 묻는 기능 구현</li>
+                                <li>기존 플러그인 개선</li>
+                                <li>워크플로우 자동화</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="contribution-card">
+                        <div class="contrib-icon">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3>번역 기여</h3>
+                        <div class="contrib-details">
+                            <h4>번역 가능 영역</h4>
+                            <ul>
+                                <li>옵시디언 인터페이스</li>
+                                <li>공식 문서</li>
+                                <li>인기 플러그인</li>
+                                <li>커뮤니티 가이드</li>
+                            </ul>
+                            <h4>참여 방법</h4>
+                            <ol>
+                                <li>GitHub 저장소 방문</li>
+                                <li>번역 파일 찾기</li>
+                                <li>Pull Request 제출</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="contribution-card">
+                        <div class="contrib-icon">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <h3>지식 공유</h3>
+                        <div class="contrib-details">
+                            <h4>공유 방법</h4>
+                            <ul>
+                                <li>블로그 포스트 작성</li>
+                                <li>YouTube 튜토리얼</li>
+                                <li>워크플로우 템플릿</li>
+                                <li>포럼 답변 활동</li>
+                            </ul>
+                            <h4>인기 주제</h4>
+                            <ul>
+                                <li>초보자 가이드</li>
+                                <li>특수 사용 사례</li>
+                                <li>플러그인 조합</li>
+                                <li>문제 해결 팁</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="contribution-card">
+                        <div class="contrib-icon">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                        <h3>버그 리포트</h3>
+                        <div class="contrib-details">
+                            <h4>좋은 버그 리포트</h4>
+                            <ul>
+                                <li>재현 가능한 단계</li>
+                                <li>시스템 정보 포함</li>
+                                <li>스크린샷/영상 첨부</li>
+                                <li>예상 vs 실제 동작</li>
+                            </ul>
+                            <h4>템플릿</h4>
+                            <pre><code>**환경**
+- OS: 
+- 옵시디언 버전: 
+- 플러그인: 
+
+**재현 단계**
+1. 
+2. 
+
+**예상 동작**
+
+**실제 동작**</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ecosystem-tools">
+                <h2><i class="fas fa-toolbox"></i> 관련 도구와 서비스</h2>
+                
+                <div class="tools-grid">
+                    <div class="tool-category">
+                        <h3>🔄 동기화 서비스</h3>
+                        <ul>
+                            <li>
+                                <strong>Obsidian Sync</strong>
+                                <p>공식 동기화 서비스 (유료)</p>
+                            </li>
+                            <li>
+                                <strong>Syncthing</strong>
+                                <p>오픈소스 P2P 동기화</p>
+                            </li>
+                            <li>
+                                <strong>Git + GitHub</strong>
+                                <p>버전 관리와 백업</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-category">
+                        <h3>🌐 웹 퍼블리싱</h3>
+                        <ul>
+                            <li>
+                                <strong>Obsidian Publish</strong>
+                                <p>공식 퍼블리싱 서비스</p>
+                            </li>
+                            <li>
+                                <strong>Quartz</strong>
+                                <p>정적 사이트 생성기</p>
+                            </li>
+                            <li>
+                                <strong>MkDocs</strong>
+                                <p>문서 사이트 빌더</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-category">
+                        <h3>🔧 보조 도구</h3>
+                        <ul>
+                            <li>
+                                <strong>Readwise</strong>
+                                <p>하이라이트 임포트</p>
+                            </li>
+                            <li>
+                                <strong>Zotero</strong>
+                                <p>참고문헌 관리</p>
+                            </li>
+                            <li>
+                                <strong>Excalidraw</strong>
+                                <p>다이어그램 도구</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="community-events">
+                <h2><i class="fas fa-calendar-alt"></i> 커뮤니티 이벤트</h2>
+                
+                <div class="events-timeline">
+                    <div class="event-item">
+                        <div class="event-date">매월</div>
+                        <h3>Obsidian October</h3>
+                        <p>매년 10월 진행되는 커뮤니티 챌린지</p>
+                        <ul>
+                            <li>일일 프롬프트</li>
+                            <li>플러그인 개발 대회</li>
+                            <li>워크플로우 공유</li>
+                        </ul>
+                    </div>
+
+                    <div class="event-item">
+                        <div class="event-date">주간</div>
+                        <h3>Weekly Thread</h3>
+                        <p>Reddit의 주간 토론 스레드</p>
+                        <ul>
+                            <li>초보자 질문</li>
+                            <li>팁 공유</li>
+                            <li>스크린샷 공유</li>
+                        </ul>
+                    </div>
+
+                    <div class="event-item">
+                        <div class="event-date">부정기</div>
+                        <h3>Community Talks</h3>
+                        <p>Discord 음성 채팅 세션</p>
+                        <ul>
+                            <li>전문가 인터뷰</li>
+                            <li>플러그인 데모</li>
+                            <li>Q&A 세션</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="korean-community">
+                <h2><i class="fas fa-flag"></i> 한국 커뮤니티</h2>
+                
+                <div class="kr-community-info">
+                    <div class="kr-channel">
+                        <h3>한국어 리소스</h3>
+                        <ul>
+                            <li>
+                                <strong>네이버 카페</strong>
+                                <p>옵시디언 코리아 - 한국 사용자 모임</p>
+                            </li>
+                            <li>
+                                <strong>카카오톡 오픈채팅</strong>
+                                <p>실시간 질문과 답변</p>
+                            </li>
+                            <li>
+                                <strong>한국어 번역 프로젝트</strong>
+                                <p>인터페이스와 플러그인 한글화</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="kr-content">
+                        <h3>한국어 콘텐츠 제작자</h3>
+                        <ul>
+                            <li>YouTube 한국어 튜토리얼</li>
+                            <li>블로그 가이드</li>
+                            <li>템플릿 공유</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="networking-tips">
+                <h2><i class="fas fa-network-wired"></i> 네트워킹 팁</h2>
+                
+                <div class="networking-guide">
+                    <h3>커뮤니티에서 인맥 쌓기</h3>
+                    
+                    <div class="tips-list">
+                        <div class="tip">
+                            <h4>1. 적극적인 참여</h4>
+                            <ul>
+                                <li>질문에 답변하기</li>
+                                <li>경험 공유하기</li>
+                                <li>피드백 제공하기</li>
+                            </ul>
+                        </div>
+
+                        <div class="tip">
+                            <h4>2. 가치 제공</h4>
+                            <ul>
+                                <li>유용한 플러그인 추천</li>
+                                <li>워크플로우 템플릿 공유</li>
+                                <li>문제 해결 도움</li>
+                            </ul>
+                        </div>
+
+                        <div class="tip">
+                            <h4>3. 장기적 관계</h4>
+                            <ul>
+                                <li>정기적인 활동</li>
+                                <li>협업 프로젝트</li>
+                                <li>오프라인 모임 참여</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice-exercise">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 커뮤니티 참여 시작하기</h2>
+                
+                <div class="exercise-container">
+                    <h3>프로젝트: 나의 첫 커뮤니티 기여</h3>
+                    
+                    <div class="exercise-steps">
+                        <div class="step">
+                            <h4>Step 1: 커뮤니티 가입</h4>
+                            <ul>
+                                <li>Discord 서버 참가</li>
+                                <li>Reddit 구독</li>
+                                <li>포럼 계정 생성</li>
+                            </ul>
+                        </div>
+
+                        <div class="step">
+                            <h4>Step 2: 관찰과 학습</h4>
+                            <ul>
+                                <li>일주일간 대화 관찰</li>
+                                <li>자주 묻는 질문 파악</li>
+                                <li>커뮤니티 문화 이해</li>
+                            </ul>
+                        </div>
+
+                        <div class="step">
+                            <h4>Step 3: 첫 기여</h4>
+                            <ul>
+                                <li>간단한 질문 답변</li>
+                                <li>워크플로우 공유</li>
+                                <li>플러그인 리뷰 작성</li>
+                            </ul>
+                        </div>
+
+                        <div class="step">
+                            <h4>Step 4: 정기 활동</h4>
+                            <ul>
+                                <li>주 1회 이상 참여</li>
+                                <li>도움 주고받기</li>
+                                <li>네트워크 확장</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="contribution-ideas">
+                        <h4>첫 기여 아이디어</h4>
+                        <ul>
+                            <li>나만의 태그 시스템 공유</li>
+                            <li>초보자 실수와 해결법 정리</li>
+                            <li>플러그인 조합 추천</li>
+                            <li>CSS 스니펫 제작</li>
+                            <li>워크플로우 다이어그램</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-clipboard-check"></i> 핵심 요약</h2>
+                
+                <div class="key-takeaways">
+                    <h3>이번 강의의 핵심 내용</h3>
+                    <ul>
+                        <li>옵시디언은 활발하고 지원적인 커뮤니티를 가지고 있습니다</li>
+                        <li>Discord, Reddit, 포럼 등 다양한 채널에서 도움을 받을 수 있습니다</li>
+                        <li>1000개 이상의 커뮤니티 플러그인이 지속적으로 개발되고 있습니다</li>
+                        <li>다양한 학습 리소스와 튜토리얼이 무료로 제공됩니다</li>
+                        <li>플러그인 개발, 번역, 지식 공유로 커뮤니티에 기여할 수 있습니다</li>
+                        <li>한국어 커뮤니티도 점점 성장하고 있습니다</li>
+                    </ul>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 단계</h3>
+                    <p>커뮤니티와 리소스를 활용하는 방법을 배웠으니, 다음 강의에서는 다른 도구에서 옵시디언으로 마이그레이션하는 방법을 알아보겠습니다.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="lesson-footer">
+            <div class="footer-content">
+                <p>&copy; 2025 옵시디언 마스터 클래스. 모든 권리 보유.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

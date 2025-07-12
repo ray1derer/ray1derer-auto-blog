@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제12강: 테스트 작성과 TDD | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-vial"></i> 제12강: 테스트 작성과 TDD</h1>
+                <p class="lesson-subtitle">AI와 함께하는 완벽한 테스트 주도 개발</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 50분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson11.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제12강: 테스트 작성과 TDD</span>
+            <a href="lesson13.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 효율적인 테스트 코드 작성하기</li>
+                    <li>테스트 주도 개발(TDD) 사이클 마스터하기</li>
+                    <li>다양한 테스트 유형과 전략 이해하기</li>
+                    <li>테스트 커버리지 향상 방법 익히기</li>
+                    <li>E2E 테스트와 통합 테스트 자동화하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-robot"></i> AI 기반 테스트 자동 생성</h2>
+                
+                <div class="info-box">
+                    <p>Cursor의 AI는 코드를 분석하여 포괄적인 테스트 케이스를 자동으로 생성합니다. Edge case, 에러 처리, 성능 테스트까지 놓치지 않는 완벽한 테스트 스위트를 구축할 수 있습니다.</p>
+                </div>
+
+                <h3>테스트 생성 워크플로우</h3>
+                <div class="test-generation">
+                    <div class="code-example">
+                        <h4>원본 코드</h4>
+                        <pre><code>// utils/validation.js
+export function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+export function validatePassword(password) {
+    if (password.length < 8) {
+        return { valid: false, error: 'Password must be at least 8 characters' };
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+        return { valid: false, error: 'Password must contain uppercase letter' };
+    }
+    
+    if (!/[0-9]/.test(password)) {
+        return { valid: false, error: 'Password must contain number' };
+    }
+    
+    return { valid: true };
+}</code></pre>
+                    </div>
+
+                    <div class="ai-generated-tests">
+                        <h4>AI가 생성한 테스트</h4>
+                        <pre><code>// utils/validation.test.js
+import { validateEmail, validatePassword } from './validation';
+
+describe('Email Validation', () => {
+    describe('validateEmail', () => {
+        // 유효한 이메일 테스트
+        test.each([
+            'user@example.com',
+            'test.name@company.co.uk',
+            'user+tag@domain.org',
+            'name123@sub.domain.com'
+        ])('should return true for valid email: %s', (email) => {
+            expect(validateEmail(email)).toBe(true);
+        });
+
+        // 무효한 이메일 테스트
+        test.each([
+            '',
+            'notanemail',
+            'missing@domain',
+            '@missinglocal.com',
+            'spaces in@email.com',
+            'double@@domain.com'
+        ])('should return false for invalid email: %s', (email) => {
+            expect(validateEmail(email)).toBe(false);
+        });
+
+        // Edge cases
+        test('should handle null/undefined', () => {
+            expect(validateEmail(null)).toBe(false);
+            expect(validateEmail(undefined)).toBe(false);
+        });
+    });
+});
+
+describe('Password Validation', () => {
+    describe('validatePassword', () => {
+        test('should accept valid passwords', () => {
+            const result = validatePassword('ValidPass123');
+            expect(result.valid).toBe(true);
+            expect(result.error).toBeUndefined();
+        });
+
+        test('should reject passwords shorter than 8 characters', () => {
+            const result = validatePassword('Short1');
+            expect(result.valid).toBe(false);
+            expect(result.error).toBe('Password must be at least 8 characters');
+        });
+
+        test('should reject passwords without uppercase letters', () => {
+            const result = validatePassword('lowercase123');
+            expect(result.valid).toBe(false);
+            expect(result.error).toBe('Password must contain uppercase letter');
+        });
+
+        test('should reject passwords without numbers', () => {
+            const result = validatePassword('NoNumbers');
+            expect(result.valid).toBe(false);
+            expect(result.error).toBe('Password must contain number');
+        });
+
+        // Boundary testing
+        test('should accept exactly 8 characters with requirements', () => {
+            const result = validatePassword('Valid1!A');
+            expect(result.valid).toBe(true);
+        });
+
+        // Security edge cases
+        test('should handle special characters', () => {
+            const result = validatePassword('Valid@123');
+            expect(result.valid).toBe(true);
+        });
+    });
+});</code></pre>
+                    </div>
+
+                    <div class="ai-suggestions">
+                        <h4>AI 추가 제안</h4>
+                        <div class="suggestion-card">
+                            <i class="fas fa-lightbulb"></i>
+                            <p>다음 테스트 케이스도 추가하는 것을 권장합니다:</p>
+                            <ul>
+                                <li>국제화된 이메일 주소 (한글 도메인 등)</li>
+                                <li>SQL 인젝션 방지 테스트</li>
+                                <li>매우 긴 입력값에 대한 성능 테스트</li>
+                                <li>동시성 문제 테스트 (필요한 경우)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-sync-alt"></i> TDD 사이클 with AI</h2>
+
+                <div class="tdd-cycle">
+                    <h3>Red-Green-Refactor with AI Support</h3>
+                    
+                    <div class="tdd-visualization">
+                        <div class="cycle-diagram">
+                            <div class="cycle-step red">
+                                <i class="fas fa-times-circle"></i>
+                                <h4>Red</h4>
+                                <p>실패하는 테스트 작성</p>
+                                <div class="ai-help">AI: "이 기능에 필요한 테스트 케이스를 제안합니다"</div>
+                            </div>
+                            <div class="cycle-arrow">→</div>
+                            <div class="cycle-step green">
+                                <i class="fas fa-check-circle"></i>
+                                <h4>Green</h4>
+                                <p>테스트 통과 코드 작성</p>
+                                <div class="ai-help">AI: "테스트를 통과하는 최소한의 코드"</div>
+                            </div>
+                            <div class="cycle-arrow">→</div>
+                            <div class="cycle-step refactor">
+                                <i class="fas fa-cog"></i>
+                                <h4>Refactor</h4>
+                                <p>코드 개선</p>
+                                <div class="ai-help">AI: "성능과 가독성 개선 제안"</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>TDD 실전 예제</h3>
+                    <div class="tdd-example">
+                        <h4>요구사항: 장바구니 총액 계산 기능</h4>
+                        
+                        <div class="tdd-steps">
+                            <div class="tdd-step">
+                                <h5>1. Red - 실패하는 테스트</h5>
+                                <pre><code>// cart.test.js
+describe('Shopping Cart', () => {
+    test('should calculate total with single item', () => {
+        const cart = new ShoppingCart();
+        cart.addItem({ id: 1, price: 100, quantity: 2 });
+        expect(cart.getTotal()).toBe(200);
+    });
+
+    test('should apply percentage discount', () => {
+        const cart = new ShoppingCart();
+        cart.addItem({ id: 1, price: 100, quantity: 1 });
+        cart.applyDiscount(10); // 10% 할인
+        expect(cart.getTotal()).toBe(90);
+    });
+
+    test('should handle empty cart', () => {
+        const cart = new ShoppingCart();
+        expect(cart.getTotal()).toBe(0);
+    });
+});</code></pre>
+                                <div class="test-result fail">❌ ReferenceError: ShoppingCart is not defined</div>
+                            </div>
+
+                            <div class="tdd-step">
+                                <h5>2. Green - 테스트 통과</h5>
+                                <pre><code>// cart.js
+export class ShoppingCart {
+    constructor() {
+        this.items = [];
+        this.discountPercentage = 0;
+    }
+
+    addItem(item) {
+        this.items.push(item);
+    }
+
+    applyDiscount(percentage) {
+        this.discountPercentage = percentage;
+    }
+
+    getTotal() {
+        const subtotal = this.items.reduce((sum, item) => 
+            sum + (item.price * item.quantity), 0
+        );
+        
+        const discount = subtotal * (this.discountPercentage / 100);
+        return subtotal - discount;
+    }
+}</code></pre>
+                                <div class="test-result pass">✅ All tests passed</div>
+                            </div>
+
+                            <div class="tdd-step">
+                                <h5>3. Refactor - AI 개선 제안</h5>
+                                <pre><code>// cart.js - Refactored
+export class ShoppingCart {
+    #items = [];
+    #discountPercentage = 0;
+
+    addItem({ id, price, quantity = 1 }) {
+        // 중복 아이템 처리
+        const existingItem = this.#items.find(item => item.id === id);
+        
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            this.#items.push({ id, price, quantity });
+        }
+        
+        return this;
+    }
+
+    applyDiscount(percentage) {
+        if (percentage < 0 || percentage > 100) {
+            throw new Error('Discount must be between 0 and 100');
+        }
+        this.#discountPercentage = percentage;
+        return this;
+    }
+
+    getTotal() {
+        const subtotal = this.#calculateSubtotal();
+        const discount = this.#calculateDiscount(subtotal);
+        return Math.round((subtotal - discount) * 100) / 100;
+    }
+
+    #calculateSubtotal() {
+        return this.#items.reduce((sum, { price, quantity }) => 
+            sum + (price * quantity), 0
+        );
+    }
+
+    #calculateDiscount(amount) {
+        return amount * (this.#discountPercentage / 100);
+    }
+
+    // 추가 유틸리티 메서드
+    getItemCount() {
+        return this.#items.reduce((count, item) => count + item.quantity, 0);
+    }
+
+    clear() {
+        this.#items = [];
+        this.#discountPercentage = 0;
+    }
+}</code></pre>
+                                <div class="improvements">
+                                    <p><strong>개선사항:</strong></p>
+                                    <ul>
+                                        <li>Private 필드로 캡슐화</li>
+                                        <li>메서드 체이닝 지원</li>
+                                        <li>중복 아이템 처리</li>
+                                        <li>입력 검증 추가</li>
+                                        <li>부동소수점 정밀도 문제 해결</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-layer-group"></i> 테스트 유형과 전략</h2>
+
+                <div class="test-types">
+                    <h3>테스트 피라미드</h3>
+                    <div class="test-pyramid">
+                        <div class="pyramid-level e2e">
+                            <h4>E2E Tests</h4>
+                            <p>실제 사용자 시나리오</p>
+                            <span class="percentage">10%</span>
+                        </div>
+                        <div class="pyramid-level integration">
+                            <h4>Integration Tests</h4>
+                            <p>컴포넌트 간 상호작용</p>
+                            <span class="percentage">30%</span>
+                        </div>
+                        <div class="pyramid-level unit">
+                            <h4>Unit Tests</h4>
+                            <p>개별 함수/메서드</p>
+                            <span class="percentage">60%</span>
+                        </div>
+                    </div>
+
+                    <h3>각 테스트 유형 예제</h3>
+                    <div class="test-examples">
+                        <div class="test-type">
+                            <h4>단위 테스트 (Unit Test)</h4>
+                            <pre><code>// 순수 함수 테스트
+test('formatCurrency should format number to currency', () => {
+    expect(formatCurrency(1234.56)).toBe('$1,234.56');
+    expect(formatCurrency(0)).toBe('$0.00');
+    expect(formatCurrency(-100)).toBe('-$100.00');
+});</code></pre>
+                        </div>
+
+                        <div class="test-type">
+                            <h4>통합 테스트 (Integration Test)</h4>
+                            <pre><code>// React 컴포넌트 통합 테스트
+import { render, fireEvent, waitFor } from '@testing-library/react';
+
+test('TodoList should add and remove items', async () => {
+    const { getByText, getByPlaceholderText } = render(<TodoApp />);
+    
+    // 새 항목 추가
+    const input = getByPlaceholderText('Add todo...');
+    fireEvent.change(input, { target: { value: 'New Task' } });
+    fireEvent.click(getByText('Add'));
+    
+    // 항목이 추가되었는지 확인
+    await waitFor(() => {
+        expect(getByText('New Task')).toBeInTheDocument();
+    });
+    
+    // 항목 삭제
+    fireEvent.click(getByText('Delete'));
+    
+    // 항목이 삭제되었는지 확인
+    await waitFor(() => {
+        expect(queryByText('New Task')).not.toBeInTheDocument();
+    });
+});</code></pre>
+                        </div>
+
+                        <div class="test-type">
+                            <h4>E2E 테스트 (End-to-End Test)</h4>
+                            <pre><code>// Cypress E2E 테스트
+describe('User Registration Flow', () => {
+    it('should complete registration successfully', () => {
+        cy.visit('/register');
+        
+        // 폼 작성
+        cy.get('[data-testid="email-input"]').type('user@test.com');
+        cy.get('[data-testid="password-input"]').type('SecurePass123');
+        cy.get('[data-testid="confirm-password"]').type('SecurePass123');
+        
+        // 약관 동의
+        cy.get('[data-testid="terms-checkbox"]').check();
+        
+        // 제출
+        cy.get('[data-testid="submit-button"]').click();
+        
+        // 성공 확인
+        cy.url().should('include', '/welcome');
+        cy.contains('Registration successful').should('be.visible');
+        
+        // 이메일 확인 (mocked)
+        cy.get('[data-testid="verify-email-banner"]').should('exist');
+    });
+});</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-chart-bar"></i> 테스트 커버리지 향상</h2>
+
+                <div class="coverage-optimization">
+                    <h3>AI 기반 커버리지 분석</h3>
+                    
+                    <div class="coverage-report">
+                        <div class="coverage-visualization">
+                            <div class="coverage-bars">
+                                <div class="coverage-metric">
+                                    <span class="metric-name">Statements</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 92%">92%</div>
+                                    </div>
+                                </div>
+                                <div class="coverage-metric">
+                                    <span class="metric-name">Branches</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 85%">85%</div>
+                                    </div>
+                                </div>
+                                <div class="coverage-metric">
+                                    <span class="metric-name">Functions</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 96%">96%</div>
+                                    </div>
+                                </div>
+                                <div class="coverage-metric">
+                                    <span class="metric-name">Lines</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 91%">91%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="uncovered-analysis">
+                            <h4>AI 분석: 테스트되지 않은 코드</h4>
+                            <div class="uncovered-code">
+                                <pre><code>// userService.js - Line 45-52 (uncovered)
+async function resetPassword(email) {
+    try {
+        const user = await findUserByEmail(email);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        // 이 부분이 테스트되지 않음
+        if (user.lastPasswordReset) {
+            const hoursSinceLastReset = 
+                (Date.now() - user.lastPasswordReset) / (1000 * 60 * 60);
+            if (hoursSinceLastReset < 1) {
+                throw new Error('Please wait before requesting another reset');
+            }
+        }
+        // ... rest of function
+    } catch (error) {
+        logger.error('Password reset failed:', error);
+        throw error;
+    }
+}</code></pre>
+                            </div>
+
+                            <div class="ai-test-suggestion">
+                                <h5>AI가 제안하는 테스트</h5>
+                                <pre><code>test('should prevent frequent password reset requests', async () => {
+    const email = 'user@test.com';
+    const user = {
+        email,
+        lastPasswordReset: Date.now() - 30 * 60 * 1000 // 30분 전
+    };
+    
+    findUserByEmail.mockResolvedValue(user);
+    
+    await expect(resetPassword(email))
+        .rejects
+        .toThrow('Please wait before requesting another reset');
+});
+
+test('should allow password reset after 1 hour', async () => {
+    const email = 'user@test.com';
+    const user = {
+        email,
+        lastPasswordReset: Date.now() - 2 * 60 * 60 * 1000 // 2시간 전
+    };
+    
+    findUserByEmail.mockResolvedValue(user);
+    
+    await expect(resetPassword(email)).resolves.not.toThrow();
+});</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-rocket"></i> 테스트 자동화와 CI/CD</h2>
+
+                <div class="test-automation">
+                    <h3>GitHub Actions 테스트 파이프라인</h3>
+                    <pre><code>name: Test Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run unit tests
+      run: npm run test:unit
+    
+    - name: Run integration tests
+      run: npm run test:integration
+    
+    - name: Generate coverage report
+      run: npm run test:coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        fail_ci_if_error: true
+    
+    - name: Run E2E tests
+      run: |
+        npm run build
+        npm run start:test &
+        npm run cypress:run
+    
+    - name: AI Test Analysis
+      run: |
+        npx cursor-cli analyze-tests \
+          --coverage ./coverage/lcov.info \
+          --suggest-improvements</code></pre>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: TDD로 기능 구현하기</h2>
+
+                <div class="practice-content">
+                    <h3>과제: 할인 쿠폰 시스템 구현</h3>
+                    <p>TDD 방식으로 할인 쿠폰 시스템을 구현해봅시다.</p>
+
+                    <div class="requirements">
+                        <h4>요구사항</h4>
+                        <ul>
+                            <li>쿠폰 코드로 할인 적용</li>
+                            <li>쿠폰 유효기간 확인</li>
+                            <li>최소 주문 금액 확인</li>
+                            <li>중복 사용 방지</li>
+                            <li>할인 타입: 정액/정률</li>
+                        </ul>
+                    </div>
+
+                    <div class="tdd-practice">
+                        <h4>Step 1: 테스트 먼저 작성</h4>
+                        <pre><code>// coupon.test.js
+describe('CouponSystem', () => {
+    let couponSystem;
+    
+    beforeEach(() => {
+        couponSystem = new CouponSystem();
+    });
+
+    test('should apply fixed amount discount', () => {
+        const coupon = {
+            code: 'SAVE10',
+            type: 'fixed',
+            value: 10,
+            minAmount: 50
+        };
+        
+        couponSystem.addCoupon(coupon);
+        const discount = couponSystem.applyCoupon('SAVE10', 100);
+        
+        expect(discount).toBe(10);
+    });
+
+    test('should apply percentage discount', () => {
+        const coupon = {
+            code: 'SAVE20PCT',
+            type: 'percentage',
+            value: 20,
+            minAmount: 50
+        };
+        
+        couponSystem.addCoupon(coupon);
+        const discount = couponSystem.applyCoupon('SAVE20PCT', 100);
+        
+        expect(discount).toBe(20); // 20% of 100
+    });
+
+    test('should reject expired coupons', () => {
+        const coupon = {
+            code: 'EXPIRED',
+            type: 'fixed',
+            value: 10,
+            expiresAt: new Date('2020-01-01')
+        };
+        
+        couponSystem.addCoupon(coupon);
+        
+        expect(() => {
+            couponSystem.applyCoupon('EXPIRED', 100);
+        }).toThrow('Coupon has expired');
+    });
+
+    test('should enforce minimum amount', () => {
+        const coupon = {
+            code: 'MIN100',
+            type: 'fixed',
+            value: 20,
+            minAmount: 100
+        };
+        
+        couponSystem.addCoupon(coupon);
+        
+        expect(() => {
+            couponSystem.applyCoupon('MIN100', 50);
+        }).toThrow('Minimum amount not met');
+    });
+
+    test('should prevent duplicate usage', () => {
+        const coupon = {
+            code: 'ONCE',
+            type: 'fixed',
+            value: 10,
+            singleUse: true
+        };
+        
+        couponSystem.addCoupon(coupon);
+        couponSystem.applyCoupon('ONCE', 100);
+        
+        expect(() => {
+            couponSystem.applyCoupon('ONCE', 100);
+        }).toThrow('Coupon already used');
+    });
+});</code></pre>
+
+                        <h4>Step 2: AI와 함께 구현</h4>
+                        <p>Cmd+K를 사용하여 테스트를 통과하는 코드를 구현하세요.</p>
+
+                        <h4>Step 3: 리팩토링</h4>
+                        <p>모든 테스트가 통과하면 코드를 개선하세요:</p>
+                        <ul>
+                            <li>코드 중복 제거</li>
+                            <li>더 나은 에러 메시지</li>
+                            <li>성능 최적화</li>
+                            <li>타입 안전성 추가</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>AI가 생성하는 포괄적 테스트</h3>
+                        <p>Edge case와 예외 상황까지 고려한 완벽한 테스트 스위트를 자동으로 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>TDD 사이클 가속화</h3>
+                        <p>Red-Green-Refactor 사이클을 AI가 도와 더 빠르고 효율적으로 진행할 수 있습니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>커버리지 자동 분석</h3>
+                        <p>테스트되지 않은 코드를 찾아 적절한 테스트 케이스를 제안합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>테스트 품질 향상</h3>
+                        <p>더 나은 테스트 구조와 assertion 방법을 학습하여 제안합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 리팩토링과 코드 품질 관리를 AI와 함께 수행하는 방법을 배웁니다.</p>
+                    <a href="lesson13.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="current">테스트 작성과 TDD</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-vial"></i> 테스트 명령어</h3>
+                <div class="command-list">
+                    <code>npm test</code>
+                    <code>npm run test:watch</code>
+                    <code>npm run test:coverage</code>
+                    <code>npm run test:unit</code>
+                    <code>npm run test:e2e</code>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 테스트를 작성할 때는 "무엇을" 테스트하는지보다 "왜" 테스트하는지에 집중하세요. 비즈니스 로직과 사용자 시나리오를 중심으로 테스트를 설계하면 더 가치 있는 테스트가 됩니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 40%"></div>
+            <span class="progress-text">12/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

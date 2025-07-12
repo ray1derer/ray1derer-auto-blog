@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제24강: 문서화 자동화와 API 스펙 생성 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-book"></i> 제24강: 문서화 자동화와 API 스펙 생성</h1>
+                <p class="lesson-subtitle">AI로 만드는 완벽한 기술 문서와 API 명세</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 고급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 65분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 고급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson23.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제24강: 문서화 자동화와 API 스펙 생성</span>
+            <a href="lesson25.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>코드에서 자동으로 문서 생성하기</li>
+                    <li>OpenAPI/Swagger 스펙 자동 생성</li>
+                    <li>인터랙티브 API 문서 만들기</li>
+                    <li>마크다운 기반 기술 문서 자동화</li>
+                    <li>다국어 문서 번역과 관리</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-file-code"></i> 자동 문서 생성 시스템</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 코드를 분석하여 자동으로 문서를 생성합니다. JSDoc, TypeDoc, Swagger 등 다양한 문서 형식을 지원하며, 코드 변경 시 문서도 자동으로 업데이트됩니다.</p>
+                </div>
+
+                <h3>지능형 문서 생성기</h3>
+                <div class="doc-generator">
+                    <div class="generator-implementation">
+                        <h4>AI 기반 문서 자동 생성 시스템</h4>
+                        <pre><code>// tools/AIDocumentationGenerator.ts
+import { CursorAI } from '@cursor/api';
+import { Project, SourceFile, ClassDeclaration, FunctionDeclaration } from 'ts-morph';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { marked } from 'marked';
+
+export class AIDocumentationGenerator {
+    private cursor: CursorAI;
+    private project: Project;
+    private config: DocGeneratorConfig;
+
+    constructor(config: DocGeneratorConfig) {
+        this.cursor = new CursorAI();
+        this.project = new Project({
+            tsConfigFilePath: config.tsConfigPath,
+            skipAddingFilesFromTsConfig: false
+        });
+        this.config = config;
+    }
+
+    async generateDocumentation(): Promise<Documentation> {
+        const docs: Documentation = {
+            overview: await this.generateOverview(),
+            modules: await this.generateModuleDocs(),
+            api: await this.generateAPIDocs(),
+            examples: await this.generateExamples(),
+            guides: await this.generateGuides(),
+            changelog: await this.generateChangelog()
+        };
+
+        // 문서 렌더링
+        await this.renderDocumentation(docs);
+        
+        // 다국어 번역
+        if (this.config.languages?.length > 0) {
+            await this.translateDocumentation(docs);
+        }
+
+        return docs;
+    }
+
+    async generateOverview(): Promise<ProjectOverview> {
+        const projectFiles = this.project.getSourceFiles();
+        
+        const prompt = `
+프로젝트 구조를 분석하여 포괄적인 개요 문서를 작성해주세요:
+
+파일 수: ${projectFiles.length}
+주요 디렉토리: ${this.getMainDirectories()}
+
+다음 내용을 포함해주세요:
+1. 프로젝트 목적과 주요 기능
+2. 아키텍처 개요
+3. 핵심 컴포넌트 설명
+4. 기술 스택
+5. 시작하기 가이드
+`;
+
+        const response = await this.cursor.ai.generateCode(prompt);
+        
+        return {
+            title: this.config.projectName,
+            description: response,
+            architecture: await this.generateArchitectureDiagram(),
+            techStack: await this.detectTechStack(),
+            quickStart: await this.generateQuickStart()
+        };
+    }
+
+    async generateModuleDocs(): Promise<ModuleDocumentation[]> {
+        const modules: ModuleDocumentation[] = [];
+        const sourceFiles = this.project.getSourceFiles();
+
+        for (const file of sourceFiles) {
+            const module = await this.documentModule(file);
+            if (module) {
+                modules.push(module);
+            }
+        }
+
+        return modules;
+    }
+
+    async documentModule(file: SourceFile): Promise<ModuleDocumentation | null> {
+        const filePath = file.getFilePath();
+        
+        // 테스트 파일이나 설정 파일은 제외
+        if (this.shouldSkipFile(filePath)) {
+            return null;
+        }
+
+        const classes = file.getClasses();
+        const functions = file.getFunctions();
+        const interfaces = file.getInterfaces();
+        const enums = file.getEnums();
+
+        if (classes.length === 0 && functions.length === 0 && 
+            interfaces.length === 0 && enums.length === 0) {
+            return null;
+        }
+
+        const moduleDoc: ModuleDocumentation = {
+            name: path.basename(filePath, path.extname(filePath)),
+            path: filePath,
+            description: await this.generateModuleDescription(file),
+            exports: {
+                classes: await Promise.all(classes.map(c => this.documentClass(c))),
+                functions: await Promise.all(functions.map(f => this.documentFunction(f))),
+                interfaces: await Promise.all(interfaces.map(i => this.documentInterface(i))),
+                enums: await Promise.all(enums.map(e => this.documentEnum(e)))
+            },
+            examples: await this.generateModuleExamples(file),
+            dependencies: this.extractDependencies(file)
+        };
+
+        return moduleDoc;
+    }
+
+    async documentClass(classDecl: ClassDeclaration): Promise<ClassDocumentation> {
+        const className = classDecl.getName() || 'Anonymous';
+        const methods = classDecl.getMethods();
+        const properties = classDecl.getProperties();
+        const constructor = classDecl.getConstructors()[0];
+
+        // 기존 JSDoc 추출
+        const existingDoc = this.extractJSDoc(classDecl);
+
+        // AI로 문서 보강
+        const enhancedDoc = await this.enhanceDocumentation(
+            className,
+            classDecl.getText(),
+            existingDoc
+        );
+
+        return {
+            name: className,
+            description: enhancedDoc.description,
+            extends: classDecl.getExtends()?.getText(),
+            implements: classDecl.getImplements().map(i => i.getText()),
+            constructor: constructor ? await this.documentConstructor(constructor) : undefined,
+            properties: await Promise.all(properties.map(p => this.documentProperty(p))),
+            methods: await Promise.all(methods.map(m => this.documentMethod(m))),
+            examples: enhancedDoc.examples,
+            usage: enhancedDoc.usage,
+            relatedClasses: await this.findRelatedClasses(classDecl)
+        };
+    }
+
+    async documentFunction(func: FunctionDeclaration): Promise<FunctionDocumentation> {
+        const funcName = func.getName() || 'Anonymous';
+        const parameters = func.getParameters();
+        const returnType = func.getReturnType();
+
+        const prompt = `
+함수를 분석하여 문서를 작성해주세요:
+
+함수명: ${funcName}
+코드:
+\`\`\`typescript
+${func.getText()}
+\`\`\`
+
+다음을 포함해주세요:
+1. 함수의 목적과 동작 설명
+2. 각 매개변수의 상세 설명
+3. 반환값 설명
+4. 사용 예제 (2-3개)
+5. 예외 상황과 에러 처리
+6. 복잡도와 성능 고려사항
+`;
+
+        const aiDoc = await this.cursor.ai.generateCode(prompt);
+        const parsedDoc = this.parseAIDocumentation(aiDoc);
+
+        return {
+            name: funcName,
+            description: parsedDoc.description,
+            parameters: parameters.map((param, index) => ({
+                name: param.getName(),
+                type: param.getType().getText(),
+                description: parsedDoc.parameters?.[index]?.description || '',
+                optional: param.isOptional(),
+                default: param.getInitializer()?.getText()
+            })),
+            returns: {
+                type: returnType.getText(),
+                description: parsedDoc.returns?.description || ''
+            },
+            throws: parsedDoc.throws || [],
+            examples: parsedDoc.examples || [],
+            complexity: this.calculateComplexity(func),
+            sideEffects: parsedDoc.sideEffects || [],
+            relatedFunctions: await this.findRelatedFunctions(func)
+        };
+    }
+
+    async generateAPIDocs(): Promise<APIDocumentation> {
+        const apiEndpoints = await this.detectAPIEndpoints();
+        const openApiSpec = await this.generateOpenAPISpec(apiEndpoints);
+
+        return {
+            openapi: openApiSpec,
+            endpoints: await Promise.all(
+                apiEndpoints.map(endpoint => this.documentEndpoint(endpoint))
+            ),
+            authentication: await this.documentAuthentication(),
+            rateLimiting: await this.documentRateLimiting(),
+            errors: await this.documentErrorResponses(),
+            webhooks: await this.documentWebhooks(),
+            postmanCollection: await this.generatePostmanCollection(apiEndpoints)
+        };
+    }
+
+    async generateOpenAPISpec(endpoints: APIEndpoint[]): Promise<OpenAPISpec> {
+        const spec: OpenAPISpec = {
+            openapi: '3.1.0',
+            info: {
+                title: this.config.projectName,
+                version: this.config.version || '1.0.0',
+                description: await this.generateAPIDescription(),
+                contact: this.config.contact,
+                license: this.config.license
+            },
+            servers: this.config.servers || [],
+            paths: {},
+            components: {
+                schemas: {},
+                securitySchemes: {},
+                parameters: {},
+                responses: {}
+            },
+            security: []
+        };
+
+        // 각 엔드포인트를 OpenAPI 경로로 변환
+        for (const endpoint of endpoints) {
+            const path = endpoint.path;
+            if (!spec.paths[path]) {
+                spec.paths[path] = {};
+            }
+
+            spec.paths[path][endpoint.method.toLowerCase()] = {
+                summary: endpoint.summary,
+                description: endpoint.description,
+                operationId: endpoint.operationId,
+                tags: endpoint.tags,
+                parameters: await this.generateParameters(endpoint),
+                requestBody: await this.generateRequestBody(endpoint),
+                responses: await this.generateResponses(endpoint),
+                security: endpoint.security || []
+            };
+        }
+
+        // 스키마 자동 생성
+        spec.components.schemas = await this.generateSchemas();
+
+        return spec;
+    }
+
+    async documentEndpoint(endpoint: APIEndpoint): Promise<EndpointDocumentation> {
+        const prompt = `
+API 엔드포인트를 분석하여 상세 문서를 작성해주세요:
+
+경로: ${endpoint.method} ${endpoint.path}
+핸들러 코드:
+\`\`\`typescript
+${endpoint.handler}
+\`\`\`
+
+다음 내용을 포함해주세요:
+1. 엔드포인트의 목적과 기능
+2. 요청 매개변수 상세 설명
+3. 요청 본문 형식과 예제
+4. 응답 형식과 상태 코드
+5. 인증 요구사항
+6. 사용 예제 (cURL, JavaScript, Python)
+7. 일반적인 에러 시나리오
+`;
+
+        const aiDoc = await this.cursor.ai.generateCode(prompt);
+        const examples = await this.generateAPIExamples(endpoint);
+
+        return {
+            ...endpoint,
+            detailedDescription: aiDoc,
+            examples: {
+                curl: examples.curl,
+                javascript: examples.javascript,
+                python: examples.python,
+                go: examples.go
+            },
+            testing: {
+                unitTests: await this.generateEndpointTests(endpoint),
+                integrationTests: await this.generateIntegrationTests(endpoint)
+            },
+            performance: {
+                expectedLatency: await this.estimateLatency(endpoint),
+                rateLimit: endpoint.rateLimit,
+                caching: endpoint.caching
+            }
+        };
+    }
+
+    async generateExamples(): Promise<ExampleCollection> {
+        const examples: ExampleCollection = {
+            quickStart: [],
+            useCases: [],
+            integrations: [],
+            troubleshooting: []
+        };
+
+        // 빠른 시작 예제
+        examples.quickStart.push({
+            title: '기본 설정',
+            description: '프로젝트 초기 설정 방법',
+            code: await this.generateQuickStartExample(),
+            language: 'typescript'
+        });
+
+        // 사용 사례별 예제
+        const useCases = await this.detectUseCases();
+        for (const useCase of useCases) {
+            examples.useCases.push({
+                title: useCase.title,
+                description: useCase.description,
+                code: await this.generateUseCaseExample(useCase),
+                explanation: await this.explainExample(useCase)
+            });
+        }
+
+        // 통합 예제
+        examples.integrations = await this.generateIntegrationExamples();
+
+        // 문제 해결 가이드
+        examples.troubleshooting = await this.generateTroubleshootingGuides();
+
+        return examples;
+    }
+
+    async generateGuides(): Promise<GuideCollection> {
+        const guides: GuideCollection = {
+            gettingStarted: await this.generateGettingStartedGuide(),
+            architecture: await this.generateArchitectureGuide(),
+            bestPractices: await this.generateBestPracticesGuide(),
+            deployment: await this.generateDeploymentGuide(),
+            migration: await this.generateMigrationGuide(),
+            contributing: await this.generateContributingGuide()
+        };
+
+        return guides;
+    }
+
+    async generateArchitectureGuide(): Promise<ArchitectureGuide> {
+        const prompt = `
+프로젝트의 아키텍처 가이드를 작성해주세요:
+
+프로젝트 구조:
+${this.getProjectStructure()}
+
+다음 내용을 포함해주세요:
+1. 전체 시스템 아키텍처
+2. 주요 컴포넌트와 책임
+3. 데이터 흐름
+4. 디자인 패턴과 원칙
+5. 확장성 고려사항
+6. 보안 아키텍처
+7. 성능 최적화 전략
+`;
+
+        const aiGuide = await this.cursor.ai.generateCode(prompt);
+        
+        return {
+            overview: aiGuide,
+            diagrams: await this.generateArchitectureDiagrams(),
+            components: await this.documentComponents(),
+            patterns: await this.documentDesignPatterns(),
+            dataFlow: await this.documentDataFlow(),
+            security: await this.documentSecurityArchitecture(),
+            scalability: await this.documentScalabilityConsiderations()
+        };
+    }
+
+    async renderDocumentation(docs: Documentation): Promise<void> {
+        const outputDir = this.config.outputDir || './docs';
+        
+        // 디렉토리 구조 생성
+        await this.createDocumentationStructure(outputDir);
+
+        // 메인 문서 렌더링
+        await this.renderMainDocumentation(docs, outputDir);
+
+        // API 문서 렌더링
+        await this.renderAPIDocumentation(docs.api, path.join(outputDir, 'api'));
+
+        // 가이드 렌더링
+        await this.renderGuides(docs.guides, path.join(outputDir, 'guides'));
+
+        // 인터랙티브 문서 생성
+        if (this.config.interactive) {
+            await this.generateInteractiveDocs(docs, outputDir);
+        }
+
+        // 검색 인덱스 생성
+        await this.generateSearchIndex(docs, outputDir);
+    }
+
+    async generateInteractiveDocs(docs: Documentation, outputDir: string): Promise<void> {
+        // Docusaurus 설정 생성
+        const docusaurusConfig = {
+            title: this.config.projectName,
+            tagline: docs.overview.description.split('\n')[0],
+            url: this.config.url || 'https://example.com',
+            baseUrl: this.config.baseUrl || '/',
+            onBrokenLinks: 'throw',
+            onBrokenMarkdownLinks: 'warn',
+            favicon: 'img/favicon.ico',
+            organizationName: this.config.organization,
+            projectName: this.config.projectName,
+            
+            presets: [
+                [
+                    'classic',
+                    {
+                        docs: {
+                            sidebarPath: require.resolve('./sidebars.js'),
+                            editUrl: this.config.editUrl
+                        },
+                        blog: false,
+                        theme: {
+                            customCss: require.resolve('./src/css/custom.css')
+                        }
+                    }
+                ]
+            ],
+
+            themeConfig: {
+                navbar: {
+                    title: this.config.projectName,
+                    items: [
+                        {
+                            type: 'doc',
+                            docId: 'intro',
+                            position: 'left',
+                            label: '문서'
+                        },
+                        {
+                            to: '/api',
+                            label: 'API',
+                            position: 'left'
+                        },
+                        {
+                            href: this.config.githubUrl,
+                            label: 'GitHub',
+                            position: 'right'
+                        }
+                    ]
+                },
+                footer: {
+                    style: 'dark',
+                    copyright: `Copyright © ${new Date().getFullYear()} ${this.config.organization}`
+                },
+                prism: {
+                    theme: lightCodeTheme,
+                    darkTheme: darkCodeTheme,
+                    additionalLanguages: ['typescript', 'javascript', 'python', 'go']
+                }
+            }
+        };
+
+        // Docusaurus 프로젝트 생성
+        await this.createDocusaurusProject(docusaurusConfig, outputDir);
+        
+        // API 플레이그라운드 생성
+        await this.createAPIPlayground(docs.api, path.join(outputDir, 'static', 'api-playground'));
+    }
+
+    async translateDocumentation(docs: Documentation): Promise<void> {
+        const languages = this.config.languages || [];
+        
+        for (const lang of languages) {
+            const translatedDocs = await this.translateToLanguage(docs, lang);
+            await this.renderDocumentation(translatedDocs);
+        }
+    }
+
+    async translateToLanguage(docs: Documentation, targetLang: string): Promise<Documentation> {
+        const prompt = `
+다음 기술 문서를 ${targetLang}로 번역해주세요.
+기술 용어는 적절히 현지화하되, 코드와 API 이름은 그대로 유지해주세요.
+
+원본:
+${JSON.stringify(docs, null, 2)}
+`;
+
+        const translatedContent = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(translatedContent);
+    }
+
+    async generateSearchIndex(docs: Documentation, outputDir: string): Promise<void> {
+        const searchIndex = [];
+        
+        // 모든 문서에서 검색 가능한 콘텐츠 추출
+        this.extractSearchableContent(docs, searchIndex);
+        
+        // Algolia DocSearch 호환 인덱스 생성
+        const algoliaIndex = {
+            index_name: this.config.projectName,
+            start_urls: [this.config.url],
+            selectors: {
+                lvl0: '.doc h1',
+                lvl1: '.doc h2',
+                lvl2: '.doc h3',
+                text: '.doc p, .doc li'
+            }
+        };
+
+        await fs.writeFile(
+            path.join(outputDir, 'search-index.json'),
+            JSON.stringify(searchIndex, null, 2)
+        );
+
+        await fs.writeFile(
+            path.join(outputDir, 'algolia-config.json'),
+            JSON.stringify(algoliaIndex, null, 2)
+        );
+    }
+}
+
+// 자동 문서화 워크플로우
+export async function generateProjectDocumentation() {
+    const generator = new AIDocumentationGenerator({
+        projectName: 'My Awesome Project',
+        tsConfigPath: './tsconfig.json',
+        outputDir: './docs',
+        interactive: true,
+        languages: ['ko', 'ja', 'zh'],
+        servers: [
+            { url: 'https://api.example.com', description: 'Production' },
+            { url: 'https://staging-api.example.com', description: 'Staging' }
+        ]
+    });
+
+    console.log('📚 문서 생성 시작...');
+    const docs = await generator.generateDocumentation();
+    
+    console.log('✅ 문서 생성 완료!');
+    console.log(`📁 출력 위치: ${generator.config.outputDir}`);
+    
+    // 문서 미리보기 서버 실행
+    if (generator.config.preview) {
+        await startDocumentationServer(generator.config.outputDir);
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+
+                <h3>API 문서 자동 생성</h3>
+                <div class="api-doc-generator">
+                    <div class="api-doc-implementation">
+                        <h4>OpenAPI/Swagger 스펙 자동 생성</h4>
+                        <pre><code>// decorators/api-documentation.ts
+import 'reflect-metadata';
+
+// API 문서화를 위한 데코레이터
+export function ApiDoc(options: ApiDocOptions) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        Reflect.defineMetadata('api-doc', options, target, propertyKey);
+    };
+}
+
+export function ApiParam(name: string, options: ParamOptions) {
+    return function (target: any, propertyKey: string, parameterIndex: number) {
+        const existingParams = Reflect.getMetadata('api-params', target, propertyKey) || [];
+        existingParams[parameterIndex] = { name, ...options };
+        Reflect.defineMetadata('api-params', existingParams, target, propertyKey);
+    };
+}
+
+export function ApiResponse(status: number, options: ResponseOptions) {
+    return function (target: any, propertyKey: string) {
+        const existingResponses = Reflect.getMetadata('api-responses', target, propertyKey) || {};
+        existingResponses[status] = options;
+        Reflect.defineMetadata('api-responses', existingResponses, target, propertyKey);
+    };
+}
+
+// 사용 예시
+export class UserController {
+    @ApiDoc({
+        summary: '사용자 목록 조회',
+        description: '페이지네이션을 지원하는 사용자 목록을 조회합니다.',
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }]
+    })
+    @ApiResponse(200, {
+        description: '성공',
+        schema: {
+            type: 'object',
+            properties: {
+                users: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/User' }
+                },
+                pagination: { $ref: '#/components/schemas/Pagination' }
+            }
+        }
+    })
+    @ApiResponse(401, { description: '인증 실패' })
+    async getUsers(
+        @ApiParam('page', { 
+            type: 'integer', 
+            description: '페이지 번호',
+            default: 1,
+            minimum: 1
+        }) page: number,
+        @ApiParam('limit', {
+            type: 'integer',
+            description: '페이지당 항목 수',
+            default: 20,
+            minimum: 1,
+            maximum: 100
+        }) limit: number
+    ) {
+        // 구현 로직
+    }
+
+    @ApiDoc({
+        summary: '사용자 생성',
+        description: '새로운 사용자를 생성합니다.',
+        tags: ['Users'],
+        requestBody: {
+            required: true,
+            content: {
+                'application/json': {
+                    schema: { $ref: '#/components/schemas/CreateUserDto' }
+                }
+            }
+        }
+    })
+    @ApiResponse(201, { 
+        description: '생성 성공',
+        schema: { $ref: '#/components/schemas/User' }
+    })
+    @ApiResponse(400, { description: '잘못된 요청' })
+    @ApiResponse(409, { description: '이메일 중복' })
+    async createUser(body: CreateUserDto) {
+        // 구현 로직
+    }
+}
+
+// OpenAPI 스펙 생성기
+export class OpenAPIGenerator {
+    private spec: OpenAPISpec;
+    
+    constructor(config: OpenAPIConfig) {
+        this.spec = {
+            openapi: '3.1.0',
+            info: config.info,
+            servers: config.servers || [],
+            paths: {},
+            components: {
+                schemas: {},
+                securitySchemes: config.securitySchemes || {}
+            }
+        };
+    }
+
+    generateFromControllers(controllers: any[]): OpenAPISpec {
+        for (const controller of controllers) {
+            this.processController(controller);
+        }
+        
+        // AI로 누락된 문서 보완
+        this.enhanceWithAI();
+        
+        return this.spec;
+    }
+
+    private processController(controller: any) {
+        const prototype = controller.prototype;
+        const basePath = Reflect.getMetadata('base-path', controller) || '';
+        
+        Object.getOwnPropertyNames(prototype).forEach(methodName => {
+            if (methodName === 'constructor') return;
+            
+            const method = prototype[methodName];
+            const apiDoc = Reflect.getMetadata('api-doc', prototype, methodName);
+            
+            if (apiDoc) {
+                const httpMethod = Reflect.getMetadata('http-method', prototype, methodName);
+                const path = basePath + Reflect.getMetadata('path', prototype, methodName);
+                
+                this.addEndpoint(path, httpMethod, {
+                    ...apiDoc,
+                    operationId: `${controller.name}.${methodName}`,
+                    parameters: this.extractParameters(prototype, methodName),
+                    responses: this.extractResponses(prototype, methodName)
+                });
+            }
+        });
+    }
+
+    private async enhanceWithAI() {
+        const cursor = new CursorAI();
+        
+        // 스키마 자동 생성
+        for (const [name, schema] of Object.entries(this.spec.components.schemas)) {
+            if (!schema.description) {
+                const prompt = `
+스키마 이름: ${name}
+속성: ${JSON.stringify(schema.properties, null, 2)}
+
+이 스키마에 대한 설명을 작성해주세요.
+각 속성의 용도와 제약사항을 포함해주세요.
+`;
+                
+                const description = await cursor.ai.generateCode(prompt);
+                schema.description = description;
+            }
+        }
+        
+        // 예제 생성
+        for (const path of Object.keys(this.spec.paths)) {
+            for (const method of Object.keys(this.spec.paths[path])) {
+                const endpoint = this.spec.paths[path][method];
+                
+                if (!endpoint.examples) {
+                    endpoint.examples = await this.generateExamples(endpoint);
+                }
+            }
+        }
+    }
+
+    private async generateExamples(endpoint: any): Promise<any> {
+        const examples = {};
+        
+        // 요청 예제
+        if (endpoint.requestBody) {
+            examples.request = {
+                summary: '기본 요청 예제',
+                value: await this.generateSampleData(endpoint.requestBody.content['application/json'].schema)
+            };
+        }
+        
+        // 응답 예제
+        for (const [status, response] of Object.entries(endpoint.responses)) {
+            if (response.content?.['application/json']?.schema) {
+                examples[`response_${status}`] = {
+                    summary: response.description,
+                    value: await this.generateSampleData(response.content['application/json'].schema)
+                };
+            }
+        }
+        
+        return examples;
+    }
+
+    async exportToFile(filepath: string) {
+        await fs.writeFile(filepath, JSON.stringify(this.spec, null, 2));
+    }
+
+    async exportToHTML(filepath: string) {
+        const html = await this.generateSwaggerUI();
+        await fs.writeFile(filepath, html);
+    }
+
+    private generateSwaggerUI(): string {
+        return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>${this.spec.info.title} - API Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@latest/swagger-ui.css">
+    <style>
+        body { margin: 0; padding: 0; }
+        #swagger-ui { max-width: 1200px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@latest/swagger-ui-bundle.js"></script>
+    <script>
+        window.onload = () => {
+            window.ui = SwaggerUIBundle({
+                spec: ${JSON.stringify(this.spec)},
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                tryItOutEnabled: true,
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+                onComplete: () => {
+                    console.log('Swagger UI loaded');
+                }
+            });
+        };
+    </script>
+</body>
+</html>
+        `;
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-language"></i> 다국어 문서 관리</h2>
+                
+                <h3>AI 기반 문서 번역 시스템</h3>
+                <div class="translation-system">
+                    <div class="translation-implementation">
+                        <h4>기술 문서 전문 번역 엔진</h4>
+                        <pre><code>// i18n/DocumentationTranslator.ts
+export class DocumentationTranslator {
+    private cursor: CursorAI;
+    private translationMemory: Map<string, TranslationEntry>;
+    private glossary: TechnicalGlossary;
+
+    constructor() {
+        this.cursor = new CursorAI();
+        this.translationMemory = new Map();
+        this.glossary = new TechnicalGlossary();
+    }
+
+    async translateDocumentation(
+        docs: Documentation,
+        targetLanguages: string[]
+    ): Promise<TranslatedDocumentation> {
+        const translations: TranslatedDocumentation = {
+            original: docs,
+            languages: {}
+        };
+
+        for (const lang of targetLanguages) {
+            console.log(`🌐 ${lang} 번역 시작...`);
+            translations.languages[lang] = await this.translateToLanguage(docs, lang);
+            console.log(`✅ ${lang} 번역 완료`);
+        }
+
+        // 번역 품질 검증
+        await this.validateTranslations(translations);
+
+        return translations;
+    }
+
+    private async translateToLanguage(
+        docs: Documentation,
+        targetLang: string
+    ): Promise<Documentation> {
+        // 문서를 섹션별로 분할하여 번역
+        const translatedDocs = await this.deepTranslate(docs, targetLang);
+        
+        // 기술 용어 일관성 확인
+        await this.ensureTerminologyConsistency(translatedDocs, targetLang);
+        
+        // 코드 블록과 API 이름 보존 확인
+        await this.preserveCodeElements(translatedDocs, docs);
+        
+        return translatedDocs;
+    }
+
+    private async deepTranslate(obj: any, targetLang: string): Promise<any> {
+        if (typeof obj === 'string') {
+            return await this.translateString(obj, targetLang);
+        } else if (Array.isArray(obj)) {
+            return await Promise.all(obj.map(item => this.deepTranslate(item, targetLang)));
+        } else if (typeof obj === 'object' && obj !== null) {
+            const translated: any = {};
+            for (const [key, value] of Object.entries(obj)) {
+                // 코드 관련 필드는 번역하지 않음
+                if (this.shouldSkipTranslation(key)) {
+                    translated[key] = value;
+                } else {
+                    translated[key] = await this.deepTranslate(value, targetLang);
+                }
+            }
+            return translated;
+        }
+        return obj;
+    }
+
+    private async translateString(text: string, targetLang: string): Promise<string> {
+        // 번역 메모리 확인
+        const cacheKey = `${text.substring(0, 50)}_${targetLang}`;
+        if (this.translationMemory.has(cacheKey)) {
+            return this.translationMemory.get(cacheKey)!.translation;
+        }
+
+        // 코드 블록 분리
+        const { plainText, codeBlocks } = this.extractCodeBlocks(text);
+
+        // AI 번역 요청
+        const prompt = `
+기술 문서를 ${targetLang}로 번역해주세요.
+
+원문:
+${plainText}
+
+번역 지침:
+1. 기술 용어는 업계 표준 번역을 사용하세요
+2. 코드, API 이름, 변수명은 번역하지 마세요
+3. 자연스럽고 이해하기 쉬운 문장으로 번역하세요
+4. 원문의 의미를 정확히 전달하세요
+
+용어집:
+${this.glossary.getTermsForLanguage(targetLang)}
+`;
+
+        const translation = await this.cursor.ai.generateCode(prompt);
+        
+        // 코드 블록 복원
+        const finalTranslation = this.restoreCodeBlocks(translation, codeBlocks);
+        
+        // 번역 메모리에 저장
+        this.translationMemory.set(cacheKey, {
+            original: text,
+            translation: finalTranslation,
+            language: targetLang,
+            timestamp: new Date()
+        });
+
+        return finalTranslation;
+    }
+
+    private extractCodeBlocks(text: string): { plainText: string, codeBlocks: string[] } {
+        const codeBlocks: string[] = [];
+        let plainText = text;
+        
+        // 코드 블록 추출 (```...```)
+        plainText = plainText.replace(/```[\s\S]*?```/g, (match) => {
+            codeBlocks.push(match);
+            return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+        });
+        
+        // 인라인 코드 추출 (`...`)
+        plainText = plainText.replace(/`[^`]+`/g, (match) => {
+            codeBlocks.push(match);
+            return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+        });
+        
+        return { plainText, codeBlocks };
+    }
+
+    private restoreCodeBlocks(text: string, codeBlocks: string[]): string {
+        return text.replace(/__CODE_BLOCK_(\d+)__/g, (match, index) => {
+            return codeBlocks[parseInt(index)];
+        });
+    }
+
+    private async validateTranslations(translations: TranslatedDocumentation) {
+        const validationReport = {
+            issues: [],
+            warnings: [],
+            statistics: {}
+        };
+
+        for (const [lang, docs] of Object.entries(translations.languages)) {
+            // 번역 완성도 확인
+            const completeness = await this.checkCompleteness(docs, translations.original);
+            
+            // 용어 일관성 확인
+            const consistency = await this.checkTerminologyConsistency(docs, lang);
+            
+            // 형식 보존 확인
+            const formatting = await this.checkFormattingPreservation(docs, translations.original);
+            
+            validationReport.statistics[lang] = {
+                completeness,
+                consistency,
+                formatting
+            };
+        }
+
+        return validationReport;
+    }
+
+    async generateTranslationReport(): Promise<TranslationReport> {
+        const report: TranslationReport = {
+            summary: {
+                totalStrings: this.translationMemory.size,
+                languages: this.getTranslatedLanguages(),
+                lastUpdated: new Date()
+            },
+            coverage: {},
+            quality: {},
+            suggestions: []
+        };
+
+        // 각 언어별 커버리지 계산
+        for (const lang of report.summary.languages) {
+            report.coverage[lang] = this.calculateCoverage(lang);
+            report.quality[lang] = await this.assessQuality(lang);
+        }
+
+        // 개선 제안 생성
+        report.suggestions = await this.generateImprovementSuggestions(report);
+
+        return report;
+    }
+}
+
+// 기술 용어집 관리
+export class TechnicalGlossary {
+    private terms: Map<string, TermEntry>;
+
+    constructor() {
+        this.terms = new Map();
+        this.loadDefaultTerms();
+    }
+
+    private loadDefaultTerms() {
+        // 기본 기술 용어 로드
+        this.addTerm('API', {
+            en: 'API',
+            ko: 'API',
+            ja: 'API',
+            zh: 'API',
+            description: 'Application Programming Interface'
+        });
+
+        this.addTerm('authentication', {
+            en: 'authentication',
+            ko: '인증',
+            ja: '認証',
+            zh: '身份验证',
+            description: 'Process of verifying identity'
+        });
+
+        // ... 더 많은 용어
+    }
+
+    addTerm(key: string, translations: TermEntry) {
+        this.terms.set(key.toLowerCase(), translations);
+    }
+
+    getTermsForLanguage(lang: string): string {
+        const termsList = [];
+        for (const [key, entry] of this.terms) {
+            if (entry[lang]) {
+                termsList.push(`${key}: ${entry[lang]}`);
+            }
+        }
+        return termsList.join('\n');
+    }
+
+    async suggestNewTerms(text: string): Promise<string[]> {
+        // AI를 사용하여 번역이 필요한 새로운 기술 용어 추출
+        const cursor = new CursorAI();
+        const prompt = `
+다음 텍스트에서 기술 용어를 추출해주세요:
+
+${text}
+
+용어집에 없는 새로운 기술 용어만 추출하세요.
+`;
+        
+        const suggestions = await cursor.ai.generateCode(prompt);
+        return JSON.parse(suggestions);
+    }
+}
+
+// 문서 버전 관리
+export class DocumentationVersionControl {
+    private versions: Map<string, DocumentVersion>;
+    private currentVersion: string;
+
+    constructor() {
+        this.versions = new Map();
+        this.currentVersion = '1.0.0';
+    }
+
+    async createVersion(docs: Documentation, version: string, changelog: string) {
+        const docVersion: DocumentVersion = {
+            version,
+            docs,
+            changelog,
+            createdAt: new Date(),
+            deprecated: false
+        };
+
+        this.versions.set(version, docVersion);
+        this.currentVersion = version;
+
+        // 이전 버전과의 차이점 분석
+        const diff = await this.analyzeDifferences(version);
+        docVersion.diff = diff;
+    }
+
+    async analyzeDifferences(version: string): Promise<VersionDiff> {
+        const previous = this.getPreviousVersion(version);
+        if (!previous) return null;
+
+        const cursor = new CursorAI();
+        const prompt = `
+두 문서 버전 간의 주요 변경사항을 분석해주세요:
+
+이전 버전: ${previous.version}
+현재 버전: ${version}
+
+다음을 포함해주세요:
+1. 추가된 API 엔드포인트
+2. 변경된 API 시그니처
+3. 삭제된 기능
+4. 주요 동작 변경사항
+5. 마이그레이션 가이드
+`;
+
+        const analysis = await cursor.ai.generateCode(prompt);
+        return JSON.parse(analysis);
+    }
+
+    generateMigrationGuide(fromVersion: string, toVersion: string): string {
+        const diff = this.versions.get(toVersion)?.diff;
+        if (!diff) return '';
+
+        return `
+# ${fromVersion}에서 ${toVersion}로 마이그레이션 가이드
+
+## 주요 변경사항
+${diff.majorChanges.map(change => `- ${change}`).join('\n')}
+
+## API 변경사항
+${diff.apiChanges.map(change => `
+### ${change.endpoint}
+- 변경 내용: ${change.description}
+- 이전: \`${change.before}\`
+- 이후: \`${change.after}\`
+`).join('\n')}
+
+## 마이그레이션 단계
+${diff.migrationSteps.map((step, index) => `
+${index + 1}. ${step.description}
+   \`\`\`${step.language}
+   ${step.code}
+   \`\`\`
+`).join('\n')}
+`;
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice-section">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 프로젝트 문서 자동화</h2>
+                
+                <div class="exercise">
+                    <h3>과제: 완전 자동화된 문서 시스템 구축</h3>
+                    <p>다음 요구사항을 만족하는 문서 자동화 시스템을 구축하세요:</p>
+                    
+                    <div class="requirements">
+                        <h4>요구사항:</h4>
+                        <ul>
+                            <li>코드 변경 시 자동으로 문서 업데이트</li>
+                            <li>OpenAPI 3.0 스펙 자동 생성</li>
+                            <li>인터랙티브 API 플레이그라운드 제공</li>
+                            <li>한국어, 영어, 일본어 3개 언어 지원</li>
+                            <li>버전별 문서 관리와 마이그레이션 가이드</li>
+                            <li>검색 가능한 문서 사이트 생성</li>
+                        </ul>
+                    </div>
+
+                    <div class="hints">
+                        <h4>힌트:</h4>
+                        <ul>
+                            <li>TypeScript의 타입 정보를 최대한 활용</li>
+                            <li>데코레이터로 문서 메타데이터 수집</li>
+                            <li>Docusaurus나 VuePress 같은 정적 사이트 생성기 활용</li>
+                            <li>GitHub Actions로 문서 배포 자동화</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary-section">
+                <h2><i class="fas fa-bookmark"></i> 핵심 요약</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>자동 문서 생성</h3>
+                        <ul>
+                            <li>코드 분석 기반 문서화</li>
+                            <li>AI 보강 문서 작성</li>
+                            <li>실시간 동기화</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>API 명세</h3>
+                        <ul>
+                            <li>OpenAPI 자동 생성</li>
+                            <li>인터랙티브 테스트</li>
+                            <li>다양한 형식 지원</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>다국어 지원</h3>
+                        <ul>
+                            <li>AI 기반 번역</li>
+                            <li>용어 일관성 유지</li>
+                            <li>문화별 최적화</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>문서 관리</h3>
+                        <ul>
+                            <li>버전 관리</li>
+                            <li>변경 이력 추적</li>
+                            <li>마이그레이션 가이드</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="progress-indicator">
+                <h3>진행 상황</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 80%;"></div>
+                </div>
+                <span>24/30 강의 (80%)</span>
+            </div>
+
+            <nav class="lesson-nav-sidebar">
+                <h3>전체 강의</h3>
+                <ul>
+                    <li><a href="lesson22.html">제22강: 커스텀 명령어 개발</a></li>
+                    <li><a href="lesson23.html">제23강: AI 코드 리뷰</a></li>
+                    <li class="current">제24강: 문서화 자동화</li>
+                    <li><a href="lesson25.html">제25강: 마이그레이션 도구</a></li>
+                    <li><a href="lesson26.html">제26강: 성능 프로파일링</a></li>
+                </ul>
+            </nav>
+
+            <div class="study-tips">
+                <h3>학습 팁</h3>
+                <ul>
+                    <li>좋은 문서는 코드만큼 중요한 자산입니다</li>
+                    <li>문서도 코드처럼 버전 관리와 리뷰가 필요합니다</li>
+                    <li>사용자 피드백을 반영하여 문서를 지속적으로 개선하세요</li>
+                    <li>예제 코드는 항상 실행 가능한 상태로 유지하세요</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

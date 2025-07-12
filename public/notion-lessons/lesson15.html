@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15강: 세상을 연결하다 - 관계형 속성</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- 사이드바 내용은 index.html에서 동적으로 로드 -->
+        </aside>
+        <main class="main-content">
+            <h1>15강: 세상을 연결하다 - 관계형 속성</h1>
+            <p>노션 데이터베이스의 진정한 힘은 서로 다른 데이터베이스를 연결하는 '관계형(Relation)' 속성에서 나옵니다. 이 강의에서는 관계형 속성의 개념을 이해하고, 이를 활용하여 데이터베이스 간의 양방향 관계를 생성함으로써 정보의 중복을 줄이고 통합된 시스템을 구축하는 방법을 배웁니다.</p>
+            
+            <h2>학습 목표</h2>
+            <ul>
+                <li>두 개의 개별 데이터베이스를 연결하는 개념을 이해합니다.</li>
+                <li>데이터베이스 간의 양방향 관계를 생성합니다.</li>
+            </ul>
+
+            <h2>주요 개념</h2>
+            <ul>
+                <li><strong>관계형 속성 (Relation Property):</strong> 한 데이터베이스의 항목을 다른 데이터베이스의 항목과 연결할 수 있게 해주는 속성입니다. 예를 들어, '프로젝트' 데이터베이스의 항목과 '업무' 데이터베이스의 항목을 연결할 수 있습니다.</li>
+                <li><strong>상호 관계형 (Two-way Relation):</strong> 관계형 속성을 생성하면 자동으로 양쪽 데이터베이스에 관계형 속성이 생성되어 서로를 참조할 수 있게 됩니다. 이는 데이터의 일관성을 유지하고 중복 입력을 방지하는 데 중요합니다.</li>
+                <li><strong>부모-자식 관계 (Parent-Child Relationship):</strong> 관계형 속성을 통해 프로젝트-업무, 고객-주문 등과 같은 계층적 관계를 설정할 수 있습니다.</li>
+            </ul>
+
+            <h2>실습 과제</h2>
+            <p><strong>'프로젝트'</strong>와 <strong>'업무'</strong>라는 두 개의 데이터베이스를 생성합니다. 다음 지침에 따라 관계형 속성을 설정해 보세요:</p>
+            <ul>
+                <li>'업무' 데이터베이스에 '프로젝트' 데이터베이스와 연결되는 관계형 속성을 추가합니다.</li>
+                <li>'프로젝트' 데이터베이스에 자동으로 생성된 상호 관계를 확인합니다.</li>
+                <li><strong>'웹사이트 리뉴얼'</strong> 프로젝트를 만들고, 3개의 특정 업무(예: '메인 페이지 디자인', '백엔드 개발', '테스트 및 배포')를 해당 프로젝트에 연결합니다.</li>
+            </ul>
+
+            <div class="navigation">
+                <!-- 이전/다음 강의 링크 -->
+            </div>
+        </main>
+    </div>
+</body>
+</html>

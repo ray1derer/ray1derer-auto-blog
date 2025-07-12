@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제2강: 첫 번째 AI 자동완성 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-keyboard"></i> 제2강: 첫 번째 AI 자동완성</h1>
+                <p class="lesson-subtitle">Tab 키 하나로 경험하는 AI 코딩의 마법</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 초급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 40분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 기초</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson01.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제2강: 첫 번째 AI 자동완성</span>
+            <a href="lesson03.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cursor의 Tab 자동완성 기능 이해하기</li>
+                    <li>효과적인 코드 주석 작성으로 AI 가이드하기</li>
+                    <li>자동완성 수락, 거부, 수정하는 방법 익히기</li>
+                    <li>다양한 프로그래밍 언어에서 활용하기</li>
+                    <li>생산성을 극대화하는 팁과 트릭 마스터하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-magic"></i> Tab 자동완성의 작동 원리</h2>
+                
+                <div class="info-box">
+                    <p>Cursor의 Tab 자동완성은 단순한 코드 스니펫이 아닙니다. AI가 전체 프로젝트 컨텍스트를 이해하고, 다음에 작성할 코드를 예측하여 제안합니다.</p>
+                </div>
+
+                <h3>AI는 어떻게 예측하나요?</h3>
+                <div class="prediction-factors">
+                    <div class="factor-card">
+                        <i class="fas fa-file-code"></i>
+                        <h4>현재 파일 컨텍스트</h4>
+                        <p>작성 중인 함수, 변수명, 코드 패턴을 분석합니다</p>
+                    </div>
+                    <div class="factor-card">
+                        <i class="fas fa-folder-open"></i>
+                        <h4>프로젝트 전체 구조</h4>
+                        <p>다른 파일의 함수, 클래스, import를 참고합니다</p>
+                    </div>
+                    <div class="factor-card">
+                        <i class="fas fa-comments"></i>
+                        <h4>주석과 문서</h4>
+                        <p>작성한 주석을 바탕으로 의도를 파악합니다</p>
+                    </div>
+                    <div class="factor-card">
+                        <i class="fas fa-history"></i>
+                        <h4>코딩 패턴</h4>
+                        <p>일반적인 코딩 패턴과 베스트 프랙티스를 적용합니다</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-play-circle"></i> 첫 번째 Tab 경험하기</h2>
+
+                <div class="step-by-step-guide">
+                    <h3>Step 1: 주석으로 의도 전달하기</h3>
+                    <p>AI에게 무엇을 만들고 싶은지 주석으로 알려주세요:</p>
+                    
+                    <div class="code-example">
+                        <pre><code>// Create a function that validates email addresses</code></pre>
+                    </div>
+                    
+                    <div class="ai-suggestion-demo">
+                        <p class="suggestion-hint">💡 잠시 기다리면 회색 텍스트로 제안이 나타납니다:</p>
+                        <div class="suggested-code">
+                            <pre><code class="ghost-text">function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}</code></pre>
+                        </div>
+                        <p class="action-hint">👉 <kbd>Tab</kbd> 키를 눌러 수락하세요!</p>
+                    </div>
+
+                    <h3>Step 2: 연속적인 자동완성</h3>
+                    <p>함수를 수락한 후, 계속해서 코드를 작성해보세요:</p>
+                    
+                    <div class="continuous-completion">
+                        <div class="completion-step">
+                            <p>타이핑: <code>// Test the function</code></p>
+                            <p>AI 제안:</p>
+                            <pre><code class="ghost-text">console.log(validateEmail('user@example.com')); // true
+console.log(validateEmail('invalid-email')); // false</code></pre>
+                        </div>
+                    </div>
+
+                    <h3>Step 3: 더 복잡한 예제</h3>
+                    <p>이번엔 더 복잡한 함수를 만들어봅시다:</p>
+                    
+                    <div class="complex-example">
+                        <pre><code>// Create a React component for a todo list with add, delete, and toggle functionality</code></pre>
+                        
+                        <div class="ai-response">
+                            <p class="response-label">AI가 생성한 전체 컴포넌트:</p>
+                            <pre><code class="ghost-text">import React, { useState } from 'react';
+
+function TodoList() {
+    const [todos, setTodos] = useState([]);
+    const [inputValue, setInputValue] = useState('');
+
+    const addTodo = () => {
+        if (inputValue.trim()) {
+            setTodos([...todos, {
+                id: Date.now(),
+                text: inputValue,
+                completed: false
+            }]);
+            setInputValue('');
+        }
+    };
+
+    const deleteTodo = (id) => {
+        setTodos(todos.filter(todo => todo.id !== id));
+    };
+
+    const toggleTodo = (id) => {
+        setTodos(todos.map(todo =>
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        ));
+    };
+
+    return (
+        &lt;div className="todo-list"&gt;
+            &lt;h2&gt;Todo List&lt;/h2&gt;
+            &lt;div className="add-todo"&gt;
+                &lt;input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+                    placeholder="Add a new todo"
+                /&gt;
+                &lt;button onClick={addTodo}&gt;Add&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;ul&gt;
+                {todos.map(todo => (
+                    &lt;li key={todo.id} className={todo.completed ? 'completed' : ''}&gt;
+                        &lt;span onClick={() => toggleTodo(todo.id)}&gt;
+                            {todo.text}
+                        &lt;/span&gt;
+                        &lt;button onClick={() => deleteTodo(todo.id)}&gt;Delete&lt;/button&gt;
+                    &lt;/li&gt;
+                ))}
+            &lt;/ul&gt;
+        &lt;/div&gt;
+    );
+}
+
+export default TodoList;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-keyboard"></i> 자동완성 컨트롤 마스터하기</h2>
+
+                <div class="controls-guide">
+                    <h3>필수 단축키</h3>
+                    <div class="shortcut-grid">
+                        <div class="shortcut-card">
+                            <div class="keys"><kbd>Tab</kbd></div>
+                            <div class="description">제안 수락</div>
+                        </div>
+                        <div class="shortcut-card">
+                            <div class="keys"><kbd>Esc</kbd></div>
+                            <div class="description">제안 거부</div>
+                        </div>
+                        <div class="shortcut-card">
+                            <div class="keys"><kbd>Cmd</kbd> + <kbd>→</kbd></div>
+                            <div class="description">단어 단위로 수락</div>
+                        </div>
+                        <div class="shortcut-card">
+                            <div class="keys"><kbd>Cmd</kbd> + <kbd>↓</kbd></div>
+                            <div class="description">라인 단위로 수락</div>
+                        </div>
+                    </div>
+
+                    <h3>부분 수락 테크닉</h3>
+                    <div class="partial-accept-demo">
+                        <p>때로는 AI 제안의 일부만 필요할 때가 있습니다:</p>
+                        
+                        <div class="demo-scenario">
+                            <h4>시나리오: 함수명은 좋은데 구현은 다르게 하고 싶을 때</h4>
+                            <pre><code>// Calculate the average of an array
+<span class="ghost-text">function calculateAverage(numbers) {
+    return numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
+}</span></code></pre>
+                            <p>💡 <kbd>Cmd + →</kbd>를 여러 번 눌러 함수 선언부만 수락하고, 내부는 직접 구현할 수 있습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-code"></i> 언어별 자동완성 활용법</h2>
+
+                <div class="language-examples">
+                    <div class="language-tab-container">
+                        <div class="language-tabs">
+                            <button class="lang-tab active" data-lang="javascript">JavaScript</button>
+                            <button class="lang-tab" data-lang="python">Python</button>
+                            <button class="lang-tab" data-lang="typescript">TypeScript</button>
+                            <button class="lang-tab" data-lang="java">Java</button>
+                        </div>
+
+                        <div class="language-content active" id="javascript">
+                            <h4>JavaScript 예제</h4>
+                            <pre><code>// Fetch data from API with error handling
+<span class="ghost-text">async function fetchUserData(userId) {
+    try {
+        const response = await fetch(`/api/users/${userId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        throw error;
+    }
+}</span></code></pre>
+                        </div>
+
+                        <div class="language-content" id="python">
+                            <h4>Python 예제</h4>
+                            <pre><code># Create a class for managing a library system
+<span class="ghost-text">class Library:
+    def __init__(self, name):
+        self.name = name
+        self.books = []
+        self.members = []
+        
+    def add_book(self, title, author, isbn):
+        book = {
+            'title': title,
+            'author': author,
+            'isbn': isbn,
+            'available': True
+        }
+        self.books.append(book)
+        return book
+    
+    def borrow_book(self, isbn, member_id):
+        for book in self.books:
+            if book['isbn'] == isbn and book['available']:
+                book['available'] = False
+                book['borrowed_by'] = member_id
+                return True
+        return False</span></code></pre>
+                        </div>
+
+                        <div class="language-content" id="typescript">
+                            <h4>TypeScript 예제</h4>
+                            <pre><code>// Define interfaces for a shopping cart system
+<span class="ghost-text">interface Product {
+    id: string;
+    name: string;
+    price: number;
+    category: string;
+}
+
+interface CartItem {
+    product: Product;
+    quantity: number;
+}
+
+class ShoppingCart {
+    private items: CartItem[] = [];
+    
+    addItem(product: Product, quantity: number = 1): void {
+        const existingItem = this.items.find(item => item.product.id === product.id);
+        
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            this.items.push({ product, quantity });
+        }
+    }
+    
+    getTotalPrice(): number {
+        return this.items.reduce((total, item) => {
+            return total + (item.product.price * item.quantity);
+        }, 0);
+    }
+}</span></code></pre>
+                        </div>
+
+                        <div class="language-content" id="java">
+                            <h4>Java 예제</h4>
+                            <pre><code>// Create a singleton database connection manager
+<span class="ghost-text">public class DatabaseManager {
+    private static DatabaseManager instance;
+    private Connection connection;
+    
+    private DatabaseManager() {
+        // Private constructor to prevent instantiation
+    }
+    
+    public static synchronized DatabaseManager getInstance() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+        return instance;
+    }
+    
+    public void connect(String url, String username, String password) throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            return;
+        }
+        
+        connection = DriverManager.getConnection(url, username, password);
+    }
+    
+    public Connection getConnection() {
+        return connection;
+    }
+}</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-lightbulb"></i> 프로 팁: 자동완성 극대화하기</h2>
+
+                <div class="pro-tips">
+                    <div class="tip-card">
+                        <div class="tip-icon"><i class="fas fa-comment"></i></div>
+                        <h3>1. 명확한 주석 작성</h3>
+                        <p>구체적이고 명확한 주석을 작성할수록 AI의 제안이 정확해집니다.</p>
+                        <div class="tip-example">
+                            <p class="good">✅ 좋은 예:</p>
+                            <code>// Create a function that validates credit card numbers using Luhn algorithm</code>
+                            <p class="bad">❌ 나쁜 예:</p>
+                            <code>// validate card</code>
+                        </div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon"><i class="fas fa-file-code"></i></div>
+                        <h3>2. 컨텍스트 제공하기</h3>
+                        <p>관련 코드나 import를 먼저 작성하면 AI가 더 적절한 제안을 합니다.</p>
+                        <div class="tip-example">
+                            <pre><code>import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+// Now AI knows you're using React hooks and axios</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon"><i class="fas fa-sync"></i></div>
+                        <h3>3. 반복 패턴 활용</h3>
+                        <p>비슷한 패턴의 코드를 여러 개 작성할 때, 첫 번째를 작성하면 AI가 패턴을 학습합니다.</p>
+                        <div class="tip-example">
+                            <pre><code>const [name, setName] = useState('');
+const [email, setEmail] = useState('');
+// AI will suggest: const [phone, setPhone] = useState('');</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon"><i class="fas fa-pause"></i></div>
+                        <h3>4. 잠시 기다리기</h3>
+                        <p>타이핑을 멈추고 1-2초 기다리면 더 정확한 제안이 나타납니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: Tab 자동완성 마스터하기</h2>
+
+                <div class="practice-content">
+                    <h3>미니 프로젝트: 사용자 관리 시스템</h3>
+                    <p>Tab 자동완성만을 사용해서 간단한 사용자 관리 시스템을 만들어봅시다.</p>
+
+                    <div class="practice-steps">
+                        <div class="practice-step">
+                            <h4>Step 1: User 클래스 생성</h4>
+                            <p>다음 주석을 작성하고 Tab으로 완성하세요:</p>
+                            <pre><code>// Create a User class with properties: id, name, email, role, createdAt</code></pre>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 2: UserManager 클래스</h4>
+                            <p>사용자 관리 기능을 추가합니다:</p>
+                            <pre><code>// Create a UserManager class with methods: addUser, removeUser, findUserById, findUserByEmail, getAllUsers</code></pre>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 3: 유효성 검사 추가</h4>
+                            <p>이메일 검증과 에러 처리를 추가합니다:</p>
+                            <pre><code>// Add email validation and error handling to the addUser method</code></pre>
+                        </div>
+
+                        <div class="practice-step">
+                            <h4>Step 4: 테스트 코드</h4>
+                            <p>작성한 클래스를 테스트합니다:</p>
+                            <pre><code>// Create test cases for UserManager</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="challenge-box">
+                        <h4>🏆 도전 과제</h4>
+                        <p>다음 기능들을 Tab 자동완성만으로 추가해보세요:</p>
+                        <ul>
+                            <li>사용자 역할(role) 기반 권한 시스템</li>
+                            <li>비밀번호 해싱 기능</li>
+                            <li>사용자 검색 및 필터링</li>
+                            <li>JSON 파일로 데이터 저장/불러오기</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="troubleshooting">
+                <h2><i class="fas fa-wrench"></i> 문제 해결</h2>
+
+                <div class="troubleshooting-guide">
+                    <div class="issue">
+                        <h3>자동완성이 나타나지 않아요</h3>
+                        <ul>
+                            <li>Settings → Features → "Tab Autocomplete"가 활성화되어 있는지 확인</li>
+                            <li>인터넷 연결 상태 확인</li>
+                            <li>Cursor 재시작 시도</li>
+                        </ul>
+                    </div>
+
+                    <div class="issue">
+                        <h3>제안이 부정확해요</h3>
+                        <ul>
+                            <li>더 구체적인 주석 작성</li>
+                            <li>관련 import나 변수 선언을 먼저 작성</li>
+                            <li>프로젝트 컨텍스트가 로드될 때까지 잠시 대기</li>
+                        </ul>
+                    </div>
+
+                    <div class="issue">
+                        <h3>제안이 너무 길어요</h3>
+                        <ul>
+                            <li>부분 수락 기능 활용 (Cmd/Ctrl + →)</li>
+                            <li>더 작은 단위로 주석 작성</li>
+                            <li>필요한 부분만 수락하고 나머지는 직접 수정</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>Tab은 마법의 키</h3>
+                        <p>단순한 자동완성이 아닌, AI가 전체 컨텍스트를 이해하고 제안하는 지능형 코딩 도우미입니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>주석이 곧 프롬프트</h3>
+                        <p>명확하고 구체적인 주석을 작성하면 AI가 정확한 코드를 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>부분 수락의 유연성</h3>
+                        <p>전체를 수락할 필요 없이, 필요한 부분만 선택적으로 사용할 수 있습니다.</p>
+                    </div>
+
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>컨텍스트가 핵심</h3>
+                        <p>프로젝트의 다른 파일들과 현재 코드를 함께 고려하여 더 정확한 제안을 제공합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 AI Chat 기능을 통해 코드에 대해 질문하고, 설명을 듣고, 즉시 수정하는 방법을 배웁니다.</p>
+                    <a href="lesson03.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li>Cursor 소개와 설치</li>
+                    <li class="current">첫 번째 AI 자동완성</li>
+                    <li>AI Chat 마스터하기</li>
+                    <li>Cmd+K 완벽 가이드</li>
+                    <li>프로젝트 컨텍스트</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-keyboard"></i> 단축키 요약</h3>
+                <div class="shortcut-summary">
+                    <div class="shortcut-item">
+                        <kbd>Tab</kbd> - 제안 수락
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd> - 제안 거부
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Cmd + →</kbd> - 단어 단위 수락
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Cmd + ↓</kbd> - 라인 단위 수락
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 오늘의 팁</h3>
+                <div class="tip-box">
+                    <p>💡 함수명이나 변수명을 의미있게 작성하면, AI가 그 용도를 이해하고 더 적절한 코드를 제안합니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 6.67%"></div>
+            <span class="progress-text">2/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+    <script>
+        // Language tab switching
+        document.querySelectorAll('.lang-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const lang = tab.getAttribute('data-lang');
+                
+                document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.language-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(lang).classList.add('active');
+            });
+        });
+
+        // Ghost text animation
+        document.querySelectorAll('.ghost-text').forEach(element => {
+            element.style.opacity = '0.5';
+            element.style.fontStyle = 'italic';
+        });
+    </script>
+</body>
+</html>

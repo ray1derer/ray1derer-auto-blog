@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제11강: Git 통합과 버전 관리 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-code-branch"></i> 제11강: Git 통합과 버전 관리</h1>
+                <p class="lesson-subtitle">AI와 함께하는 스마트한 코드 버전 관리</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 45분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson10.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제11강: Git 통합과 버전 관리</span>
+            <a href="lesson12.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cursor의 Git 통합 기능 완벽 활용하기</li>
+                    <li>AI 도움으로 의미 있는 커밋 메시지 작성하기</li>
+                    <li>복잡한 머지 충돌 해결 전략 익히기</li>
+                    <li>브랜치 전략과 협업 워크플로우 구축하기</li>
+                    <li>코드 리뷰와 PR 관리 최적화하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-git-alt"></i> Cursor의 Git 통합 기능</h2>
+                
+                <div class="info-box">
+                    <p>Cursor는 Git을 단순한 버전 관리 도구를 넘어 AI 기반 협업 플랫폼으로 확장합니다. 커밋 메시지 생성, 충돌 해결, 코드 리뷰까지 모든 과정에서 AI가 도움을 제공합니다.</p>
+                </div>
+
+                <h3>통합 Git 인터페이스</h3>
+                <div class="git-interface">
+                    <div class="interface-mockup">
+                        <div class="source-control-panel">
+                            <div class="panel-header">
+                                <i class="fas fa-code-branch"></i> Source Control
+                                <span class="branch-info">main</span>
+                            </div>
+                            <div class="changes-section">
+                                <h4>Changes (5)</h4>
+                                <div class="file-change">
+                                    <span class="status modified">M</span>
+                                    <span class="filename">src/App.jsx</span>
+                                    <div class="ai-actions">
+                                        <button class="ai-btn" title="AI로 변경사항 설명">
+                                            <i class="fas fa-robot"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="file-change">
+                                    <span class="status added">A</span>
+                                    <span class="filename">src/components/Header.jsx</span>
+                                </div>
+                                <div class="file-change">
+                                    <span class="status deleted">D</span>
+                                    <span class="filename">src/old-header.jsx</span>
+                                </div>
+                            </div>
+                            <div class="commit-section">
+                                <textarea placeholder="커밋 메시지 (AI 제안: Cmd+Shift+G)"></textarea>
+                                <button class="commit-btn">Commit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-message"></i> AI 기반 커밋 메시지 작성</h2>
+
+                <div class="commit-message-guide">
+                    <h3>스마트 커밋 메시지 생성</h3>
+                    
+                    <div class="commit-example">
+                        <h4>변경사항 분석</h4>
+                        <div class="diff-preview">
+                            <pre><code class="diff">// src/components/UserProfile.jsx
+- function UserProfile({ user }) {
+-   return <div>{user.name}</div>;
++ function UserProfile({ user }) {
++   const [isEditing, setIsEditing] = useState(false);
++   const [profile, setProfile] = useState(user);
++   
++   const handleSave = async () => {
++     await updateUser(profile);
++     setIsEditing(false);
++   };
++   
++   return (
++     <div className="user-profile">
++       {isEditing ? (
++         <ProfileEditor 
++           profile={profile}
++           onChange={setProfile}
++           onSave={handleSave}
++         />
++       ) : (
++         <ProfileDisplay 
++           profile={profile}
++           onEdit={() => setIsEditing(true)}
++         />
++       )}
++     </div>
++   );
+ }</code></pre>
+                        </div>
+
+                        <div class="ai-suggestions">
+                            <h4>AI 제안 커밋 메시지</h4>
+                            <div class="message-options">
+                                <div class="message-option recommended">
+                                    <span class="type">✨ feat</span>
+                                    <p>Add inline editing functionality to UserProfile component</p>
+                                    <ul class="details">
+                                        <li>Implement edit/view mode toggle</li>
+                                        <li>Add ProfileEditor and ProfileDisplay sub-components</li>
+                                        <li>Handle profile updates with async save</li>
+                                    </ul>
+                                </div>
+                                <div class="message-option">
+                                    <span class="type">🔧 refactor</span>
+                                    <p>Refactor UserProfile to support editing mode</p>
+                                </div>
+                                <div class="message-option">
+                                    <span class="type">📝 update</span>
+                                    <p>Update UserProfile component with edit functionality</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>커밋 메시지 컨벤션</h3>
+                    <div class="commit-conventions">
+                        <div class="convention-card">
+                            <h4>Conventional Commits</h4>
+                            <pre><code>type(scope): subject
+
+body
+
+footer</code></pre>
+                            <ul>
+                                <li><strong>feat:</strong> 새로운 기능</li>
+                                <li><strong>fix:</strong> 버그 수정</li>
+                                <li><strong>docs:</strong> 문서 변경</li>
+                                <li><strong>style:</strong> 코드 스타일 변경</li>
+                                <li><strong>refactor:</strong> 리팩토링</li>
+                                <li><strong>test:</strong> 테스트 추가/수정</li>
+                                <li><strong>chore:</strong> 빌드, 설정 변경</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-code-compare"></i> 머지 충돌 해결</h2>
+
+                <div class="merge-conflict-resolution">
+                    <h3>AI 지원 충돌 해결</h3>
+                    
+                    <div class="conflict-example">
+                        <h4>충돌 상황</h4>
+                        <div class="conflict-view">
+                            <pre><code><<<<<<< HEAD
+function calculateTotal(items) {
+    return items.reduce((sum, item) => {
+        const price = item.price * item.quantity;
+        const tax = price * 0.1;
+        return sum + price + tax;
+    }, 0);
+}
+=======
+function calculateTotal(items) {
+    const subtotal = items.reduce((sum, item) => 
+        sum + (item.price * item.quantity), 0);
+    const discount = subtotal > 100 ? subtotal * 0.05 : 0;
+    return subtotal - discount;
+}
+>>>>>>> feature/discount-system</code></pre>
+                        </div>
+
+                        <div class="ai-resolution">
+                            <h4>AI 해결 방안</h4>
+                            <div class="resolution-options">
+                                <div class="option">
+                                    <h5>옵션 1: 두 기능 모두 통합</h5>
+                                    <pre><code>function calculateTotal(items, options = {}) {
+    const { includeTax = true, applyDiscount = true } = options;
+    
+    const subtotal = items.reduce((sum, item) => 
+        sum + (item.price * item.quantity), 0);
+    
+    let total = subtotal;
+    
+    if (includeTax) {
+        const tax = subtotal * 0.1;
+        total += tax;
+    }
+    
+    if (applyDiscount && subtotal > 100) {
+        const discount = subtotal * 0.05;
+        total -= discount;
+    }
+    
+    return total;
+}</code></pre>
+                                    <p class="explanation">두 브랜치의 기능을 모두 포함하며, 옵션으로 제어 가능</p>
+                                </div>
+
+                                <div class="option">
+                                    <h5>옵션 2: 전략 패턴 적용</h5>
+                                    <pre><code>class PricingStrategy {
+    calculateTax(subtotal) { return 0; }
+    calculateDiscount(subtotal) { return 0; }
+}
+
+class StandardPricing extends PricingStrategy {
+    calculateTax(subtotal) { return subtotal * 0.1; }
+}
+
+class DiscountPricing extends PricingStrategy {
+    calculateDiscount(subtotal) {
+        return subtotal > 100 ? subtotal * 0.05 : 0;
+    }
+}
+
+function calculateTotal(items, strategy = new StandardPricing()) {
+    const subtotal = items.reduce((sum, item) => 
+        sum + (item.price * item.quantity), 0);
+    
+    const tax = strategy.calculateTax(subtotal);
+    const discount = strategy.calculateDiscount(subtotal);
+    
+    return subtotal + tax - discount;
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3-way 머지 시각화</h3>
+                    <div class="three-way-merge">
+                        <div class="merge-visualization">
+                            <div class="branch base">
+                                <h5>Base (공통 조상)</h5>
+                                <pre><code>function calculateTotal(items) {
+    return items.reduce((sum, item) => 
+        sum + (item.price * item.quantity), 0);
+}</code></pre>
+                            </div>
+                            <div class="branch ours">
+                                <h5>Ours (현재 브랜치)</h5>
+                                <pre><code>// 세금 추가</code></pre>
+                            </div>
+                            <div class="branch theirs">
+                                <h5>Theirs (머지 대상)</h5>
+                                <pre><code>// 할인 추가</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-sitemap"></i> 브랜치 전략과 워크플로우</h2>
+
+                <div class="branching-strategies">
+                    <h3>Git Flow with AI</h3>
+                    
+                    <div class="git-flow-diagram">
+                        <div class="flow-visualization">
+                            <div class="branch-line main">
+                                <span class="branch-name">main</span>
+                                <div class="commits">
+                                    <div class="commit"></div>
+                                    <div class="commit"></div>
+                                    <div class="commit merge"></div>
+                                </div>
+                            </div>
+                            <div class="branch-line develop">
+                                <span class="branch-name">develop</span>
+                                <div class="commits">
+                                    <div class="commit"></div>
+                                    <div class="commit"></div>
+                                    <div class="commit"></div>
+                                </div>
+                            </div>
+                            <div class="branch-line feature">
+                                <span class="branch-name">feature/user-auth</span>
+                                <div class="commits">
+                                    <div class="commit"></div>
+                                    <div class="commit"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>AI 지원 브랜치 관리</h3>
+                    <div class="branch-management">
+                        <div class="ai-commands">
+                            <div class="command-example">
+                                <p class="user-request">"새 기능을 위한 브랜치 만들어줘"</p>
+                                <div class="ai-response">
+                                    <p>현재 작업을 분석한 결과, 사용자 인증 기능을 추가하시는 것 같습니다.</p>
+                                    <pre><code>git checkout -b feature/user-authentication
+# 또는 더 구체적으로:
+git checkout -b feature/jwt-auth-implementation</code></pre>
+                                </div>
+                            </div>
+
+                            <div class="command-example">
+                                <p class="user-request">"이 브랜치를 develop에 머지할 준비가 됐는지 확인해줘"</p>
+                                <div class="ai-response">
+                                    <p>머지 전 체크리스트:</p>
+                                    <ul>
+                                        <li>✅ 모든 테스트 통과</li>
+                                        <li>✅ 코드 리뷰 완료</li>
+                                        <li>⚠️ 문서 업데이트 필요</li>
+                                        <li>❌ CHANGELOG 업데이트 안됨</li>
+                                    </ul>
+                                    <pre><code># 머지 전 권장 작업:
+echo "## [1.2.0] - 2024-01-15" >> CHANGELOG.md
+echo "### Added" >> CHANGELOG.md
+echo "- JWT 기반 사용자 인증" >> CHANGELOG.md
+
+git add CHANGELOG.md
+git commit -m "docs: Update CHANGELOG for JWT auth feature"</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-users"></i> 협업과 코드 리뷰</h2>
+
+                <div class="collaboration">
+                    <h3>AI 지원 Pull Request</h3>
+                    
+                    <div class="pr-creation">
+                        <h4>PR 템플릿 자동 생성</h4>
+                        <div class="pr-template">
+                            <div class="pr-form">
+                                <input type="text" value="feat: Add JWT authentication system" class="pr-title">
+                                <div class="pr-body">
+                                    <pre>## 개요
+JWT 기반 사용자 인증 시스템을 구현했습니다.
+
+## 변경사항
+- ✨ JWT 토큰 생성 및 검증 로직 추가
+- 🔐 인증 미들웨어 구현
+- 🛡️ 보안 헤더 및 CORS 설정
+- 📝 API 문서 업데이트
+
+## 테스트
+- [x] 단위 테스트 작성 (coverage: 95%)
+- [x] 통합 테스트 완료
+- [x] 수동 테스트 시나리오 검증
+
+## 체크리스트
+- [x] 코드가 프로젝트 스타일 가이드를 따름
+- [x] 모든 테스트 통과
+- [x] 문서 업데이트 완료
+- [x] 브레이킹 체인지 없음
+
+## 스크린샷
+![로그인 플로우](login-flow.png)
+
+## 관련 이슈
+Closes #123</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>코드 리뷰 자동화</h3>
+                    <div class="code-review">
+                        <div class="review-comments">
+                            <div class="review-item">
+                                <div class="code-snippet">
+                                    <pre><code>if (password == confirmPassword) {
+    createUser(email, password);
+}</code></pre>
+                                </div>
+                                <div class="ai-review">
+                                    <div class="reviewer">
+                                        <i class="fas fa-robot"></i> AI Reviewer
+                                    </div>
+                                    <p>🔒 보안 이슈: 평문 비밀번호 비교는 위험합니다.</p>
+                                    <div class="suggestion">
+                                        <pre><code>// 제안:
+if (password === confirmPassword && password.length >= 8) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    createUser(email, hashedPassword);
+}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: Git 워크플로우 마스터하기</h2>
+
+                <div class="practice-content">
+                    <h3>실제 프로젝트에서 Git 활용하기</h3>
+                    <p>Feature 브랜치 워크플로우를 실습해봅시다.</p>
+
+                    <div class="practice-scenario">
+                        <h4>시나리오: 새로운 기능 개발부터 머지까지</h4>
+                        
+                        <div class="workflow-steps">
+                            <div class="workflow-step">
+                                <h5>Step 1: 이슈 생성 및 브랜치</h5>
+                                <pre><code># AI에게 요청
+"사용자 프로필 편집 기능을 위한 브랜치 만들어줘"
+
+# 생성된 명령어
+git checkout -b feature/edit-user-profile
+git push -u origin feature/edit-user-profile</code></pre>
+                            </div>
+
+                            <div class="workflow-step">
+                                <h5>Step 2: 개발 및 커밋</h5>
+                                <pre><code># 작업 후 AI에게 커밋 메시지 요청
+"변경사항을 분석해서 적절한 커밋 메시지 만들어줘"
+
+# AI 제안
+git add src/components/ProfileEditor.jsx
+git commit -m "feat(profile): Add inline editing for user profile
+
+- Implement ProfileEditor component with form validation
+- Add save/cancel functionality with optimistic updates
+- Include error handling for failed updates"</code></pre>
+                            </div>
+
+                            <div class="workflow-step">
+                                <h5>Step 3: 리베이스 및 정리</h5>
+                                <pre><code># develop 브랜치의 최신 변경사항 가져오기
+git fetch origin
+git rebase origin/develop
+
+# 충돌 발생 시 AI 도움 요청
+"리베이스 충돌을 해결해줘"</code></pre>
+                            </div>
+
+                            <div class="workflow-step">
+                                <h5>Step 4: PR 생성</h5>
+                                <pre><code># AI에게 PR 설명 요청
+"이 브랜치의 변경사항을 분석해서 PR 설명 만들어줘"
+
+# GitHub CLI로 PR 생성
+gh pr create --title "feat: Add user profile editing" \
+  --body "$(cat pr-description.md)" \
+  --base develop</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="git-tips">
+                        <h4>💡 Git 프로 팁</h4>
+                        <ul>
+                            <li><strong>Interactive Rebase:</strong> <code>git rebase -i HEAD~3</code>로 커밋 정리</li>
+                            <li><strong>Stash 활용:</strong> <code>git stash save "작업 중인 기능"</code></li>
+                            <li><strong>Cherry-pick:</strong> 특정 커밋만 가져오기</li>
+                            <li><strong>Reflog:</strong> 실수 복구의 마지막 수단</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="advanced-git">
+                <h2><i class="fas fa-graduation-cap"></i> 고급 Git 기능</h2>
+
+                <div class="advanced-features">
+                    <h3>Git Hooks with AI</h3>
+                    <div class="git-hooks">
+                        <h4>pre-commit Hook</h4>
+                        <pre><code>#!/bin/sh
+# .git/hooks/pre-commit
+
+# AI 코드 검사
+cursor-cli check --ai-review
+
+# 테스트 실행
+npm test
+
+# 코드 포맷팅
+npm run format
+
+# 커밋 메시지 가이드
+echo "💡 팁: 'git commit' 대신 'cursor commit'을 사용하면 AI가 메시지를 제안합니다"</code></pre>
+                    </div>
+
+                    <h3>Git Aliases for Cursor</h3>
+                    <div class="git-aliases">
+                        <pre><code># ~/.gitconfig
+[alias]
+    # AI 커밋
+    aic = !cursor commit
+    
+    # AI 리뷰와 함께 푸시
+    pushrev = !git push && cursor review
+    
+    # 스마트 머지
+    smerge = !cursor merge
+    
+    # 충돌 해결
+    resolve = !cursor resolve-conflicts</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>AI가 작성하는 커밋 메시지</h3>
+                        <p>변경사항을 분석하여 의미 있고 일관된 커밋 메시지를 자동으로 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>스마트한 충돌 해결</h3>
+                        <p>AI가 코드의 의도를 파악하여 최적의 머지 전략을 제안합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>자동화된 코드 리뷰</h3>
+                        <p>PR 생성부터 리뷰 코멘트까지 AI가 품질 관리를 도와줍니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>협업 워크플로우 최적화</h3>
+                        <p>팀의 Git 컨벤션을 학습하여 일관된 협업 환경을 구축합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 테스트 주도 개발(TDD)과 AI를 활용한 자동 테스트 작성 방법을 배웁니다.</p>
+                    <a href="lesson12.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="current">Git 통합과 버전 관리</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-git-alt"></i> Git 명령어 참조</h3>
+                <div class="git-commands">
+                    <div class="cmd-group">
+                        <h4>기본 명령어</h4>
+                        <code>git status</code>
+                        <code>git add .</code>
+                        <code>git commit -m ""</code>
+                        <code>git push</code>
+                    </div>
+                    <div class="cmd-group">
+                        <h4>브랜치</h4>
+                        <code>git checkout -b</code>
+                        <code>git merge</code>
+                        <code>git rebase</code>
+                    </div>
+                    <div class="cmd-group">
+                        <h4>Cursor 전용</h4>
+                        <code>cursor commit</code>
+                        <code>cursor merge</code>
+                        <code>cursor review</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 커밋하기 전에 <code>git diff</code>로 변경사항을 확인하고, AI에게 리뷰를 요청하세요. 작은 습관이 큰 차이를 만듭니다!</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 36.67%"></div>
+            <span class="progress-text">11/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

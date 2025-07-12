@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제22강: 커스텀 명령어와 확장 개발 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-plug"></i> 제22강: 커스텀 명령어와 확장 개발</h1>
+                <p class="lesson-subtitle">Cursor를 자신만의 도구로 확장하고 커스터마이징하기</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 고급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 65분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 고급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson21.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제22강: 커스텀 명령어와 확장 개발</span>
+            <a href="lesson23.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cursor 확장 아키텍처 이해하기</li>
+                    <li>커스텀 명령어 개발과 등록하기</li>
+                    <li>AI 통합 확장 기능 구현하기</li>
+                    <li>워크플로우 자동화 도구 만들기</li>
+                    <li>팀을 위한 맞춤형 도구 배포하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-puzzle-piece"></i> Cursor 확장 아키텍처</h2>
+                
+                <div class="info-box">
+                    <p>Cursor는 VS Code 기반이므로 VS Code 확장과 호환되며, 추가로 AI 기능을 활용하는 고유한 API를 제공합니다. 이를 통해 강력한 AI 기반 개발 도구를 만들 수 있습니다.</p>
+                </div>
+
+                <h3>확장 시스템 구조</h3>
+                <div class="extension-architecture">
+                    <div class="architecture-overview">
+                        <h4>Cursor Extension API</h4>
+                        <pre><code>// cursor-extension-api.d.ts
+declare module 'cursor-api' {
+    export namespace cursor {
+        // AI Chat API
+        namespace chat {
+            function sendMessage(message: string): Promise<string>;
+            function streamMessage(
+                message: string, 
+                onChunk: (chunk: string) => void
+            ): Promise<void>;
+            function setContext(context: string[]): void;
+            function clearContext(): void;
+        }
+
+        // AI 코드 생성 API
+        namespace ai {
+            function generateCode(
+                prompt: string,
+                options?: GenerateOptions
+            ): Promise<string>;
+            
+            function refactorCode(
+                code: string,
+                instructions: string
+            ): Promise<string>;
+            
+            function explainCode(
+                code: string,
+                language?: string
+            ): Promise<string>;
+            
+            function suggestFixes(
+                code: string,
+                error: string
+            ): Promise<Fix[]>;
+        }
+
+        // 컨텍스트 관리 API
+        namespace context {
+            function addFile(path: string): void;
+            function removeFile(path: string): void;
+            function setProjectContext(context: ProjectContext): void;
+            function getActiveContext(): Context;
+        }
+
+        // 명령어 등록 API
+        namespace commands {
+            function registerCommand(
+                command: string,
+                callback: (...args: any[]) => any
+            ): Disposable;
+            
+            function registerAICommand(
+                command: string,
+                handler: AICommandHandler
+            ): Disposable;
+        }
+    }
+
+    // 타입 정의
+    interface GenerateOptions {
+        language?: string;
+        framework?: string;
+        style?: 'functional' | 'oop' | 'procedural';
+        includeTests?: boolean;
+        includeComments?: boolean;
+    }
+
+    interface Fix {
+        description: string;
+        code: string;
+        severity: 'error' | 'warning' | 'info';
+    }
+
+    interface AICommandHandler {
+        prompt: (args: any[]) => string;
+        processResponse?: (response: string) => any;
+        validateInput?: (args: any[]) => boolean;
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="extension-structure">
+                        <h4>확장 프로젝트 구조</h4>
+                        <pre><code>my-cursor-extension/
+├── src/
+│   ├── extension.ts          # 메인 진입점
+│   ├── commands/            # 커스텀 명령어
+│   │   ├── generateBoilerplate.ts
+│   │   ├── refactorToPattern.ts
+│   │   └── autoDocument.ts
+│   ├── providers/           # 프로바이더
+│   │   ├── aiCodeActionProvider.ts
+│   │   ├── aiCompletionProvider.ts
+│   │   └── aiHoverProvider.ts
+│   ├── services/            # 서비스 레이어
+│   │   ├── aiService.ts
+│   │   ├── contextService.ts
+│   │   └── templateService.ts
+│   └── utils/               # 유틸리티
+│       ├── promptBuilder.ts
+│       └── codeAnalyzer.ts
+├── package.json             # 확장 매니페스트
+├── tsconfig.json           # TypeScript 설정
+└── .cursorrules            # AI 동작 규칙</code></pre>
+                    </div>
+
+                    <div class="extension-manifest">
+                        <h4>package.json 구성</h4>
+                        <pre><code>{
+    "name": "my-cursor-extension",
+    "displayName": "My Cursor Extension",
+    "description": "AI-powered development tools",
+    "version": "1.0.0",
+    "engines": {
+        "vscode": "^1.74.0",
+        "cursor": "^0.8.0"
+    },
+    "categories": ["AI", "Other"],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "myExtension.generateBoilerplate",
+                "title": "Generate AI Boilerplate",
+                "category": "My Extension"
+            },
+            {
+                "command": "myExtension.refactorToPattern",
+                "title": "Refactor to Design Pattern",
+                "category": "My Extension"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "myExtension.generateBoilerplate",
+                "key": "ctrl+shift+g",
+                "mac": "cmd+shift+g"
+            }
+        ],
+        "configuration": {
+            "title": "My Cursor Extension",
+            "properties": {
+                "myExtension.aiModel": {
+                    "type": "string",
+                    "default": "gpt-4",
+                    "enum": ["gpt-4", "claude-3"],
+                    "description": "AI model to use"
+                },
+                "myExtension.contextDepth": {
+                    "type": "number",
+                    "default": 5,
+                    "description": "Number of files to include in context"
+                }
+            }
+        },
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "myExtension.refactorToPattern",
+                    "group": "1_modification",
+                    "when": "editorHasSelection"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.74.0",
+        "@types/node": "16.x",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "cursor-api": "^0.8.0"
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-terminal"></i> 커스텀 명령어 개발</h2>
+
+                <div class="custom-commands">
+                    <h3>AI 통합 명령어 구현</h3>
+                    
+                    <div class="command-example">
+                        <h4>보일러플레이트 생성 명령어</h4>
+                        <pre><code>// src/commands/generateBoilerplate.ts
+import * as vscode from 'vscode';
+import { cursor } from 'cursor-api';
+import { TemplateService } from '../services/templateService';
+import { PromptBuilder } from '../utils/promptBuilder';
+
+export class GenerateBoilerplateCommand {
+    constructor(
+        private templateService: TemplateService,
+        private promptBuilder: PromptBuilder
+    ) {}
+
+    async execute() {
+        // 1. 사용자 입력 받기
+        const projectType = await vscode.window.showQuickPick([
+            { label: 'React + TypeScript', value: 'react-ts' },
+            { label: 'Node.js API', value: 'node-api' },
+            { label: 'Python FastAPI', value: 'python-fastapi' },
+            { label: 'Custom...', value: 'custom' }
+        ], {
+            placeHolder: 'Select project type'
+        });
+
+        if (!projectType) return;
+
+        // 2. 추가 옵션 수집
+        const options = await this.collectOptions(projectType.value);
+
+        // 3. AI 프롬프트 생성
+        const prompt = this.promptBuilder.buildBoilerplatePrompt({
+            type: projectType.value,
+            options,
+            context: await this.gatherContext()
+        });
+
+        // 4. AI에게 코드 생성 요청
+        const generatedCode = await cursor.ai.generateCode(prompt, {
+            language: this.getLanguage(projectType.value),
+            includeTests: options.includeTests,
+            includeComments: true
+        });
+
+        // 5. 생성된 코드 처리
+        await this.processGeneratedCode(generatedCode, options);
+    }
+
+    private async collectOptions(projectType: string): Promise<ProjectOptions> {
+        const options: ProjectOptions = {};
+
+        // 프로젝트 이름
+        options.name = await vscode.window.showInputBox({
+            prompt: 'Project name',
+            placeHolder: 'my-awesome-project'
+        }) || 'new-project';
+
+        // 추가 기능 선택
+        const features = await vscode.window.showQuickPick([
+            { label: 'Authentication', picked: true },
+            { label: 'Database (PostgreSQL)', picked: true },
+            { label: 'Redis Cache', picked: false },
+            { label: 'Docker Support', picked: true },
+            { label: 'CI/CD Pipeline', picked: true },
+            { label: 'Testing Setup', picked: true }
+        ], {
+            canPickMany: true,
+            placeHolder: 'Select features to include'
+        });
+
+        options.features = features?.map(f => f.label) || [];
+        options.includeTests = options.features.includes('Testing Setup');
+
+        return options;
+    }
+
+    private async processGeneratedCode(code: string, options: ProjectOptions) {
+        // 코드를 파일별로 파싱
+        const files = this.parseGeneratedFiles(code);
+
+        // 프로젝트 폴더 생성
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage('No workspace folder open');
+            return;
+        }
+
+        const projectPath = path.join(workspaceFolder.uri.fsPath, options.name);
+        
+        // 사용자 확인
+        const proceed = await vscode.window.showWarningMessage(
+            `Create project at ${projectPath}?`,
+            'Yes', 'No'
+        );
+
+        if (proceed !== 'Yes') return;
+
+        // 파일 생성
+        for (const [filePath, content] of files.entries()) {
+            const fullPath = path.join(projectPath, filePath);
+            const dir = path.dirname(fullPath);
+            
+            // 디렉토리 생성
+            await fs.mkdir(dir, { recursive: true });
+            
+            // 파일 작성
+            await fs.writeFile(fullPath, content);
+        }
+
+        // 생성된 프로젝트 열기
+        const openInNewWindow = await vscode.window.showQuickPick(
+            ['Current Window', 'New Window'],
+            { placeHolder: 'Open project in...' }
+        );
+
+        if (openInNewWindow === 'New Window') {
+            vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectPath), true);
+        } else {
+            vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectPath));
+        }
+
+        // 성공 메시지
+        vscode.window.showInformationMessage(`Project ${options.name} created successfully!`);
+    }
+
+    private parseGeneratedFiles(code: string): Map<string, string> {
+        const files = new Map<string, string>();
+        const fileRegex = /```(?:[\w]+)?\s*\/\/ ([\w\/\.\-]+)\n([\s\S]*?)```/g;
+        
+        let match;
+        while ((match = fileRegex.exec(code)) !== null) {
+            files.set(match[1], match[2].trim());
+        }
+
+        return files;
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="command-example">
+                        <h4>디자인 패턴 리팩토링 명령어</h4>
+                        <pre><code>// src/commands/refactorToPattern.ts
+export class RefactorToPatternCommand {
+    async execute() {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+
+        // 선택된 코드 가져오기
+        const selection = editor.selection;
+        const selectedCode = editor.document.getText(selection);
+
+        if (!selectedCode) {
+            vscode.window.showWarningMessage('Please select code to refactor');
+            return;
+        }
+
+        // 패턴 선택
+        const pattern = await vscode.window.showQuickPick([
+            { 
+                label: 'Singleton',
+                description: 'Ensure a class has only one instance',
+                detail: 'Use when exactly one object is needed to coordinate actions'
+            },
+            {
+                label: 'Factory',
+                description: 'Create objects without specifying their concrete classes',
+                detail: 'Use when you need to decouple object creation from usage'
+            },
+            {
+                label: 'Observer',
+                description: 'Define a one-to-many dependency between objects',
+                detail: 'Use for event handling and reactive programming'
+            },
+            {
+                label: 'Strategy',
+                description: 'Define a family of algorithms and make them interchangeable',
+                detail: 'Use to encapsulate algorithms and make them swappable'
+            },
+            {
+                label: 'Decorator',
+                description: 'Add new functionality to objects without altering their structure',
+                detail: 'Use to add responsibilities to objects dynamically'
+            }
+        ], {
+            placeHolder: 'Select design pattern'
+        });
+
+        if (!pattern) return;
+
+        // 코드 분석
+        const analysis = await this.analyzeCode(selectedCode);
+
+        // AI 프롬프트 생성
+        const prompt = `
+Refactor the following code to implement the ${pattern.label} pattern:
+
+Current Code:
+\`\`\`${analysis.language}
+${selectedCode}
+\`\`\`
+
+Code Analysis:
+- Classes: ${analysis.classes.join(', ')}
+- Methods: ${analysis.methods.join(', ')}
+- Dependencies: ${analysis.dependencies.join(', ')}
+
+Requirements:
+1. Maintain all existing functionality
+2. Follow ${pattern.label} pattern best practices
+3. Add appropriate comments explaining the pattern
+4. Include usage examples
+5. Ensure backward compatibility if possible
+
+Additional Context:
+- Pattern Purpose: ${pattern.description}
+- When to Use: ${pattern.detail}
+`;
+
+        // AI에게 리팩토링 요청
+        const refactoredCode = await cursor.ai.refactorCode(selectedCode, prompt);
+
+        // 리팩토링 결과 표시
+        await this.showRefactoringResult(
+            selectedCode,
+            refactoredCode,
+            pattern.label,
+            editor,
+            selection
+        );
+    }
+
+    private async analyzeCode(code: string): Promise<CodeAnalysis> {
+        // 간단한 코드 분석 (실제로는 더 정교한 AST 분석 필요)
+        const classRegex = /class\s+(\w+)/g;
+        const methodRegex = /(?:function\s+(\w+)|(\w+)\s*\([^)]*\)\s*{)/g;
+        const importRegex = /import.*from\s+['"](.+)['"]/g;
+
+        const classes = [...code.matchAll(classRegex)].map(m => m[1]);
+        const methods = [...code.matchAll(methodRegex)].map(m => m[1] || m[2]).filter(Boolean);
+        const dependencies = [...code.matchAll(importRegex)].map(m => m[1]);
+
+        // 언어 감지
+        const language = await vscode.languages.match(
+            { pattern: '**/*.{ts,js,py,java}' },
+            vscode.window.activeTextEditor!.document
+        );
+
+        return {
+            language: language[0]?.language || 'typescript',
+            classes,
+            methods,
+            dependencies
+        };
+    }
+
+    private async showRefactoringResult(
+        originalCode: string,
+        refactoredCode: string,
+        patternName: string,
+        editor: vscode.TextEditor,
+        selection: vscode.Selection
+    ) {
+        // Diff 뷰 생성
+        const diffUri = vscode.Uri.parse(
+            `diff:original.ts?refactored.ts?${patternName} Pattern Refactoring`
+        );
+
+        // 임시 문서 생성
+        const originalDoc = await vscode.workspace.openTextDocument({
+            content: originalCode,
+            language: editor.document.languageId
+        });
+
+        const refactoredDoc = await vscode.workspace.openTextDocument({
+            content: refactoredCode,
+            language: editor.document.languageId
+        });
+
+        // Diff 표시
+        await vscode.commands.executeCommand(
+            'vscode.diff',
+            originalDoc.uri,
+            refactoredDoc.uri,
+            `${patternName} Pattern Refactoring`
+        );
+
+        // 적용 옵션
+        const action = await vscode.window.showInformationMessage(
+            'Apply refactoring?',
+            'Apply', 'Apply with Review', 'Cancel'
+        );
+
+        if (action === 'Apply') {
+            await editor.edit(editBuilder => {
+                editBuilder.replace(selection, refactoredCode);
+            });
+        } else if (action === 'Apply with Review') {
+            // 리뷰 모드로 적용
+            await this.applyWithReview(editor, selection, refactoredCode);
+        }
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-robot"></i> AI 통합 프로바이더</h2>
+
+                <div class="ai-providers">
+                    <h3>지능형 코드 완성 프로바이더</h3>
+                    
+                    <div class="provider-example">
+                        <h4>AI 코드 액션 프로바이더</h4>
+                        <pre><code>// src/providers/aiCodeActionProvider.ts
+import * as vscode from 'vscode';
+import { cursor } from 'cursor-api';
+
+export class AICodeActionProvider implements vscode.CodeActionProvider {
+    public static readonly providedCodeActionKinds = [
+        vscode.CodeActionKind.QuickFix,
+        vscode.CodeActionKind.Refactor,
+        vscode.CodeActionKind.RefactorExtract,
+        vscode.CodeActionKind.RefactorInline
+    ];
+
+    async provideCodeActions(
+        document: vscode.TextDocument,
+        range: vscode.Range | vscode.Selection,
+        context: vscode.CodeActionContext,
+        token: vscode.CancellationToken
+    ): Promise<vscode.CodeAction[]> {
+        const actions: vscode.CodeAction[] = [];
+
+        // 진단 정보 기반 수정 제안
+        for (const diagnostic of context.diagnostics) {
+            const fixAction = await this.createFixAction(document, diagnostic);
+            if (fixAction) actions.push(fixAction);
+        }
+
+        // 선택 영역 기반 리팩토링 제안
+        if (!range.isEmpty) {
+            const refactorActions = await this.createRefactorActions(document, range);
+            actions.push(...refactorActions);
+        }
+
+        // 성능 최적화 제안
+        const perfAction = await this.createPerformanceAction(document, range);
+        if (perfAction) actions.push(perfAction);
+
+        return actions;
+    }
+
+    private async createFixAction(
+        document: vscode.TextDocument,
+        diagnostic: vscode.Diagnostic
+    ): Promise<vscode.CodeAction | undefined> {
+        const code = document.getText(diagnostic.range);
+        const error = diagnostic.message;
+
+        // AI에게 수정 제안 요청
+        const fixes = await cursor.ai.suggestFixes(code, error);
+        
+        if (fixes.length === 0) return undefined;
+
+        // 가장 적절한 수정 선택
+        const bestFix = fixes[0];
+        
+        const action = new vscode.CodeAction(
+            `AI Fix: ${bestFix.description}`,
+            vscode.CodeActionKind.QuickFix
+        );
+
+        action.edit = new vscode.WorkspaceEdit();
+        action.edit.replace(
+            document.uri,
+            diagnostic.range,
+            bestFix.code
+        );
+
+        action.diagnostics = [diagnostic];
+        action.isPreferred = true;
+
+        return action;
+    }
+
+    private async createRefactorActions(
+        document: vscode.TextDocument,
+        range: vscode.Range
+    ): Promise<vscode.CodeAction[]> {
+        const selectedCode = document.getText(range);
+        const actions: vscode.CodeAction[] = [];
+
+        // Extract Method
+        const extractMethodAction = new vscode.CodeAction(
+            'AI: Extract Method',
+            vscode.CodeActionKind.RefactorExtract
+        );
+        extractMethodAction.command = {
+            command: 'myExtension.aiExtractMethod',
+            title: 'Extract Method with AI',
+            arguments: [document, range]
+        };
+        actions.push(extractMethodAction);
+
+        // Inline Variable
+        if (this.isVariable(selectedCode)) {
+            const inlineAction = new vscode.CodeAction(
+                'AI: Inline Variable',
+                vscode.CodeActionKind.RefactorInline
+            );
+            inlineAction.command = {
+                command: 'myExtension.aiInlineVariable',
+                title: 'Inline Variable with AI',
+                arguments: [document, range]
+            };
+            actions.push(inlineAction);
+        }
+
+        // Convert to Async
+        if (this.canConvertToAsync(selectedCode)) {
+            const asyncAction = new vscode.CodeAction(
+                'AI: Convert to Async/Await',
+                vscode.CodeActionKind.Refactor
+            );
+            asyncAction.command = {
+                command: 'myExtension.aiConvertToAsync',
+                title: 'Convert to Async/Await',
+                arguments: [document, range]
+            };
+            actions.push(asyncAction);
+        }
+
+        return actions;
+    }
+
+    private async createPerformanceAction(
+        document: vscode.TextDocument,
+        range: vscode.Range
+    ): Promise<vscode.CodeAction | undefined> {
+        const code = document.getText(range.isEmpty ? undefined : range);
+        
+        // 성능 분석 프롬프트
+        const analysisPrompt = `
+Analyze this code for performance issues:
+\`\`\`
+${code}
+\`\`\`
+
+Look for:
+- Unnecessary loops or iterations
+- Memory leaks
+- Inefficient algorithms
+- Missing memoization opportunities
+- Blocking operations
+
+If issues found, provide optimized version.
+`;
+
+        const analysis = await cursor.ai.generateCode(analysisPrompt);
+        
+        if (analysis.includes('OPTIMIZED:')) {
+            const action = new vscode.CodeAction(
+                'AI: Optimize Performance',
+                vscode.CodeActionKind.Refactor
+            );
+            
+            action.command = {
+                command: 'myExtension.showOptimization',
+                title: 'Show AI Performance Optimization',
+                arguments: [analysis]
+            };
+            
+            return action;
+        }
+        
+        return undefined;
+    }
+
+    private isVariable(code: string): boolean {
+        return /(?:const|let|var)\s+\w+\s*=/.test(code);
+    }
+
+    private canConvertToAsync(code: string): boolean {
+        return code.includes('.then(') || code.includes('Promise');
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="provider-example">
+                        <h4>AI 호버 프로바이더</h4>
+                        <pre><code>// src/providers/aiHoverProvider.ts
+export class AIHoverProvider implements vscode.HoverProvider {
+    private cache = new Map<string, vscode.Hover>();
+
+    async provideHover(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        token: vscode.CancellationToken
+    ): Promise<vscode.Hover | undefined> {
+        const range = document.getWordRangeAtPosition(position);
+        if (!range) return undefined;
+
+        const word = document.getText(range);
+        
+        // 캐시 확인
+        const cacheKey = `${document.uri.toString()}:${word}`;
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey);
+        }
+
+        // 컨텍스트 수집
+        const context = this.gatherContext(document, position);
+        
+        // AI에게 설명 요청
+        const explanation = await cursor.ai.explainCode(
+            word,
+            context.language
+        );
+
+        // 추가 정보 수집
+        const additionalInfo = await this.gatherAdditionalInfo(word, context);
+
+        // Hover 내용 구성
+        const hoverContent = new vscode.MarkdownString();
+        hoverContent.isTrusted = true;
+        hoverContent.supportHtml = true;
+
+        // 기본 설명
+        hoverContent.appendMarkdown(`### ${word}\n\n`);
+        hoverContent.appendMarkdown(explanation);
+
+        // 추가 정보
+        if (additionalInfo.type) {
+            hoverContent.appendMarkdown(`\n\n**Type:** \`${additionalInfo.type}\``);
+        }
+
+        if (additionalInfo.examples.length > 0) {
+            hoverContent.appendMarkdown('\n\n**Examples:**\n');
+            additionalInfo.examples.forEach(example => {
+                hoverContent.appendCodeblock(example, context.language);
+            });
+        }
+
+        if (additionalInfo.relatedSymbols.length > 0) {
+            hoverContent.appendMarkdown('\n\n**Related:**\n');
+            additionalInfo.relatedSymbols.forEach(symbol => {
+                hoverContent.appendMarkdown(`- [\`${symbol}\`](command:myExtension.goToSymbol?${symbol})\n`);
+            });
+        }
+
+        // 액션 버튼
+        hoverContent.appendMarkdown('\n\n---\n');
+        hoverContent.appendMarkdown(
+            `[📖 Docs](command:myExtension.searchDocs?${word}) | ` +
+            `[🔍 Find References](command:references-view.findReferences) | ` +
+            `[💡 AI Explain](command:myExtension.aiExplainDetailed?${word})`
+        );
+
+        const hover = new vscode.Hover(hoverContent, range);
+        
+        // 캐시 저장
+        this.cache.set(cacheKey, hover);
+        
+        // 캐시 만료 설정
+        setTimeout(() => {
+            this.cache.delete(cacheKey);
+        }, 300000); // 5분
+
+        return hover;
+    }
+
+    private gatherContext(
+        document: vscode.TextDocument,
+        position: vscode.Position
+    ): Context {
+        // 주변 코드 수집
+        const linePrefix = document.lineAt(position).text.substr(0, position.character);
+        const lineSuffix = document.lineAt(position).text.substr(position.character);
+        
+        // 함수/클래스 컨텍스트 찾기
+        let scopeContext = '';
+        for (let i = position.line; i >= 0; i--) {
+            const line = document.lineAt(i).text;
+            if (line.match(/(?:function|class|interface|type)\s+\w+/)) {
+                scopeContext = line;
+                break;
+            }
+        }
+
+        return {
+            language: document.languageId,
+            linePrefix,
+            lineSuffix,
+            scopeContext,
+            imports: this.extractImports(document),
+            fileType: path.extname(document.uri.fsPath)
+        };
+    }
+
+    private async gatherAdditionalInfo(
+        symbol: string,
+        context: Context
+    ): Promise<AdditionalInfo> {
+        // 심볼 타입 추론
+        const type = await this.inferType(symbol, context);
+        
+        // 예제 생성
+        const examples = await this.generateExamples(symbol, type, context);
+        
+        // 관련 심볼 찾기
+        const relatedSymbols = await this.findRelatedSymbols(symbol, context);
+
+        return {
+            type,
+            examples,
+            relatedSymbols
+        };
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-cogs"></i> 워크플로우 자동화</h2>
+
+                <div class="workflow-automation">
+                    <h3>AI 기반 자동화 도구</h3>
+                    
+                    <div class="automation-example">
+                        <h4>코드 리뷰 자동화</h4>
+                        <pre><code>// src/automation/codeReviewAutomation.ts
+export class CodeReviewAutomation {
+    async setupAutomatedReview() {
+        // Git 훅 설정
+        const hookContent = `#!/bin/sh
+# AI 코드 리뷰 pre-commit hook
+
+# Cursor AI 리뷰 실행
+cursor-cli review --staged --format json > .review-result.json
+
+# 리뷰 결과 확인
+if [ -f .review-result.json ]; then
+    issues=$(jq '.issues | length' .review-result.json)
+    if [ "$issues" -gt 0 ]; then
+        echo "🔍 AI Code Review found $issues issues:"
+        jq '.issues[] | "\\(.severity): \\(.message) (\\(.file):\\(.line))"' .review-result.json
+        
+        echo "\\nWould you like to proceed anyway? (y/n)"
+        read response
+        if [ "$response" != "y" ]; then
+            exit 1
+        fi
+    fi
+fi
+`;
+
+        // 훅 파일 생성
+        const gitHookPath = path.join(
+            vscode.workspace.rootPath!,
+            '.git/hooks/pre-commit'
+        );
+        
+        await fs.writeFile(gitHookPath, hookContent);
+        await fs.chmod(gitHookPath, '755');
+
+        // VS Code 통합
+        vscode.workspace.onDidSaveTextDocument(async (document) => {
+            if (this.shouldReview(document)) {
+                await this.performReview(document);
+            }
+        });
+    }
+
+    private async performReview(document: vscode.TextDocument) {
+        const config = vscode.workspace.getConfiguration('myExtension');
+        const autoReviewEnabled = config.get<boolean>('enableAutoReview', true);
+        
+        if (!autoReviewEnabled) return;
+
+        // 변경 사항 분석
+        const changes = await this.getDocumentChanges(document);
+        
+        // AI 리뷰 요청
+        const reviewPrompt = `
+Review the following code changes for:
+1. Potential bugs or errors
+2. Performance issues
+3. Security vulnerabilities
+4. Code style violations
+5. Best practice violations
+
+Changes:
+\`\`\`diff
+${changes}
+\`\`\`
+
+Provide specific, actionable feedback with line numbers.
+`;
+
+        const review = await cursor.ai.generateCode(reviewPrompt);
+        
+        // 리뷰 결과 파싱
+        const issues = this.parseReviewIssues(review);
+        
+        // 진단 정보 생성
+        const diagnostics = issues.map(issue => {
+            const diagnostic = new vscode.Diagnostic(
+                issue.range,
+                issue.message,
+                this.getSeverity(issue.severity)
+            );
+            diagnostic.source = 'AI Review';
+            diagnostic.code = issue.code;
+            return diagnostic;
+        });
+
+        // 진단 정보 설정
+        const diagnosticCollection = vscode.languages.createDiagnosticCollection('ai-review');
+        diagnosticCollection.set(document.uri, diagnostics);
+
+        // 심각한 이슈가 있으면 알림
+        const criticalIssues = issues.filter(i => i.severity === 'critical');
+        if (criticalIssues.length > 0) {
+            const action = await vscode.window.showWarningMessage(
+                `AI Review found ${criticalIssues.length} critical issues`,
+                'Show Issues',
+                'Ignore'
+            );
+            
+            if (action === 'Show Issues') {
+                vscode.commands.executeCommand('workbench.action.problems.focus');
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="automation-example">
+                        <h4>테스트 자동 생성</h4>
+                        <pre><code>// src/automation/testGeneration.ts
+export class TestGenerationAutomation {
+    async generateTestsForFile(uri: vscode.Uri) {
+        const document = await vscode.workspace.openTextDocument(uri);
+        const code = document.getText();
+        
+        // 코드 분석
+        const analysis = await this.analyzeCode(code);
+        
+        // 테스트 생성 프롬프트
+        const prompt = `
+Generate comprehensive unit tests for the following code:
+
+\`\`\`${document.languageId}
+${code}
+\`\`\`
+
+Requirements:
+1. Test all public methods and functions
+2. Include edge cases and error scenarios
+3. Use ${this.getTestFramework(document.languageId)} framework
+4. Follow AAA pattern (Arrange, Act, Assert)
+5. Include both positive and negative test cases
+6. Add descriptive test names
+7. Mock external dependencies
+
+Code Analysis:
+- Exported Functions: ${analysis.functions.join(', ')}
+- Classes: ${analysis.classes.join(', ')}
+- Dependencies: ${analysis.dependencies.join(', ')}
+`;
+
+        // AI로 테스트 생성
+        const generatedTests = await cursor.ai.generateCode(prompt, {
+            language: document.languageId,
+            includeComments: true
+        });
+
+        // 테스트 파일 경로 결정
+        const testFilePath = this.getTestFilePath(uri);
+        
+        // 기존 테스트와 병합
+        if (await this.fileExists(testFilePath)) {
+            const existingTests = await this.readFile(testFilePath);
+            const mergedTests = await this.mergeTests(existingTests, generatedTests);
+            await this.writeFile(testFilePath, mergedTests);
+        } else {
+            await this.writeFile(testFilePath, generatedTests);
+        }
+
+        // 테스트 실행
+        const runTests = await vscode.window.showInformationMessage(
+            'Tests generated successfully. Run them now?',
+            'Run Tests',
+            'Open File',
+            'Later'
+        );
+
+        if (runTests === 'Run Tests') {
+            vscode.commands.executeCommand('testing.runAll');
+        } else if (runTests === 'Open File') {
+            const doc = await vscode.workspace.openTextDocument(testFilePath);
+            await vscode.window.showTextDocument(doc);
+        }
+    }
+
+    private getTestFramework(language: string): string {
+        const frameworks = {
+            'typescript': 'Jest',
+            'javascript': 'Jest',
+            'python': 'pytest',
+            'java': 'JUnit',
+            'csharp': 'xUnit',
+            'go': 'testing',
+            'rust': 'cargo test'
+        };
+        
+        return frameworks[language] || 'default test framework';
+    }
+
+    private getTestFilePath(sourceUri: vscode.Uri): string {
+        const sourcePath = sourceUri.fsPath;
+        const dir = path.dirname(sourcePath);
+        const basename = path.basename(sourcePath, path.extname(sourcePath));
+        const ext = path.extname(sourcePath);
+        
+        // 테스트 파일 네이밍 컨벤션
+        const testPatterns = [
+            `${dir}/__tests__/${basename}.test${ext}`,
+            `${dir}/${basename}.test${ext}`,
+            `${dir}/${basename}.spec${ext}`,
+            `${dir}/test_${basename}.py` // Python
+        ];
+        
+        // 프로젝트 설정에 따라 선택
+        const config = vscode.workspace.getConfiguration('myExtension');
+        const testPattern = config.get<string>('testFilePattern', testPatterns[0]);
+        
+        return testPattern.replace('{basename}', basename).replace('{ext}', ext);
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-share-alt"></i> 확장 배포와 공유</h2>
+
+                <div class="extension-deployment">
+                    <h3>팀 확장 배포 전략</h3>
+                    
+                    <div class="deployment-guide">
+                        <h4>확장 패키징과 배포</h4>
+                        <pre><code># 확장 빌드 및 패키징
+npm run compile
+vsce package
+
+# 프라이빗 레지스트리 배포
+vsce publish --registry https://npm.company.com
+
+# 팀 내부 배포 스크립트
+#!/bin/bash
+# deploy-extension.sh
+
+VERSION=$(node -p "require('./package.json').version")
+EXTENSION_NAME="my-cursor-extension"
+
+echo "Building extension v$VERSION..."
+npm run compile
+vsce package
+
+echo "Uploading to team repository..."
+aws s3 cp "$EXTENSION_NAME-$VERSION.vsix" \
+  "s3://team-extensions/$EXTENSION_NAME/" \
+  --acl private
+
+echo "Updating team registry..."
+curl -X POST https://api.team.com/extensions \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -d @- << EOF
+{
+  "name": "$EXTENSION_NAME",
+  "version": "$VERSION",
+  "url": "s3://team-extensions/$EXTENSION_NAME/$EXTENSION_NAME-$VERSION.vsix",
+  "changelog": "$(cat CHANGELOG.md | jq -sR .)"
+}
+EOF
+
+echo "Notifying team..."
+slack-notify "#dev-tools" "New Cursor extension released: $EXTENSION_NAME v$VERSION"</code></pre>
+                    </div>
+
+                    <div class="team-configuration">
+                        <h4>팀 설정 동기화</h4>
+                        <pre><code>// team-sync/settings.json
+{
+    "myExtension.teamPresets": {
+        "frontend": {
+            "aiModel": "gpt-4",
+            "codeStyle": "functional",
+            "framework": "react",
+            "testFramework": "jest",
+            "lintRules": "strict"
+        },
+        "backend": {
+            "aiModel": "claude-3",
+            "codeStyle": "oop",
+            "framework": "express",
+            "testFramework": "mocha",
+            "database": "postgresql"
+        }
+    },
+    "myExtension.sharedPrompts": {
+        "review": "templates/review-prompt.md",
+        "refactor": "templates/refactor-prompt.md",
+        "document": "templates/document-prompt.md"
+    },
+    "myExtension.teamContext": {
+        "repository": "https://github.com/company/contexts",
+        "branch": "main",
+        "syncInterval": 3600
+    }
+}
+
+// 동기화 서비스
+export class TeamSyncService {
+    async syncTeamSettings() {
+        const config = vscode.workspace.getConfiguration('myExtension');
+        const teamContext = config.get<TeamContext>('teamContext');
+        
+        if (!teamContext) return;
+
+        // 팀 컨텍스트 다운로드
+        const contexts = await this.downloadTeamContexts(teamContext);
+        
+        // 로컬에 적용
+        for (const [key, value] of Object.entries(contexts)) {
+            await config.update(key, value, vscode.ConfigurationTarget.Workspace);
+        }
+
+        // 프롬프트 템플릿 동기화
+        await this.syncPromptTemplates(teamContext);
+        
+        // AI 룰 동기화
+        await this.syncAIRules(teamContext);
+        
+        vscode.window.showInformationMessage('Team settings synchronized successfully');
+    }
+
+    private async downloadTeamContexts(context: TeamContext): Promise<any> {
+        const response = await fetch(
+            `${context.repository}/raw/${context.branch}/settings.json`
+        );
+        return response.json();
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 나만의 Cursor 확장 만들기</h2>
+
+                <div class="practice-content">
+                    <h3>프로젝트별 맞춤 도구 개발</h3>
+                    <p>팀의 특정 요구사항을 해결하는 Cursor 확장을 만들어봅시다.</p>
+
+                    <div class="extension-project">
+                        <h4>확장 프로젝트: Smart Documentation Generator</h4>
+                        <div class="project-features">
+                            <h5>주요 기능</h5>
+                            <ul>
+                                <li>코드에서 자동으로 문서 생성</li>
+                                <li>API 엔드포인트 문서화</li>
+                                <li>컴포넌트 스토리북 생성</li>
+                                <li>다이어그램 자동 생성</li>
+                                <li>변경 이력 추적</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="implementation-steps">
+                        <h4>구현 단계</h4>
+                        
+                        <div class="step">
+                            <h5>1. 프로젝트 초기화</h5>
+                            <pre><code>yo code
+# ? What type of extension? New Extension (TypeScript)
+# ? Extension name? Smart Documentation Generator
+# ? Identifier? smart-doc-gen
+# ? Initialize git? Yes</code></pre>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>2. 핵심 기능 구현</h5>
+                            <p>AI를 활용한 문서 생성 엔진 개발</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>3. UI/UX 개선</h5>
+                            <p>웹뷰를 활용한 인터랙티브 문서 뷰어</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>4. 팀 통합</h5>
+                            <p>CI/CD 파이프라인과 문서 자동 업데이트</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>5. 배포 및 관리</h5>
+                            <p>내부 마켓플레이스 또는 직접 배포</p>
+                        </div>
+                    </div>
+
+                    <div class="best-practices">
+                        <h4>🏆 확장 개발 베스트 프랙티스</h4>
+                        <ul>
+                            <li>성능 최적화: 비동기 처리와 지연 로딩</li>
+                            <li>에러 처리: 우아한 실패와 복구</li>
+                            <li>사용자 경험: 직관적인 인터페이스</li>
+                            <li>테스트: 단위 및 통합 테스트</li>
+                            <li>문서화: 명확한 사용 가이드</li>
+                            <li>버전 관리: 시맨틱 버저닝</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>확장 가능한 아키텍처</h3>
+                        <p>Cursor의 확장 시스템을 활용하여 맞춤형 개발 도구를 구축합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>AI 통합 자동화</h3>
+                        <p>AI API를 활용하여 지능적인 코드 생성과 분석 도구를 만듭니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>워크플로우 최적화</h3>
+                        <p>반복적인 작업을 자동화하여 개발 생산성을 향상시킵니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>팀 협업 강화</h3>
+                        <p>팀 전용 도구와 설정을 공유하여 일관된 개발 환경을 구축합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 실시간 협업과 코드 공유 기법을 배웁니다.</p>
+                    <a href="lesson23.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="completed">API 개발과 문서화</li>
+                    <li class="completed">데이터베이스 설계와 최적화</li>
+                    <li class="completed">프론트엔드 프레임워크와 Cursor AI</li>
+                    <li class="completed">백엔드 프레임워크와 Cursor AI</li>
+                    <li class="completed">Docker와 Kubernetes 배포</li>
+                    <li class="completed">성능 최적화와 보안</li>
+                    <li class="completed">대규모 프로젝트 아키텍처</li>
+                    <li class="completed">AI 페어 프로그래밍 고급 기법</li>
+                    <li class="current">커스텀 명령어와 확장 개발</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-tools"></i> 확장 개발 도구</h3>
+                <div class="dev-tools">
+                    <div class="tool">
+                        <strong>yo code</strong>
+                        <span>확장 생성기</span>
+                    </div>
+                    <div class="tool">
+                        <strong>vsce</strong>
+                        <span>패키징 도구</span>
+                    </div>
+                    <div class="tool">
+                        <strong>Extension API</strong>
+                        <span>API 문서</span>
+                    </div>
+                    <div class="tool">
+                        <strong>Debugger</strong>
+                        <span>확장 디버거</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 확장을 개발할 때는 항상 성능을 염두에 두세요. 동기적 작업을 피하고, 필요할 때만 활성화되도록 activation events를 잘 설정하는 것이 중요합니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 73.33%"></div>
+            <span class="progress-text">22/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

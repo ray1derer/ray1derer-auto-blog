@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제16강: 프론트엔드 프레임워크와 Cursor AI | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-react"></i> 제16강: 프론트엔드 프레임워크와 Cursor AI</h1>
+                <p class="lesson-subtitle">React, Vue, Angular와 함께하는 AI 기반 프론트엔드 개발</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 55분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson15.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제16강: 프론트엔드 프레임워크와 Cursor AI</span>
+            <a href="lesson17.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 React 컴포넌트 자동 생성 마스터하기</li>
+                    <li>Vue.js Composition API와 AI 통합 활용하기</li>
+                    <li>Angular의 복잡한 구조를 AI로 간단하게 관리하기</li>
+                    <li>상태 관리 라이브러리 자동 설정 및 최적화</li>
+                    <li>프레임워크별 베스트 프랙티스 적용하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-react"></i> React와 AI 기반 개발</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 React의 컴포넌트 구조를 이해하고, 재사용 가능한 컴포넌트를 자동으로 생성합니다. Hooks, Context API, 최신 패턴까지 모두 지원합니다.</p>
+                </div>
+
+                <h3>React 컴포넌트 자동 생성</h3>
+                <div class="react-examples">
+                    <div class="component-request">
+                        <h4>요구사항: 검색 가능한 사용자 목록 컴포넌트</h4>
+                        <p>AI에게 요청: "페이지네이션과 검색 기능이 있는 사용자 목록 컴포넌트를 만들어줘"</p>
+                    </div>
+
+                    <div class="ai-generated-component">
+                        <h4>AI가 생성한 컴포넌트</h4>
+                        <pre><code>// UserList.tsx
+import React, { useState, useEffect, useMemo } from 'react';
+import { User } from '../types/User';
+import { useDebounce } from '../hooks/useDebounce';
+import './UserList.css';
+
+interface UserListProps {
+    users: User[];
+    itemsPerPage?: number;
+    onUserSelect?: (user: User) => void;
+}
+
+export const UserList: React.FC<UserListProps> = ({ 
+    users, 
+    itemsPerPage = 10,
+    onUserSelect 
+}) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof User;
+        direction: 'asc' | 'desc';
+    } | null>(null);
+
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+    // 필터링된 사용자 목록
+    const filteredUsers = useMemo(() => {
+        return users.filter(user => {
+            const searchLower = debouncedSearchTerm.toLowerCase();
+            return (
+                user.name.toLowerCase().includes(searchLower) ||
+                user.email.toLowerCase().includes(searchLower) ||
+                user.role?.toLowerCase().includes(searchLower)
+            );
+        });
+    }, [users, debouncedSearchTerm]);
+
+    // 정렬된 사용자 목록
+    const sortedUsers = useMemo(() => {
+        if (!sortConfig) return filteredUsers;
+
+        return [...filteredUsers].sort((a, b) => {
+            const aValue = a[sortConfig.key];
+            const bValue = b[sortConfig.key];
+
+            if (aValue < bValue) {
+                return sortConfig.direction === 'asc' ? -1 : 1;
+            }
+            if (aValue > bValue) {
+                return sortConfig.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    }, [filteredUsers, sortConfig]);
+
+    // 페이지네이션
+    const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+    const paginatedUsers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedUsers.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedUsers, currentPage, itemsPerPage]);
+
+    // 검색어 변경 시 첫 페이지로
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearchTerm]);
+
+    const handleSort = (key: keyof User) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        
+        if (sortConfig?.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        
+        setSortConfig({ key, direction });
+    };
+
+    return (
+        <div className="user-list-container">
+            <div className="user-list-header">
+                <div className="search-box">
+                    <i className="fas fa-search"></i>
+                    <input
+                        type="text"
+                        placeholder="이름, 이메일, 역할로 검색..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                    {searchTerm && (
+                        <button 
+                            className="clear-button"
+                            onClick={() => setSearchTerm('')}
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+                    )}
+                </div>
+                <div className="results-info">
+                    {filteredUsers.length}명의 사용자
+                </div>
+            </div>
+
+            <div className="user-table-wrapper">
+                <table className="user-table">
+                    <thead>
+                        <tr>
+                            <th onClick={() => handleSort('name')}>
+                                이름
+                                {sortConfig?.key === 'name' && (
+                                    <i className={`fas fa-sort-${sortConfig.direction === 'asc' ? 'up' : 'down'}`} />
+                                )}
+                            </th>
+                            <th onClick={() => handleSort('email')}>
+                                이메일
+                                {sortConfig?.key === 'email' && (
+                                    <i className={`fas fa-sort-${sortConfig.direction === 'asc' ? 'up' : 'down'}`} />
+                                )}
+                            </th>
+                            <th onClick={() => handleSort('role')}>
+                                역할
+                                {sortConfig?.key === 'role' && (
+                                    <i className={`fas fa-sort-${sortConfig.direction === 'asc' ? 'up' : 'down'}`} />
+                                )}
+                            </th>
+                            <th>상태</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {paginatedUsers.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="no-results">
+                                    검색 결과가 없습니다
+                                </td>
+                            </tr>
+                        ) : (
+                            paginatedUsers.map(user => (
+                                <tr 
+                                    key={user.id}
+                                    onClick={() => onUserSelect?.(user)}
+                                    className="user-row"
+                                >
+                                    <td>
+                                        <div className="user-info">
+                                            <img 
+                                                src={user.avatar || '/default-avatar.png'} 
+                                                alt={user.name}
+                                                className="user-avatar"
+                                            />
+                                            <span>{user.name}</span>
+                                        </div>
+                                    </td>
+                                    <td>{user.email}</td>
+                                    <td>
+                                        <span className={`role-badge role-${user.role}`}>
+                                            {user.role}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`status-badge ${user.isActive ? 'active' : 'inactive'}`}>
+                                            {user.isActive ? '활성' : '비활성'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button className="action-button">
+                                            <i className="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {totalPages > 1 && (
+                <div className="pagination">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="pagination-button"
+                    >
+                        <i className="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    {[...Array(totalPages)].map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(index + 1)}
+                            className={`pagination-button ${currentPage === index + 1 ? 'active' : ''}`}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+                    
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="pagination-button"
+                    >
+                        <i className="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};</code></pre>
+                    </div>
+
+                    <div class="custom-hook">
+                        <h4>AI가 생성한 커스텀 Hook</h4>
+                        <pre><code>// hooks/useDebounce.ts
+import { useState, useEffect } from 'react';
+
+export function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
+// hooks/usePagination.ts
+export function usePagination<T>(items: T[], itemsPerPage: number) {
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const totalPages = Math.ceil(items.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = items.slice(startIndex, endIndex);
+
+    const goToPage = (page: number) => {
+        setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+    };
+
+    const nextPage = () => goToPage(currentPage + 1);
+    const prevPage = () => goToPage(currentPage - 1);
+
+    return {
+        currentPage,
+        totalPages,
+        currentItems,
+        goToPage,
+        nextPage,
+        prevPage,
+        hasNext: currentPage < totalPages,
+        hasPrev: currentPage > 1
+    };
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-vuejs"></i> Vue.js와 AI 통합</h2>
+
+                <div class="vue-examples">
+                    <h3>Vue 3 Composition API 활용</h3>
+                    
+                    <div class="vue-component">
+                        <h4>AI가 생성한 Vue 3 컴포넌트</h4>
+                        <pre><code>// TaskManager.vue
+<template>
+  <div class="task-manager">
+    <div class="task-header">
+      <h2>작업 관리</h2>
+      <div class="task-stats">
+        <div class="stat">
+          <span class="stat-value">{{ stats.total }}</span>
+          <span class="stat-label">전체</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ stats.completed }}</span>
+          <span class="stat-label">완료</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ stats.pending }}</span>
+          <span class="stat-label">대기</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-controls">
+      <input
+        v-model="newTaskTitle"
+        @keyup.enter="addTask"
+        placeholder="새 작업 추가..."
+        class="task-input"
+      />
+      <select v-model="filter" class="task-filter">
+        <option value="all">모든 작업</option>
+        <option value="pending">대기 중</option>
+        <option value="completed">완료됨</option>
+      </select>
+    </div>
+
+    <TransitionGroup name="task-list" tag="ul" class="task-list">
+      <li
+        v-for="task in filteredTasks"
+        :key="task.id"
+        :class="['task-item', { completed: task.completed }]"
+        @click="toggleTask(task.id)"
+      >
+        <div class="task-content">
+          <input
+            type="checkbox"
+            :checked="task.completed"
+            @click.stop
+            @change="toggleTask(task.id)"
+          />
+          <span class="task-title">{{ task.title }}</span>
+          <span class="task-date">{{ formatDate(task.createdAt) }}</span>
+        </div>
+        <button
+          @click.stop="deleteTask(task.id)"
+          class="delete-button"
+        >
+          <i class="fas fa-trash"></i>
+        </button>
+      </li>
+    </TransitionGroup>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import { useTaskStore } from '@/stores/task';
+import { storeToRefs } from 'pinia';
+import { formatDate } from '@/utils/date';
+
+interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+}
+
+// Pinia store 사용
+const taskStore = useTaskStore();
+const { tasks } = storeToRefs(taskStore);
+const { addTask: storeAddTask, deleteTask: storeDeleteTask, toggleTask } = taskStore;
+
+// 로컬 상태
+const newTaskTitle = ref('');
+const filter = ref<'all' | 'pending' | 'completed'>('all');
+
+// 필터링된 작업 목록
+const filteredTasks = computed(() => {
+  switch (filter.value) {
+    case 'pending':
+      return tasks.value.filter(task => !task.completed);
+    case 'completed':
+      return tasks.value.filter(task => task.completed);
+    default:
+      return tasks.value;
+  }
+});
+
+// 통계
+const stats = computed(() => {
+  const total = tasks.value.length;
+  const completed = tasks.value.filter(t => t.completed).length;
+  return {
+    total,
+    completed,
+    pending: total - completed
+  };
+});
+
+// 새 작업 추가
+const addTask = () => {
+  if (newTaskTitle.value.trim()) {
+    storeAddTask(newTaskTitle.value);
+    newTaskTitle.value = '';
+  }
+};
+
+// 작업 삭제
+const deleteTask = (id: string) => {
+  if (confirm('이 작업을 삭제하시겠습니까?')) {
+    storeDeleteTask(id);
+  }
+};
+
+// 로컬 스토리지 동기화
+watch(tasks, (newTasks) => {
+  localStorage.setItem('tasks', JSON.stringify(newTasks));
+}, { deep: true });
+</script>
+
+<style scoped>
+.task-manager {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.task-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.task-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.task-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.task-filter {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: white;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-item.completed {
+  opacity: 0.6;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+}
+
+.task-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 10px;
+}
+
+.task-date {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.delete-button {
+  padding: 5px 10px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 트랜지션 애니메이션 */
+.task-list-enter-active,
+.task-list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.task-list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.task-list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+</style></code></pre>
+                    </div>
+
+                    <div class="pinia-store">
+                        <h4>AI가 생성한 Pinia Store</h4>
+                        <pre><code>// stores/task.ts
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface Task {
+    id: string;
+    title: string;
+    description?: string;
+    completed: boolean;
+    priority: 'low' | 'medium' | 'high';
+    tags: string[];
+    createdAt: Date;
+    updatedAt: Date;
+    dueDate?: Date;
+}
+
+export const useTaskStore = defineStore('task', () => {
+    // 상태
+    const tasks = ref<Task[]>([]);
+    const isLoading = ref(false);
+    const error = ref<string | null>(null);
+
+    // 게터
+    const completedTasks = computed(() => 
+        tasks.value.filter(task => task.completed)
+    );
+
+    const pendingTasks = computed(() => 
+        tasks.value.filter(task => !task.completed)
+    );
+
+    const tasksByPriority = computed(() => {
+        const priority = { high: 3, medium: 2, low: 1 };
+        return [...tasks.value].sort((a, b) => 
+            priority[b.priority] - priority[a.priority]
+        );
+    });
+
+    const overdueTasks = computed(() => {
+        const now = new Date();
+        return tasks.value.filter(task => 
+            task.dueDate && new Date(task.dueDate) < now && !task.completed
+        );
+    });
+
+    // 액션
+    function addTask(title: string, options: Partial<Task> = {}) {
+        const newTask: Task = {
+            id: uuidv4(),
+            title,
+            completed: false,
+            priority: 'medium',
+            tags: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ...options
+        };
+        
+        tasks.value.unshift(newTask);
+        saveToLocalStorage();
+        return newTask;
+    }
+
+    function updateTask(id: string, updates: Partial<Task>) {
+        const index = tasks.value.findIndex(task => task.id === id);
+        if (index !== -1) {
+            tasks.value[index] = {
+                ...tasks.value[index],
+                ...updates,
+                updatedAt: new Date()
+            };
+            saveToLocalStorage();
+        }
+    }
+
+    function deleteTask(id: string) {
+        tasks.value = tasks.value.filter(task => task.id !== id);
+        saveToLocalStorage();
+    }
+
+    function toggleTask(id: string) {
+        const task = tasks.value.find(t => t.id === id);
+        if (task) {
+            task.completed = !task.completed;
+            task.updatedAt = new Date();
+            saveToLocalStorage();
+        }
+    }
+
+    function clearCompleted() {
+        tasks.value = tasks.value.filter(task => !task.completed);
+        saveToLocalStorage();
+    }
+
+    // 로컬 스토리지
+    function saveToLocalStorage() {
+        localStorage.setItem('tasks', JSON.stringify(tasks.value));
+    }
+
+    function loadFromLocalStorage() {
+        const saved = localStorage.getItem('tasks');
+        if (saved) {
+            tasks.value = JSON.parse(saved).map((task: any) => ({
+                ...task,
+                createdAt: new Date(task.createdAt),
+                updatedAt: new Date(task.updatedAt),
+                dueDate: task.dueDate ? new Date(task.dueDate) : undefined
+            }));
+        }
+    }
+
+    // 초기화
+    loadFromLocalStorage();
+
+    return {
+        // 상태
+        tasks,
+        isLoading,
+        error,
+        // 게터
+        completedTasks,
+        pendingTasks,
+        tasksByPriority,
+        overdueTasks,
+        // 액션
+        addTask,
+        updateTask,
+        deleteTask,
+        toggleTask,
+        clearCompleted
+    };
+});</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-angular"></i> Angular와 AI 기반 개발</h2>
+
+                <div class="angular-examples">
+                    <h3>Angular 컴포넌트와 서비스</h3>
+                    
+                    <div class="angular-component">
+                        <h4>AI가 생성한 Angular 컴포넌트</h4>
+                        <pre><code>// product-list.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { Subject, combineLatest } from 'rxjs';
+import { 
+    takeUntil, 
+    debounceTime, 
+    distinctUntilChanged,
+    startWith,
+    map 
+} from 'rxjs/operators';
+import { ProductService } from '../../services/product.service';
+import { Product } from '../../models/product.model';
+
+@Component({
+    selector: 'app-product-list',
+    templateUrl: './product-list.component.html',
+    styleUrls: ['./product-list.component.scss']
+})
+export class ProductListComponent implements OnInit, OnDestroy {
+    products$ = this.productService.products$;
+    loading$ = this.productService.loading$;
+    error$ = this.productService.error$;
+    
+    searchControl = new FormControl('');
+    categoryControl = new FormControl('all');
+    sortControl = new FormControl('name');
+    
+    categories = ['all', 'electronics', 'clothing', 'books', 'food'];
+    sortOptions = [
+        { value: 'name', label: '이름순' },
+        { value: 'price-asc', label: '가격 낮은순' },
+        { value: 'price-desc', label: '가격 높은순' },
+        { value: 'rating', label: '평점순' }
+    ];
+    
+    filteredProducts$ = combineLatest([
+        this.products$,
+        this.searchControl.valueChanges.pipe(
+            startWith(''),
+            debounceTime(300),
+            distinctUntilChanged()
+        ),
+        this.categoryControl.valueChanges.pipe(startWith('all')),
+        this.sortControl.valueChanges.pipe(startWith('name'))
+    ]).pipe(
+        map(([products, search, category, sort]) => 
+            this.filterAndSortProducts(products, search, category, sort)
+        )
+    );
+    
+    private destroy$ = new Subject<void>();
+    
+    constructor(private productService: ProductService) {}
+    
+    ngOnInit(): void {
+        this.productService.loadProducts();
+    }
+    
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+    
+    private filterAndSortProducts(
+        products: Product[],
+        search: string,
+        category: string,
+        sortBy: string
+    ): Product[] {
+        let filtered = products;
+        
+        // 검색 필터
+        if (search) {
+            const searchLower = search.toLowerCase();
+            filtered = filtered.filter(product =>
+                product.name.toLowerCase().includes(searchLower) ||
+                product.description?.toLowerCase().includes(searchLower)
+            );
+        }
+        
+        // 카테고리 필터
+        if (category !== 'all') {
+            filtered = filtered.filter(product => 
+                product.category === category
+            );
+        }
+        
+        // 정렬
+        return this.sortProducts(filtered, sortBy);
+    }
+    
+    private sortProducts(products: Product[], sortBy: string): Product[] {
+        const sorted = [...products];
+        
+        switch (sortBy) {
+            case 'name':
+                return sorted.sort((a, b) => 
+                    a.name.localeCompare(b.name)
+                );
+            case 'price-asc':
+                return sorted.sort((a, b) => a.price - b.price);
+            case 'price-desc':
+                return sorted.sort((a, b) => b.price - a.price);
+            case 'rating':
+                return sorted.sort((a, b) => b.rating - a.rating);
+            default:
+                return sorted;
+        }
+    }
+    
+    addToCart(product: Product): void {
+        this.productService.addToCart(product);
+    }
+    
+    trackByProductId(index: number, product: Product): string {
+        return product.id;
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="angular-template">
+                        <h4>Angular 템플릿</h4>
+                        <pre><code><!-- product-list.component.html -->
+<div class="product-list-container">
+    <div class="filters">
+        <mat-form-field appearance="outline">
+            <mat-label>검색</mat-label>
+            <input 
+                matInput 
+                [formControl]="searchControl"
+                placeholder="상품명 또는 설명으로 검색..."
+            >
+            <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+            <mat-label>카테고리</mat-label>
+            <mat-select [formControl]="categoryControl">
+                <mat-option value="all">모든 카테고리</mat-option>
+                <mat-option 
+                    *ngFor="let category of categories.slice(1)" 
+                    [value]="category"
+                >
+                    {{ category | titlecase }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+            <mat-label>정렬</mat-label>
+            <mat-select [formControl]="sortControl">
+                <mat-option 
+                    *ngFor="let option of sortOptions" 
+                    [value]="option.value"
+                >
+                    {{ option.label }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    
+    <div class="products-grid" *ngIf="filteredProducts$ | async as products">
+        <ng-container *ngIf="!(loading$ | async); else loadingTemplate">
+            <div 
+                class="product-card" 
+                *ngFor="let product of products; trackBy: trackByProductId"
+                [@slideIn]
+            >
+                <img 
+                    [src]="product.imageUrl" 
+                    [alt]="product.name"
+                    class="product-image"
+                >
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-description">
+                        {{ product.description }}
+                    </p>
+                    <div class="product-meta">
+                        <span class="product-price">
+                            {{ product.price | currency:'KRW':'symbol':'1.0-0' }}
+                        </span>
+                        <div class="product-rating">
+                            <mat-icon 
+                                *ngFor="let star of [1,2,3,4,5]"
+                                [class.filled]="star <= product.rating"
+                            >
+                                star
+                            </mat-icon>
+                            <span>({{ product.reviewCount }})</span>
+                        </div>
+                    </div>
+                    <button 
+                        mat-raised-button 
+                        color="primary"
+                        (click)="addToCart(product)"
+                    >
+                        <mat-icon>shopping_cart</mat-icon>
+                        장바구니 담기
+                    </button>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+    
+    <div 
+        class="empty-state" 
+        *ngIf="(filteredProducts$ | async)?.length === 0 && !(loading$ | async)"
+    >
+        <mat-icon>search_off</mat-icon>
+        <p>검색 결과가 없습니다</p>
+    </div>
+</div>
+
+<ng-template #loadingTemplate>
+    <div class="loading-state">
+        <mat-spinner></mat-spinner>
+        <p>상품을 불러오는 중...</p>
+    </div>
+</ng-template></code></pre>
+                    </div>
+
+                    <div class="angular-service">
+                        <h4>Angular 서비스</h4>
+                        <pre><code>// product.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, tap, map, finalize } from 'rxjs/operators';
+import { Product } from '../models/product.model';
+import { NotificationService } from './notification.service';
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ProductService {
+    private productsSubject = new BehaviorSubject<Product[]>([]);
+    private loadingSubject = new BehaviorSubject<boolean>(false);
+    private errorSubject = new BehaviorSubject<string | null>(null);
+    
+    products$ = this.productsSubject.asObservable();
+    loading$ = this.loadingSubject.asObservable();
+    error$ = this.errorSubject.asObservable();
+    
+    private apiUrl = '/api/products';
+    
+    constructor(
+        private http: HttpClient,
+        private notification: NotificationService
+    ) {}
+    
+    loadProducts(): void {
+        this.loadingSubject.next(true);
+        this.errorSubject.next(null);
+        
+        this.http.get<Product[]>(this.apiUrl).pipe(
+            tap(products => this.productsSubject.next(products)),
+            catchError(error => {
+                const message = '상품을 불러오는데 실패했습니다';
+                this.errorSubject.next(message);
+                this.notification.error(message);
+                return throwError(error);
+            }),
+            finalize(() => this.loadingSubject.next(false))
+        ).subscribe();
+    }
+    
+    getProductById(id: string): Observable<Product | undefined> {
+        return this.products$.pipe(
+            map(products => products.find(p => p.id === id))
+        );
+    }
+    
+    addToCart(product: Product): void {
+        // 장바구니 로직
+        this.notification.success(`${product.name}을(를) 장바구니에 담았습니다`);
+    }
+    
+    updateProduct(id: string, updates: Partial<Product>): Observable<Product> {
+        return this.http.patch<Product>(`${this.apiUrl}/${id}`, updates).pipe(
+            tap(updatedProduct => {
+                const products = this.productsSubject.value;
+                const index = products.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    products[index] = updatedProduct;
+                    this.productsSubject.next([...products]);
+                }
+            }),
+            catchError(error => {
+                this.notification.error('상품 업데이트에 실패했습니다');
+                return throwError(error);
+            })
+        );
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-cog"></i> 상태 관리 라이브러리 통합</h2>
+
+                <div class="state-management">
+                    <h3>프레임워크별 상태 관리</h3>
+                    
+                    <div class="state-comparison">
+                        <div class="state-option">
+                            <h4>React: Redux Toolkit</h4>
+                            <pre><code>// store/userSlice.ts
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { userAPI } from '../api/userAPI';
+
+interface UserState {
+    currentUser: User | null;
+    isAuthenticated: boolean;
+    loading: boolean;
+    error: string | null;
+}
+
+const initialState: UserState = {
+    currentUser: null,
+    isAuthenticated: false,
+    loading: false,
+    error: null
+};
+
+export const login = createAsyncThunk(
+    'user/login',
+    async (credentials: LoginCredentials) => {
+        const response = await userAPI.login(credentials);
+        return response.data;
+    }
+);
+
+const userSlice = createSlice({
+    name: 'user',
+    initialState,
+    reducers: {
+        logout(state) {
+            state.currentUser = null;
+            state.isAuthenticated = false;
+        },
+        updateProfile(state, action: PayloadAction<Partial<User>>) {
+            if (state.currentUser) {
+                state.currentUser = { ...state.currentUser, ...action.payload };
+            }
+        }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(login.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(login.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentUser = action.payload.user;
+                state.isAuthenticated = true;
+            })
+            .addCase(login.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message || '로그인 실패';
+            });
+    }
+});
+
+export const { logout, updateProfile } = userSlice.actions;
+export default userSlice.reducer;</code></pre>
+                        </div>
+
+                        <div class="state-option">
+                            <h4>Vue: Pinia</h4>
+                            <pre><code>// stores/user.ts
+import { defineStore } from 'pinia';
+import { userAPI } from '@/api/userAPI';
+
+export const useUserStore = defineStore('user', {
+    state: () => ({
+        currentUser: null as User | null,
+        isAuthenticated: false,
+        loading: false,
+        error: null as string | null
+    }),
+    
+    getters: {
+        userFullName: (state) => {
+            if (!state.currentUser) return '';
+            return `${state.currentUser.firstName} ${state.currentUser.lastName}`;
+        },
+        
+        userPermissions: (state) => {
+            return state.currentUser?.permissions || [];
+        }
+    },
+    
+    actions: {
+        async login(credentials: LoginCredentials) {
+            this.loading = true;
+            this.error = null;
+            
+            try {
+                const { data } = await userAPI.login(credentials);
+                this.currentUser = data.user;
+                this.isAuthenticated = true;
+                
+                // 토큰 저장
+                localStorage.setItem('authToken', data.token);
+                
+                return data;
+            } catch (error) {
+                this.error = error.message;
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        logout() {
+            this.currentUser = null;
+            this.isAuthenticated = false;
+            localStorage.removeItem('authToken');
+        },
+        
+        updateProfile(updates: Partial<User>) {
+            if (this.currentUser) {
+                this.currentUser = { ...this.currentUser, ...updates };
+            }
+        }
+    },
+    
+    persist: {
+        enabled: true,
+        strategies: [{
+            key: 'user',
+            storage: localStorage,
+            paths: ['currentUser', 'isAuthenticated']
+        }]
+    }
+});</code></pre>
+                        </div>
+
+                        <div class="state-option">
+                            <h4>Angular: NgRx</h4>
+                            <pre><code>// store/user.actions.ts
+import { createAction, props } from '@ngrx/store';
+import { User, LoginCredentials } from '../models/user.model';
+
+export const login = createAction(
+    '[Auth] Login',
+    props<{ credentials: LoginCredentials }>()
+);
+
+export const loginSuccess = createAction(
+    '[Auth] Login Success',
+    props<{ user: User; token: string }>()
+);
+
+export const loginFailure = createAction(
+    '[Auth] Login Failure',
+    props<{ error: string }>()
+);
+
+export const logout = createAction('[Auth] Logout');
+
+// store/user.reducer.ts
+import { createReducer, on } from '@ngrx/store';
+import * as UserActions from './user.actions';
+
+export interface UserState {
+    currentUser: User | null;
+    isAuthenticated: boolean;
+    loading: boolean;
+    error: string | null;
+}
+
+const initialState: UserState = {
+    currentUser: null,
+    isAuthenticated: false,
+    loading: false,
+    error: null
+};
+
+export const userReducer = createReducer(
+    initialState,
+    on(UserActions.login, state => ({
+        ...state,
+        loading: true,
+        error: null
+    })),
+    on(UserActions.loginSuccess, (state, { user }) => ({
+        ...state,
+        currentUser: user,
+        isAuthenticated: true,
+        loading: false
+    })),
+    on(UserActions.loginFailure, (state, { error }) => ({
+        ...state,
+        error,
+        loading: false
+    })),
+    on(UserActions.logout, () => initialState)
+);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 프레임워크 통합 프로젝트</h2>
+
+                <div class="practice-content">
+                    <h3>실시간 대시보드 만들기</h3>
+                    <p>AI와 함께 실시간 데이터 대시보드를 구축해봅시다.</p>
+
+                    <div class="dashboard-requirements">
+                        <h4>요구사항</h4>
+                        <ul>
+                            <li>실시간 차트 (매출, 사용자, 트래픽)</li>
+                            <li>데이터 필터링 (날짜, 카테고리)</li>
+                            <li>반응형 그리드 레이아웃</li>
+                            <li>WebSocket 실시간 업데이트</li>
+                            <li>다크모드 지원</li>
+                        </ul>
+                    </div>
+
+                    <div class="implementation-steps">
+                        <h4>구현 단계</h4>
+                        
+                        <div class="step">
+                            <h5>1. 프로젝트 설정</h5>
+                            <p>선택한 프레임워크로 프로젝트 초기화</p>
+                            <pre><code># React
+npx create-react-app dashboard --template typescript
+
+# Vue
+npm create vue@latest dashboard
+
+# Angular
+ng new dashboard --routing --style=scss</code></pre>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>2. AI와 컴포넌트 설계</h5>
+                            <p>Chat에 요청: "실시간 대시보드를 위한 컴포넌트 구조를 설계해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>3. 차트 컴포넌트 생성</h5>
+                            <p>Cmd+K: "Chart.js를 사용한 실시간 차트 컴포넌트 만들어줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>4. WebSocket 연결</h5>
+                            <p>Composer로 실시간 데이터 스트림 구현</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>5. 반응형 레이아웃</h5>
+                            <p>AI에게: "CSS Grid로 반응형 대시보드 레이아웃 만들어줘"</p>
+                        </div>
+                    </div>
+
+                    <div class="tips">
+                        <h4>🌟 프레임워크별 팁</h4>
+                        <ul>
+                            <li><strong>React:</strong> React.memo()와 useMemo()로 성능 최적화</li>
+                            <li><strong>Vue:</strong> Composition API로 로직 재사용성 향상</li>
+                            <li><strong>Angular:</strong> OnPush 전략으로 변경 감지 최적화</li>
+                            <li><strong>공통:</strong> 가상 스크롤링으로 대량 데이터 처리</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>컴포넌트 자동 생성</h3>
+                        <p>AI가 프레임워크별 베스트 프랙티스를 적용한 컴포넌트를 자동으로 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>상태 관리 통합</h3>
+                        <p>Redux, Pinia, NgRx 등 각 프레임워크에 최적화된 상태 관리 코드를 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>타입 안전성 보장</h3>
+                        <p>TypeScript를 활용하여 컴파일 타임에 오류를 방지하는 안전한 코드를 작성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>성능 최적화 자동화</h3>
+                        <p>각 프레임워크의 성능 최적화 기법을 자동으로 적용합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 백엔드 프레임워크와 Cursor AI를 활용한 서버 개발을 배웁니다.</p>
+                    <a href="lesson17.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="completed">API 개발과 문서화</li>
+                    <li class="completed">데이터베이스 설계와 최적화</li>
+                    <li class="current">프론트엔드 프레임워크와 Cursor AI</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-code"></i> 프레임워크 비교</h3>
+                <div class="framework-comparison">
+                    <div class="framework-item">
+                        <strong>React</strong>
+                        <ul>
+                            <li>컴포넌트 기반</li>
+                            <li>Virtual DOM</li>
+                            <li>큰 생태계</li>
+                        </ul>
+                    </div>
+                    <div class="framework-item">
+                        <strong>Vue</strong>
+                        <ul>
+                            <li>점진적 프레임워크</li>
+                            <li>템플릿 기반</li>
+                            <li>쉬운 학습 곡선</li>
+                        </ul>
+                    </div>
+                    <div class="framework-item">
+                        <strong>Angular</strong>
+                        <ul>
+                            <li>풀 프레임워크</li>
+                            <li>TypeScript 기본</li>
+                            <li>엔터프라이즈급</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 프레임워크를 선택할 때는 프로젝트 요구사항과 팀의 경험을 고려하세요. Cursor AI는 모든 주요 프레임워크를 지원하므로, 익숙한 것부터 시작하는 것이 좋습니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 53.33%"></div>
+            <span class="progress-text">16/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

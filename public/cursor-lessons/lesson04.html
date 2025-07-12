@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제4강: Cmd+K 완벽 가이드 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-magic"></i> 제4강: Cmd+K 완벽 가이드</h1>
+                <p class="lesson-subtitle">선택한 코드를 AI로 즉시 변환하는 마법같은 기능</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 초급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 40분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 기초</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson03.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제4강: Cmd+K 완벽 가이드</span>
+            <a href="lesson05.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cmd+K(Ctrl+K)의 핵심 개념 이해하기</li>
+                    <li>다양한 코드 변환 시나리오 마스터하기</li>
+                    <li>효과적인 명령어 작성법 익히기</li>
+                    <li>Cmd+K와 다른 기능의 조합 활용하기</li>
+                    <li>생산성을 극대화하는 워크플로우 구축하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-wand-magic-sparkles"></i> Cmd+K란 무엇인가?</h2>
+                
+                <div class="info-box">
+                    <p>Cmd+K는 선택한 코드에 AI 명령을 내려 즉시 편집할 수 있는 Cursor의 킬러 기능입니다. 코드를 선택하고, 원하는 변환을 자연어로 설명하면, AI가 즉시 코드를 수정합니다.</p>
+                </div>
+
+                <h3>Cmd+K의 특징</h3>
+                <div class="features-highlight">
+                    <div class="feature">
+                        <i class="fas fa-bolt"></i>
+                        <h4>즉각적인 변환</h4>
+                        <p>선택한 코드를 바로 그 자리에서 변환</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-crosshairs"></i>
+                        <h4>정확한 타겟팅</h4>
+                        <p>선택한 부분만 정확히 수정</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-language"></i>
+                        <h4>자연어 명령</h4>
+                        <p>프로그래밍 용어 없이도 사용 가능</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-undo"></i>
+                        <h4>안전한 편집</h4>
+                        <p>언제든지 실행 취소 가능</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-play"></i> Cmd+K 기본 사용법</h2>
+
+                <div class="basic-usage">
+                    <h3>3단계로 완성하는 코드 변환</h3>
+                    
+                    <div class="steps-visual">
+                        <div class="step-card">
+                            <div class="step-number">1</div>
+                            <h4>코드 선택</h4>
+                            <p>변환하고 싶은 코드를 마우스나 키보드로 선택</p>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step-card">
+                            <div class="step-number">2</div>
+                            <h4>Cmd+K 누르기</h4>
+                            <p>명령 입력창이 나타남</p>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step-card">
+                            <div class="step-number">3</div>
+                            <h4>명령 입력</h4>
+                            <p>원하는 변환을 자연어로 설명</p>
+                        </div>
+                    </div>
+
+                    <h3>첫 번째 Cmd+K 체험</h3>
+                    <div class="first-experience">
+                        <div class="code-before">
+                            <h4>변환 전</h4>
+                            <pre><code class="selected">function greet(name) {
+    console.log("Hello, " + name + "!");
+}</code></pre>
+                        </div>
+                        
+                        <div class="cmd-k-input">
+                            <div class="command-box">
+                                <kbd>Cmd+K</kbd>
+                                <input type="text" value="convert to arrow function with template literal" disabled>
+                            </div>
+                        </div>
+                        
+                        <div class="code-after">
+                            <h4>변환 후</h4>
+                            <pre><code>const greet = (name) => {
+    console.log(`Hello, ${name}!`);
+};</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-toolbox"></i> 실전 Cmd+K 활용 예제</h2>
+
+                <div class="use-cases">
+                    <h3>1. 문법 변환</h3>
+                    <div class="use-case-example">
+                        <div class="example-grid">
+                            <div class="before">
+                                <h5>Promise → Async/Await</h5>
+                                <pre><code>function fetchData() {
+    return fetch('/api/data')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            return data;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+}</code></pre>
+                                <p class="cmd-hint">Cmd+K: "convert to async await"</p>
+                            </div>
+                            <div class="after">
+                                <pre><code>async function fetchData() {
+    try {
+        const response = await fetch('/api/data');
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. 타입 추가 (JavaScript → TypeScript)</h3>
+                    <div class="use-case-example">
+                        <div class="example-grid">
+                            <div class="before">
+                                <h5>타입 없는 함수</h5>
+                                <pre><code>function calculateTotal(items, taxRate) {
+    const subtotal = items.reduce((sum, item) => 
+        sum + item.price * item.quantity, 0);
+    const tax = subtotal * taxRate;
+    return {
+        subtotal,
+        tax,
+        total: subtotal + tax
+    };
+}</code></pre>
+                                <p class="cmd-hint">Cmd+K: "add TypeScript types"</p>
+                            </div>
+                            <div class="after">
+                                <pre><code>interface Item {
+    price: number;
+    quantity: number;
+}
+
+interface TotalResult {
+    subtotal: number;
+    tax: number;
+    total: number;
+}
+
+function calculateTotal(items: Item[], taxRate: number): TotalResult {
+    const subtotal = items.reduce((sum, item) => 
+        sum + item.price * item.quantity, 0);
+    const tax = subtotal * taxRate;
+    return {
+        subtotal,
+        tax,
+        total: subtotal + tax
+    };
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. 코드 스타일 변경</h3>
+                    <div class="use-case-example">
+                        <div class="example-grid">
+                            <div class="before">
+                                <h5>클래스 컴포넌트</h5>
+                                <pre><code>class Counter extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { count: 0 };
+    }
+
+    increment = () => {
+        this.setState({ count: this.state.count + 1 });
+    }
+
+    render() {
+        return (
+            &lt;div&gt;
+                &lt;p&gt;Count: {this.state.count}&lt;/p&gt;
+                &lt;button onClick={this.increment}&gt;+&lt;/button&gt;
+            &lt;/div&gt;
+        );
+    }
+}</code></pre>
+                                <p class="cmd-hint">Cmd+K: "convert to functional component with hooks"</p>
+                            </div>
+                            <div class="after">
+                                <pre><code>import React, { useState } from 'react';
+
+const Counter = () => {
+    const [count, setCount] = useState(0);
+
+    const increment = () => {
+        setCount(count + 1);
+    };
+
+    return (
+        &lt;div&gt;
+            &lt;p&gt;Count: {count}&lt;/p&gt;
+            &lt;button onClick={increment}&gt;+&lt;/button&gt;
+        &lt;/div&gt;
+    );
+};</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>4. 에러 처리 추가</h3>
+                    <div class="use-case-example">
+                        <div class="example-grid">
+                            <div class="before">
+                                <h5>에러 처리 없는 코드</h5>
+                                <pre><code>function parseJSON(jsonString) {
+    return JSON.parse(jsonString);
+}</code></pre>
+                                <p class="cmd-hint">Cmd+K: "add try-catch error handling"</p>
+                            </div>
+                            <div class="after">
+                                <pre><code>function parseJSON(jsonString) {
+    try {
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error('Failed to parse JSON:', error);
+        return null;
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>5. 성능 최적화</h3>
+                    <div class="use-case-example">
+                        <div class="example-grid">
+                            <div class="before">
+                                <h5>최적화되지 않은 React 컴포넌트</h5>
+                                <pre><code>const ExpensiveList = ({ items, filter }) => {
+    const filteredItems = items.filter(item => 
+        item.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    return (
+        &lt;ul&gt;
+            {filteredItems.map(item => (
+                &lt;li key={item.id}&gt;{item.name}&lt;/li&gt;
+            ))}
+        &lt;/ul&gt;
+    );
+};</code></pre>
+                                <p class="cmd-hint">Cmd+K: "optimize with useMemo"</p>
+                            </div>
+                            <div class="after">
+                                <pre><code>import React, { useMemo } from 'react';
+
+const ExpensiveList = ({ items, filter }) => {
+    const filteredItems = useMemo(() => 
+        items.filter(item => 
+            item.name.toLowerCase().includes(filter.toLowerCase())
+        ), [items, filter]
+    );
+
+    return (
+        &lt;ul&gt;
+            {filteredItems.map(item => (
+                &lt;li key={item.id}&gt;{item.name}&lt;/li&gt;
+            ))}
+        &lt;/ul&gt;
+    );
+};</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-comment-alt"></i> 효과적인 Cmd+K 명령어</h2>
+
+                <div class="command-guide">
+                    <h3>명령어 작성 팁</h3>
+                    
+                    <div class="command-categories">
+                        <div class="category">
+                            <h4>🔄 변환 명령어</h4>
+                            <ul>
+                                <li>"convert to arrow function"</li>
+                                <li>"change to async/await"</li>
+                                <li>"make this a class method"</li>
+                                <li>"convert to template literal"</li>
+                                <li>"change var to const/let"</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h4>➕ 추가 명령어</h4>
+                            <ul>
+                                <li>"add error handling"</li>
+                                <li>"add JSDoc comments"</li>
+                                <li>"add TypeScript types"</li>
+                                <li>"add console.log for debugging"</li>
+                                <li>"add null check"</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h4>🔧 리팩토링 명령어</h4>
+                            <ul>
+                                <li>"extract to separate function"</li>
+                                <li>"simplify this code"</li>
+                                <li>"make this more readable"</li>
+                                <li>"optimize performance"</li>
+                                <li>"remove duplication"</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h4>🎨 스타일 명령어</h4>
+                            <ul>
+                                <li>"format with prettier"</li>
+                                <li>"fix indentation"</li>
+                                <li>"add semicolons"</li>
+                                <li>"use single quotes"</li>
+                                <li>"follow ESLint rules"</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3>고급 명령어 패턴</h3>
+                    <div class="advanced-commands">
+                        <div class="command-example">
+                            <h4>복합 명령어</h4>
+                            <p class="command">"convert to TypeScript and add proper error handling with custom error types"</p>
+                            <p class="description">여러 작업을 한 번에 수행</p>
+                        </div>
+                        
+                        <div class="command-example">
+                            <h4>조건부 명령어</h4>
+                            <p class="command">"add loading state if this is an async function"</p>
+                            <p class="description">조건에 따른 변환</p>
+                        </div>
+                        
+                        <div class="command-example">
+                            <h4>컨텍스트 인식 명령어</h4>
+                            <p class="command">"refactor to match the style of other functions in this file"</p>
+                            <p class="description">주변 코드 스타일에 맞춤</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-layer-group"></i> Cmd+K 고급 활용법</h2>
+
+                <div class="advanced-usage">
+                    <h3>1. 다중 선택과 Cmd+K</h3>
+                    <div class="multi-select-demo">
+                        <p>여러 곳을 동시에 선택하고 Cmd+K를 사용할 수 있습니다:</p>
+                        <pre><code>// Cmd+D로 여러 곳을 선택
+const <span class="highlight">width</span> = 100;
+const <span class="highlight">height</span> = 200;
+const <span class="highlight">depth</span> = 50;</code></pre>
+                        <p class="cmd-hint">Cmd+K: "rename to camelCase with dimension prefix"</p>
+                        <pre><code>const dimensionWidth = 100;
+const dimensionHeight = 200;
+const dimensionDepth = 50;</code></pre>
+                    </div>
+
+                    <h3>2. 정규식 패턴 활용</h3>
+                    <div class="regex-demo">
+                        <p>복잡한 패턴 변환도 가능합니다:</p>
+                        <pre><code>// 여러 console.log 문
+console.log('user:', user);
+console.log('data:', data);
+console.log('error:', error);</code></pre>
+                        <p class="cmd-hint">Cmd+K: "convert all console.log to debug function calls"</p>
+                        <pre><code>debug('user:', user);
+debug('data:', data);
+debug('error:', error);</code></pre>
+                    </div>
+
+                    <h3>3. 코드 생성</h3>
+                    <div class="code-generation">
+                        <p>빈 함수에서 구현을 생성할 수도 있습니다:</p>
+                        <pre><code>function validateEmail(email) {
+    // TODO: implement email validation
+}</code></pre>
+                        <p class="cmd-hint">Cmd+K: "implement email validation with regex"</p>
+                        <pre><code>function validateEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: Cmd+K로 코드 리팩토링</h2>
+
+                <div class="practice-content">
+                    <h3>레거시 코드 현대화 프로젝트</h3>
+                    <p>오래된 JavaScript 코드를 현대적인 ES6+ 코드로 변환해봅시다.</p>
+
+                    <div class="practice-code">
+                        <h4>원본 코드</h4>
+                        <pre><code>var UserManager = function() {
+    var users = [];
+    
+    this.addUser = function(name, email) {
+        var user = {
+            id: Date.now(),
+            name: name,
+            email: email
+        };
+        users.push(user);
+        return user;
+    };
+    
+    this.getUsers = function() {
+        return users;
+    };
+    
+    this.findUser = function(id) {
+        for (var i = 0; i < users.length; i++) {
+            if (users[i].id == id) {
+                return users[i];
+            }
+        }
+        return null;
+    };
+    
+    this.removeUser = function(id) {
+        for (var i = 0; i < users.length; i++) {
+            if (users[i].id == id) {
+                users.splice(i, 1);
+                return true;
+            }
+        }
+        return false;
+    };
+};</code></pre>
+                    </div>
+
+                    <div class="practice-steps">
+                        <h4>리팩토링 단계</h4>
+                        
+                        <div class="refactor-step">
+                            <h5>Step 1: 클래스로 변환</h5>
+                            <p>전체 코드를 선택하고:</p>
+                            <p class="cmd-prompt">Cmd+K: "convert to ES6 class"</p>
+                        </div>
+                        
+                        <div class="refactor-step">
+                            <h5>Step 2: 메서드 현대화</h5>
+                            <p>findUser 메서드를 선택하고:</p>
+                            <p class="cmd-prompt">Cmd+K: "use array find method instead of for loop"</p>
+                        </div>
+                        
+                        <div class="refactor-step">
+                            <h5>Step 3: TypeScript 타입 추가</h5>
+                            <p>클래스 전체를 선택하고:</p>
+                            <p class="cmd-prompt">Cmd+K: "add TypeScript interfaces and types"</p>
+                        </div>
+                        
+                        <div class="refactor-step">
+                            <h5>Step 4: 검증 로직 추가</h5>
+                            <p>addUser 메서드를 선택하고:</p>
+                            <p class="cmd-prompt">Cmd+K: "add email validation and duplicate check"</p>
+                        </div>
+                    </div>
+
+                    <div class="expected-result">
+                        <h4>예상 결과</h4>
+                        <pre><code>interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
+class UserManager {
+    private users: User[] = [];
+
+    addUser(name: string, email: string): User | null {
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new Error('Invalid email format');
+        }
+
+        // Duplicate check
+        const existingUser = this.users.find(u => u.email === email);
+        if (existingUser) {
+            throw new Error('User with this email already exists');
+        }
+
+        const user: User = {
+            id: Date.now(),
+            name,
+            email
+        };
+        
+        this.users.push(user);
+        return user;
+    }
+
+    getUsers(): User[] {
+        return [...this.users];
+    }
+
+    findUser(id: number): User | null {
+        return this.users.find(user => user.id === id) || null;
+    }
+
+    removeUser(id: number): boolean {
+        const index = this.users.findIndex(user => user.id === id);
+        if (index !== -1) {
+            this.users.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="workflow-integration">
+                <h2><i class="fas fa-sync-alt"></i> Cmd+K 워크플로우 통합</h2>
+
+                <div class="workflow-tips">
+                    <h3>효율적인 작업 흐름</h3>
+                    
+                    <div class="workflow-pattern">
+                        <h4>패턴 1: Write → Select → Transform</h4>
+                        <ol>
+                            <li>기본 코드를 빠르게 작성</li>
+                            <li>개선이 필요한 부분 선택</li>
+                            <li>Cmd+K로 즉시 변환</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="workflow-pattern">
+                        <h4>패턴 2: Copy → Paste → Adapt</h4>
+                        <ol>
+                            <li>유사한 코드 복사</li>
+                            <li>새 위치에 붙여넣기</li>
+                            <li>Cmd+K로 컨텍스트에 맞게 수정</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="workflow-pattern">
+                        <h4>패턴 3: Prototype → Refine</h4>
+                        <ol>
+                            <li>프로토타입 코드 작성</li>
+                            <li>Cmd+K로 에러 처리 추가</li>
+                            <li>Cmd+K로 타입 추가</li>
+                            <li>Cmd+K로 최적화</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="combo-techniques">
+                    <h3>다른 기능과의 조합</h3>
+                    
+                    <div class="combo">
+                        <h4>Tab + Cmd+K</h4>
+                        <p>AI 자동완성으로 기본 구조를 만들고, Cmd+K로 세부 조정</p>
+                    </div>
+                    
+                    <div class="combo">
+                        <h4>Chat + Cmd+K</h4>
+                        <p>Chat에서 전체적인 접근 방법을 물어보고, Cmd+K로 구체적인 구현</p>
+                    </div>
+                    
+                    <div class="combo">
+                        <h4>Multi-cursor + Cmd+K</h4>
+                        <p>여러 위치를 동시에 선택하고 일괄 변환</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>즉각적인 코드 변환</h3>
+                        <p>선택한 코드를 자연어 명령으로 즉시 변환할 수 있는 강력한 도구입니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>컨텍스트 인식</h3>
+                        <p>주변 코드와 프로젝트 구조를 이해하여 적절한 변환을 수행합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>다양한 활용 시나리오</h3>
+                        <p>문법 변환, 리팩토링, 최적화, 스타일 변경 등 모든 종류의 코드 편집에 활용 가능합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>워크플로우 가속화</h3>
+                        <p>반복적인 코드 수정 작업을 자동화하여 개발 속도를 획기적으로 향상시킵니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 Cursor가 프로젝트 전체를 어떻게 이해하고 활용하는지, 프로젝트 컨텍스트를 최대한 활용하는 방법을 배웁니다.</p>
+                    <a href="lesson05.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li>Cursor 소개와 설치</li>
+                    <li>첫 번째 AI 자동완성</li>
+                    <li>AI Chat 마스터하기</li>
+                    <li class="current">Cmd+K 완벽 가이드</li>
+                    <li>프로젝트 컨텍스트</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-star"></i> Cmd+K 즐겨찾기</h3>
+                <div class="favorite-commands">
+                    <div class="fav-cmd">
+                        <code>"add types"</code>
+                        <span>TypeScript 타입 추가</span>
+                    </div>
+                    <div class="fav-cmd">
+                        <code>"make async"</code>
+                        <span>비동기 함수로 변환</span>
+                    </div>
+                    <div class="fav-cmd">
+                        <code>"add error handling"</code>
+                        <span>에러 처리 추가</span>
+                    </div>
+                    <div class="fav-cmd">
+                        <code>"optimize"</code>
+                        <span>성능 최적화</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 Cmd+K는 선택 영역의 컨텍스트를 이해합니다. 함수 전체를 선택하면 더 정확한 변환이 가능합니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 13.33%"></div>
+            <span class="progress-text">4/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

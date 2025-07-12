@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제13강: 리팩토링과 코드 품질 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-gem"></i> 제13강: 리팩토링과 코드 품질</h1>
+                <p class="lesson-subtitle">AI와 함께하는 깨끗하고 유지보수 가능한 코드 작성</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 45분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson12.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제13강: 리팩토링과 코드 품질</span>
+            <a href="lesson14.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI 기반 코드 스멜 탐지와 해결 방법 익히기</li>
+                    <li>리팩토링 패턴과 베스트 프랙티스 이해하기</li>
+                    <li>코드 복잡도 측정과 개선 전략 수립하기</li>
+                    <li>SOLID 원칙 적용과 디자인 패턴 구현하기</li>
+                    <li>지속적인 코드 품질 관리 시스템 구축하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-nose"></i> AI 기반 코드 스멜 탐지</h2>
+                
+                <div class="info-box">
+                    <p>Cursor의 AI는 코드에서 나는 "나쁜 냄새"를 감지하고, 각 상황에 맞는 리팩토링 기법을 제안합니다. 단순한 스타일 문제부터 복잡한 아키텍처 개선까지 다양한 수준의 개선을 지원합니다.</p>
+                </div>
+
+                <h3>일반적인 코드 스멜과 해결법</h3>
+                <div class="code-smells">
+                    <div class="smell-example">
+                        <h4>1. 긴 메서드 (Long Method)</h4>
+                        <div class="bad-code">
+                            <h5>❌ 문제가 있는 코드</h5>
+                            <pre><code>function processOrder(order) {
+    // 주문 검증
+    if (!order.items || order.items.length === 0) {
+        throw new Error('Order must have items');
+    }
+    if (!order.customer) {
+        throw new Error('Order must have customer');
+    }
+    if (!order.customer.email || !order.customer.email.includes('@')) {
+        throw new Error('Invalid customer email');
+    }
+    
+    // 재고 확인
+    let allItemsAvailable = true;
+    for (let item of order.items) {
+        const stock = inventory.getStock(item.productId);
+        if (stock < item.quantity) {
+            allItemsAvailable = false;
+            break;
+        }
+    }
+    if (!allItemsAvailable) {
+        throw new Error('Some items are out of stock');
+    }
+    
+    // 가격 계산
+    let subtotal = 0;
+    for (let item of order.items) {
+        const product = products.find(p => p.id === item.productId);
+        subtotal += product.price * item.quantity;
+    }
+    
+    // 할인 적용
+    let discount = 0;
+    if (order.couponCode) {
+        const coupon = coupons.find(c => c.code === order.couponCode);
+        if (coupon && coupon.expiryDate > new Date()) {
+            if (coupon.type === 'percentage') {
+                discount = subtotal * (coupon.value / 100);
+            } else {
+                discount = coupon.value;
+            }
+        }
+    }
+    
+    // 세금 계산
+    const taxRate = 0.08;
+    const tax = (subtotal - discount) * taxRate;
+    
+    // 배송비 계산
+    let shipping = 10;
+    if (subtotal > 100) {
+        shipping = 0;
+    }
+    
+    // 최종 금액
+    const total = subtotal - discount + tax + shipping;
+    
+    // 주문 저장
+    const orderId = generateOrderId();
+    database.save({
+        id: orderId,
+        ...order,
+        subtotal,
+        discount,
+        tax,
+        shipping,
+        total,
+        status: 'pending',
+        createdAt: new Date()
+    });
+    
+    // 이메일 전송
+    emailService.send(order.customer.email, 'Order Confirmation', 
+        `Your order ${orderId} has been received. Total: $${total}`);
+    
+    // 재고 업데이트
+    for (let item of order.items) {
+        inventory.reduce(item.productId, item.quantity);
+    }
+    
+    return { orderId, total };
+}</code></pre>
+                        </div>
+
+                        <div class="ai-refactored">
+                            <h5>✅ AI 리팩토링 제안</h5>
+                            <pre><code>// 메서드 추출과 책임 분리
+class OrderProcessor {
+    async processOrder(order) {
+        this.validateOrder(order);
+        this.checkInventory(order.items);
+        
+        const pricing = this.calculatePricing(order);
+        const savedOrder = await this.saveOrder(order, pricing);
+        
+        await this.sendConfirmationEmail(savedOrder);
+        await this.updateInventory(order.items);
+        
+        return {
+            orderId: savedOrder.id,
+            total: pricing.total
+        };
+    }
+    
+    validateOrder(order) {
+        const validator = new OrderValidator();
+        validator.validate(order);
+    }
+    
+    checkInventory(items) {
+        const checker = new InventoryChecker();
+        if (!checker.areItemsAvailable(items)) {
+            throw new Error('Some items are out of stock');
+        }
+    }
+    
+    calculatePricing(order) {
+        const calculator = new PricingCalculator();
+        return calculator.calculate(order);
+    }
+    
+    async saveOrder(order, pricing) {
+        const repository = new OrderRepository();
+        return await repository.save({
+            ...order,
+            ...pricing,
+            status: 'pending',
+            createdAt: new Date()
+        });
+    }
+    
+    async sendConfirmationEmail(order) {
+        const emailer = new OrderEmailer();
+        await emailer.sendConfirmation(order);
+    }
+    
+    async updateInventory(items) {
+        const updater = new InventoryUpdater();
+        await updater.reduceStock(items);
+    }
+}
+
+// 각 책임을 담당하는 별도 클래스들
+class OrderValidator {
+    validate(order) {
+        this.validateItems(order.items);
+        this.validateCustomer(order.customer);
+    }
+    
+    validateItems(items) {
+        if (!items?.length) {
+            throw new ValidationError('Order must have items');
+        }
+    }
+    
+    validateCustomer(customer) {
+        if (!customer) {
+            throw new ValidationError('Order must have customer');
+        }
+        this.validateEmail(customer.email);
+    }
+    
+    validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new ValidationError('Invalid customer email');
+        }
+    }
+}
+
+class PricingCalculator {
+    calculate(order) {
+        const subtotal = this.calculateSubtotal(order.items);
+        const discount = this.calculateDiscount(subtotal, order.couponCode);
+        const tax = this.calculateTax(subtotal - discount);
+        const shipping = this.calculateShipping(subtotal);
+        
+        return {
+            subtotal,
+            discount,
+            tax,
+            shipping,
+            total: subtotal - discount + tax + shipping
+        };
+    }
+    
+    calculateSubtotal(items) {
+        return items.reduce((sum, item) => {
+            const product = this.findProduct(item.productId);
+            return sum + (product.price * item.quantity);
+        }, 0);
+    }
+    
+    calculateDiscount(subtotal, couponCode) {
+        if (!couponCode) return 0;
+        
+        const coupon = this.findValidCoupon(couponCode);
+        if (!coupon) return 0;
+        
+        return coupon.type === 'percentage'
+            ? subtotal * (coupon.value / 100)
+            : coupon.value;
+    }
+    
+    calculateTax(amount) {
+        const TAX_RATE = 0.08;
+        return amount * TAX_RATE;
+    }
+    
+    calculateShipping(subtotal) {
+        const FREE_SHIPPING_THRESHOLD = 100;
+        const STANDARD_SHIPPING = 10;
+        
+        return subtotal > FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING;
+    }
+}</code></pre>
+                            <div class="refactoring-benefits">
+                                <h6>개선 효과:</h6>
+                                <ul>
+                                    <li>단일 책임 원칙 적용</li>
+                                    <li>테스트 가능성 향상</li>
+                                    <li>코드 재사용성 증가</li>
+                                    <li>유지보수성 개선</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="smell-example">
+                        <h4>2. 중복 코드 (Duplicated Code)</h4>
+                        <div class="bad-code">
+                            <h5>❌ 중복된 코드</h5>
+                            <pre><code>// userController.js
+async function createUser(req, res) {
+    try {
+        const { email, password, name } = req.body;
+        
+        if (!email || !email.includes('@')) {
+            return res.status(400).json({ error: 'Invalid email' });
+        }
+        if (!password || password.length < 8) {
+            return res.status(400).json({ error: 'Password too short' });
+        }
+        if (!name || name.trim().length === 0) {
+            return res.status(400).json({ error: 'Name is required' });
+        }
+        
+        const user = await User.create({ email, password, name });
+        res.json({ success: true, user });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+// productController.js
+async function createProduct(req, res) {
+    try {
+        const { name, price, description } = req.body;
+        
+        if (!name || name.trim().length === 0) {
+            return res.status(400).json({ error: 'Name is required' });
+        }
+        if (!price || price <= 0) {
+            return res.status(400).json({ error: 'Invalid price' });
+        }
+        if (!description || description.trim().length === 0) {
+            return res.status(400).json({ error: 'Description is required' });
+        }
+        
+        const product = await Product.create({ name, price, description });
+        res.json({ success: true, product });
+    } catch (error) {
+        console.error('Error creating product:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}</code></pre>
+                        </div>
+
+                        <div class="ai-refactored">
+                            <h5>✅ DRY 원칙 적용</h5>
+                            <pre><code>// validators.js
+class ValidationError extends Error {
+    constructor(field, message) {
+        super(message);
+        this.field = field;
+        this.statusCode = 400;
+    }
+}
+
+const validators = {
+    required: (value, field) => {
+        if (!value || (typeof value === 'string' && !value.trim())) {
+            throw new ValidationError(field, `${field} is required`);
+        }
+    },
+    
+    email: (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+            throw new ValidationError('email', 'Invalid email format');
+        }
+    },
+    
+    minLength: (value, length, field) => {
+        if (value.length < length) {
+            throw new ValidationError(field, `${field} must be at least ${length} characters`);
+        }
+    },
+    
+    positive: (value, field) => {
+        if (value <= 0) {
+            throw new ValidationError(field, `${field} must be positive`);
+        }
+    }
+};
+
+// middleware/asyncHandler.js
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+// middleware/errorHandler.js
+const errorHandler = (err, req, res, next) => {
+    console.error(`Error: ${err.message}`, err);
+    
+    if (err instanceof ValidationError) {
+        return res.status(err.statusCode).json({
+            error: err.message,
+            field: err.field
+        });
+    }
+    
+    res.status(500).json({ error: 'Internal server error' });
+};
+
+// controllers/baseController.js
+class BaseController {
+    constructor(model, validationRules) {
+        this.model = model;
+        this.validationRules = validationRules;
+    }
+    
+    validate(data) {
+        for (const [field, rules] of Object.entries(this.validationRules)) {
+            const value = data[field];
+            
+            for (const rule of rules) {
+                if (typeof rule === 'function') {
+                    rule(value, field);
+                } else if (typeof rule === 'object') {
+                    rule.validator(value, rule.params, field);
+                }
+            }
+        }
+    }
+    
+    create = asyncHandler(async (req, res) => {
+        this.validate(req.body);
+        const entity = await this.model.create(req.body);
+        res.json({ success: true, data: entity });
+    });
+}
+
+// controllers/userController.js
+class UserController extends BaseController {
+    constructor() {
+        super(User, {
+            email: [validators.required, validators.email],
+            password: [
+                validators.required,
+                { validator: validators.minLength, params: 8 }
+            ],
+            name: [validators.required]
+        });
+    }
+}
+
+// controllers/productController.js
+class ProductController extends BaseController {
+    constructor() {
+        super(Product, {
+            name: [validators.required],
+            price: [validators.required, validators.positive],
+            description: [validators.required]
+        });
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-chart-line"></i> 코드 복잡도 분석과 개선</h2>
+
+                <div class="complexity-analysis">
+                    <h3>순환 복잡도 (Cyclomatic Complexity)</h3>
+                    
+                    <div class="complexity-example">
+                        <div class="high-complexity">
+                            <h4>높은 복잡도 코드</h4>
+                            <pre><code>// 복잡도: 12 (너무 높음!)
+function calculateShippingCost(order) {
+    let cost = 0;
+    
+    if (order.destination === 'domestic') {
+        if (order.weight <= 1) {
+            cost = 5;
+        } else if (order.weight <= 5) {
+            cost = 10;
+        } else if (order.weight <= 10) {
+            cost = 15;
+        } else {
+            cost = 20;
+        }
+        
+        if (order.express) {
+            cost *= 1.5;
+        }
+        
+        if (order.insurance) {
+            cost += 5;
+        }
+    } else {
+        if (order.weight <= 1) {
+            cost = 15;
+        } else if (order.weight <= 5) {
+            cost = 25;
+        } else {
+            cost = 40;
+        }
+        
+        if (order.express) {
+            cost *= 2;
+        }
+        
+        if (order.insurance) {
+            cost += 10;
+        }
+    }
+    
+    if (order.fragile) {
+        cost += 10;
+    }
+    
+    return cost;
+}</code></pre>
+                        </div>
+
+                        <div class="low-complexity">
+                            <h4>리팩토링된 코드</h4>
+                            <pre><code>// 전략 패턴으로 복잡도 감소
+class ShippingCalculator {
+    constructor() {
+        this.strategies = {
+            domestic: new DomesticShippingStrategy(),
+            international: new InternationalShippingStrategy()
+        };
+    }
+    
+    calculate(order) {
+        const strategy = this.strategies[order.destination] || this.strategies.domestic;
+        return strategy.calculate(order);
+    }
+}
+
+class BaseShippingStrategy {
+    calculate(order) {
+        let cost = this.getBaseCost(order.weight);
+        cost = this.applyExpressMultiplier(cost, order.express);
+        cost = this.addInsurance(cost, order.insurance);
+        cost = this.addFragileHandling(cost, order.fragile);
+        return cost;
+    }
+    
+    addFragileHandling(cost, isFragile) {
+        return isFragile ? cost + 10 : cost;
+    }
+}
+
+class DomesticShippingStrategy extends BaseShippingStrategy {
+    getBaseCost(weight) {
+        const rates = [
+            { maxWeight: 1, cost: 5 },
+            { maxWeight: 5, cost: 10 },
+            { maxWeight: 10, cost: 15 },
+            { maxWeight: Infinity, cost: 20 }
+        ];
+        
+        return rates.find(rate => weight <= rate.maxWeight).cost;
+    }
+    
+    applyExpressMultiplier(cost, isExpress) {
+        return isExpress ? cost * 1.5 : cost;
+    }
+    
+    addInsurance(cost, hasInsurance) {
+        return hasInsurance ? cost + 5 : cost;
+    }
+}
+
+class InternationalShippingStrategy extends BaseShippingStrategy {
+    getBaseCost(weight) {
+        const rates = [
+            { maxWeight: 1, cost: 15 },
+            { maxWeight: 5, cost: 25 },
+            { maxWeight: Infinity, cost: 40 }
+        ];
+        
+        return rates.find(rate => weight <= rate.maxWeight).cost;
+    }
+    
+    applyExpressMultiplier(cost, isExpress) {
+        return isExpress ? cost * 2 : cost;
+    }
+    
+    addInsurance(cost, hasInsurance) {
+        return hasInsurance ? cost + 10 : cost;
+    }
+}</code></pre>
+                            <div class="complexity-metrics">
+                                <p><strong>개선 결과:</strong></p>
+                                <ul>
+                                    <li>각 메서드의 복잡도: 1-3 (이상적)</li>
+                                    <li>테스트 용이성 향상</li>
+                                    <li>새로운 배송 타입 추가 용이</li>
+                                    <li>비즈니스 로직 명확화</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-cube"></i> SOLID 원칙 적용</h2>
+
+                <div class="solid-principles">
+                    <div class="principle">
+                        <h3>S - 단일 책임 원칙 (Single Responsibility)</h3>
+                        <div class="principle-example">
+                            <div class="violation">
+                                <h5>❌ 원칙 위반</h5>
+                                <pre><code>class User {
+    constructor(name, email) {
+        this.name = name;
+        this.email = email;
+    }
+    
+    // 사용자 정보 관리
+    updateProfile(data) { /* ... */ }
+    
+    // 인증 로직 (다른 책임)
+    authenticate(password) { /* ... */ }
+    
+    // 이메일 전송 (다른 책임)
+    sendEmail(subject, body) { /* ... */ }
+    
+    // 데이터베이스 저장 (다른 책임)
+    save() { /* ... */ }
+}</code></pre>
+                            </div>
+                            <div class="fixed">
+                                <h5>✅ 원칙 적용</h5>
+                                <pre><code>// 각 클래스가 하나의 책임만 가짐
+class User {
+    constructor(name, email) {
+        this.name = name;
+        this.email = email;
+    }
+    
+    updateProfile(data) {
+        Object.assign(this, data);
+    }
+}
+
+class UserAuthenticator {
+    authenticate(user, password) {
+        // 인증 로직만
+    }
+}
+
+class EmailService {
+    sendEmail(to, subject, body) {
+        // 이메일 전송만
+    }
+}
+
+class UserRepository {
+    save(user) {
+        // 데이터 저장만
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="principle">
+                        <h3>O - 개방-폐쇄 원칙 (Open-Closed)</h3>
+                        <div class="principle-example">
+                            <div class="violation">
+                                <h5>❌ 수정에 열려있음</h5>
+                                <pre><code>class PaymentProcessor {
+    processPayment(amount, type) {
+        if (type === 'credit') {
+            // 신용카드 처리
+        } else if (type === 'debit') {
+            // 직불카드 처리
+        } else if (type === 'paypal') {
+            // PayPal 처리
+        }
+        // 새 결제 방식 추가 시 이 메서드 수정 필요
+    }
+}</code></pre>
+                            </div>
+                            <div class="fixed">
+                                <h5>✅ 확장에는 열려있고 수정에는 닫혀있음</h5>
+                                <pre><code>interface PaymentMethod {
+    process(amount: number): Promise<PaymentResult>;
+}
+
+class CreditCardPayment implements PaymentMethod {
+    async process(amount) {
+        // 신용카드 처리
+    }
+}
+
+class PayPalPayment implements PaymentMethod {
+    async process(amount) {
+        // PayPal 처리
+    }
+}
+
+// 새로운 결제 방식 추가 (기존 코드 수정 없음)
+class CryptoPayment implements PaymentMethod {
+    async process(amount) {
+        // 암호화폐 처리
+    }
+}
+
+class PaymentProcessor {
+    async processPayment(amount: number, method: PaymentMethod) {
+        return await method.process(amount);
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-shield-alt"></i> 코드 품질 메트릭스</h2>
+
+                <div class="quality-metrics">
+                    <h3>AI 기반 코드 품질 대시보드</h3>
+                    
+                    <div class="metrics-dashboard">
+                        <div class="metric-card">
+                            <h4>유지보수성 지수</h4>
+                            <div class="metric-score high">85</div>
+                            <p>코드 변경의 용이성</p>
+                        </div>
+                        <div class="metric-card">
+                            <h4>인지적 복잡도</h4>
+                            <div class="metric-score medium">12</div>
+                            <p>코드 이해의 난이도</p>
+                        </div>
+                        <div class="metric-card">
+                            <h4>결합도</h4>
+                            <div class="metric-score high">Low</div>
+                            <p>모듈 간 의존성</p>
+                        </div>
+                        <div class="metric-card">
+                            <h4>응집도</h4>
+                            <div class="metric-score high">High</div>
+                            <p>모듈 내 관련성</p>
+                        </div>
+                    </div>
+
+                    <div class="improvement-suggestions">
+                        <h3>AI 개선 제안</h3>
+                        <div class="suggestion-list">
+                            <div class="suggestion">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <div class="suggestion-content">
+                                    <h5>UserService.js의 복잡도가 높습니다</h5>
+                                    <p>150줄이 넘는 메서드를 작은 단위로 분리하세요.</p>
+                                    <button class="fix-btn">AI로 리팩토링</button>
+                                </div>
+                            </div>
+                            <div class="suggestion">
+                                <i class="fas fa-link"></i>
+                                <div class="suggestion-content">
+                                    <h5>OrderController가 너무 많은 의존성을 가집니다</h5>
+                                    <p>8개의 서비스를 주입받고 있습니다. Facade 패턴 고려하세요.</p>
+                                    <button class="fix-btn">패턴 적용</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 레거시 코드 리팩토링</h2>
+
+                <div class="practice-content">
+                    <h3>실제 프로젝트 리팩토링</h3>
+                    <p>문제가 많은 레거시 코드를 단계적으로 개선해봅시다.</p>
+
+                    <div class="legacy-code">
+                        <h4>리팩토링 대상 코드</h4>
+                        <pre><code>// 전형적인 레거시 코드 예제
+var utils = {
+    data: [],
+    
+    init: function() {
+        var self = this;
+        $.ajax({
+            url: '/api/data',
+            success: function(response) {
+                self.data = response;
+                self.render();
+            }
+        });
+    },
+    
+    render: function() {
+        var html = '';
+        for (var i = 0; i < this.data.length; i++) {
+            html += '<div class="item">';
+            html += '<h3>' + this.data[i].title + '</h3>';
+            html += '<p>' + this.data[i].description + '</p>';
+            if (this.data[i].status == 'active') {
+                html += '<span class="badge active">Active</span>';
+            } else if (this.data[i].status == 'pending') {
+                html += '<span class="badge pending">Pending</span>';
+            } else {
+                html += '<span class="badge inactive">Inactive</span>';
+            }
+            html += '<button onclick="utils.delete(' + this.data[i].id + ')">Delete</button>';
+            html += '</div>';
+        }
+        document.getElementById('container').innerHTML = html;
+    },
+    
+    delete: function(id) {
+        if (confirm('Are you sure?')) {
+            var self = this;
+            $.ajax({
+                url: '/api/data/' + id,
+                method: 'DELETE',
+                success: function() {
+                    self.data = self.data.filter(function(item) {
+                        return item.id != id;
+                    });
+                    self.render();
+                }
+            });
+        }
+    },
+    
+    add: function(title, desc) {
+        if (title == '' || desc == '') {
+            alert('Please fill all fields');
+            return;
+        }
+        
+        var self = this;
+        $.ajax({
+            url: '/api/data',
+            method: 'POST',
+            data: { title: title, description: desc },
+            success: function(response) {
+                self.data.push(response);
+                self.render();
+            }
+        });
+    }
+};</code></pre>
+                    </div>
+
+                    <div class="refactoring-steps">
+                        <h4>리팩토링 단계</h4>
+                        <ol>
+                            <li>
+                                <strong>모던 JavaScript로 변환</strong>
+                                <ul>
+                                    <li>var → const/let</li>
+                                    <li>함수 표현식 → 화살표 함수</li>
+                                    <li>jQuery → Fetch API</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>클래스 기반 구조로 변경</strong>
+                                <ul>
+                                    <li>ES6 클래스 사용</li>
+                                    <li>적절한 캡슐화</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>관심사 분리</strong>
+                                <ul>
+                                    <li>데이터 관리</li>
+                                    <li>UI 렌더링</li>
+                                    <li>API 통신</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>React/Vue 컴포넌트로 전환</strong>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="ai-assistance">
+                        <h4>AI 활용 팁</h4>
+                        <p>각 단계에서 Cursor의 도움을 받으세요:</p>
+                        <ul>
+                            <li>Cmd+K: "Convert to modern ES6+ syntax"</li>
+                            <li>Chat: "이 코드의 문제점을 분석하고 개선 방안을 제시해줘"</li>
+                            <li>Composer: "이 코드를 React 컴포넌트로 변환해줘"</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>자동 코드 스멜 탐지</h3>
+                        <p>AI가 코드의 문제점을 자동으로 찾아내고 개선 방안을 제시합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>원칙 기반 리팩토링</h3>
+                        <p>SOLID, DRY, KISS 등의 원칙을 자동으로 적용하여 코드 품질을 향상시킵니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>복잡도 관리</h3>
+                        <p>순환 복잡도와 인지적 복잡도를 측정하고 최적화합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>지속적인 품질 개선</h3>
+                        <p>코드 품질 메트릭을 모니터링하고 점진적으로 개선합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 API 개발과 문서화를 AI와 함께 효율적으로 수행하는 방법을 배웁니다.</p>
+                    <a href="lesson14.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="current">리팩토링과 코드 품질</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-gem"></i> 리팩토링 체크리스트</h3>
+                <div class="checklist">
+                    <label><input type="checkbox"> 긴 메서드 분리</label>
+                    <label><input type="checkbox"> 중복 코드 제거</label>
+                    <label><input type="checkbox"> 복잡한 조건문 단순화</label>
+                    <label><input type="checkbox"> 매직 넘버 상수화</label>
+                    <label><input type="checkbox"> 네이밍 개선</label>
+                    <label><input type="checkbox"> 불필요한 주석 제거</label>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 리팩토링은 기능을 변경하지 않고 코드를 개선하는 것입니다. 항상 테스트를 먼저 작성하고, 작은 단계로 진행하세요.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 43.33%"></div>
+            <span class="progress-text">13/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

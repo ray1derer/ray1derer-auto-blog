@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제6강: AI 모델 선택과 활용 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-robot"></i> 제6강: AI 모델 선택과 활용</h1>
+                <p class="lesson-subtitle">GPT-4, Claude, 그리고 더 많은 모델들을 상황에 맞게 활용하기</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 초급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 40분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 기초</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson05.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제6강: AI 모델 선택과 활용</span>
+            <a href="lesson07.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>Cursor에서 사용 가능한 AI 모델들의 특징 이해하기</li>
+                    <li>GPT-4와 Claude의 장단점 비교하기</li>
+                    <li>작업별 최적의 모델 선택하기</li>
+                    <li>모델 전환과 활용 전략 익히기</li>
+                    <li>비용 효율적인 모델 사용법 마스터하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-layer-group"></i> Cursor의 AI 모델 라인업</h2>
+                
+                <div class="info-box">
+                    <p>Cursor는 다양한 AI 모델을 제공하여 상황에 맞는 최적의 선택을 할 수 있게 합니다. 각 모델은 고유한 강점과 특징을 가지고 있어, 작업의 성격에 따라 전략적으로 선택할 수 있습니다.</p>
+                </div>
+
+                <h3>사용 가능한 모델들</h3>
+                <div class="models-grid">
+                    <div class="model-card premium">
+                        <div class="model-header">
+                            <h4><i class="fas fa-crown"></i> GPT-4</h4>
+                            <span class="model-badge">Premium</span>
+                        </div>
+                        <ul class="model-features">
+                            <li>가장 강력한 추론 능력</li>
+                            <li>복잡한 로직 구현에 탁월</li>
+                            <li>최신 프로그래밍 패턴 이해</li>
+                            <li>느린 응답 속도</li>
+                            <li>높은 토큰 비용</li>
+                        </ul>
+                    </div>
+
+                    <div class="model-card premium">
+                        <div class="model-header">
+                            <h4><i class="fas fa-brain"></i> Claude 3.5 Sonnet</h4>
+                            <span class="model-badge">Premium</span>
+                        </div>
+                        <ul class="model-features">
+                            <li>뛰어난 코드 이해력</li>
+                            <li>긴 컨텍스트 처리 가능</li>
+                            <li>안전하고 정확한 코드 생성</li>
+                            <li>빠른 응답 속도</li>
+                            <li>균형잡힌 성능</li>
+                        </ul>
+                    </div>
+
+                    <div class="model-card">
+                        <div class="model-header">
+                            <h4><i class="fas fa-bolt"></i> GPT-3.5</h4>
+                            <span class="model-badge">Standard</span>
+                        </div>
+                        <ul class="model-features">
+                            <li>빠른 응답 속도</li>
+                            <li>기본적인 코딩 작업에 적합</li>
+                            <li>낮은 비용</li>
+                            <li>간단한 리팩토링</li>
+                            <li>일반적인 패턴 구현</li>
+                        </ul>
+                    </div>
+
+                    <div class="model-card">
+                        <div class="model-header">
+                            <h4><i class="fas fa-zap"></i> Cursor-Fast</h4>
+                            <span class="model-badge">Free</span>
+                        </div>
+                        <ul class="model-features">
+                            <li>즉각적인 응답</li>
+                            <li>자동완성에 최적화</li>
+                            <li>무료 사용 가능</li>
+                            <li>간단한 코드 제안</li>
+                            <li>기본적인 구문 완성</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-balance-scale"></i> GPT-4 vs Claude: 상세 비교</h2>
+
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>비교 항목</th>
+                                <th><i class="fas fa-crown"></i> GPT-4</th>
+                                <th><i class="fas fa-brain"></i> Claude 3.5</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>코드 품질</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>응답 속도</td>
+                                <td>⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>컨텍스트 길이</td>
+                                <td>8K 토큰</td>
+                                <td>100K 토큰</td>
+                            </tr>
+                            <tr>
+                                <td>추론 능력</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>코드 설명</td>
+                                <td>⭐⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>디버깅</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>창의적 솔루션</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>비용 효율성</td>
+                                <td>⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="model-recommendations">
+                    <div class="recommendation-card">
+                        <h4>GPT-4를 선택해야 할 때</h4>
+                        <ul>
+                            <li>복잡한 알고리즘 구현</li>
+                            <li>아키텍처 설계 및 리팩토링</li>
+                            <li>창의적인 문제 해결이 필요한 경우</li>
+                            <li>최신 기술 스택 활용</li>
+                            <li>복잡한 비즈니스 로직 구현</li>
+                        </ul>
+                    </div>
+
+                    <div class="recommendation-card">
+                        <h4>Claude를 선택해야 할 때</h4>
+                        <ul>
+                            <li>긴 코드베이스 분석</li>
+                            <li>상세한 코드 설명이 필요한 경우</li>
+                            <li>안전하고 검증된 코드 필요</li>
+                            <li>빠른 응답이 중요한 작업</li>
+                            <li>문서화 및 주석 작성</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-exchange-alt"></i> 모델 전환하기</h2>
+
+                <div class="model-switching">
+                    <h3>모델 변경 방법</h3>
+                    
+                    <div class="switching-methods">
+                        <div class="method">
+                            <h4>1. 설정에서 기본 모델 변경</h4>
+                            <div class="steps">
+                                <p><kbd>Cmd/Ctrl</kbd> + <kbd>,</kbd> → Models → Default Model</p>
+                                <img src="../assets/model-settings.png" alt="모델 설정" class="screenshot">
+                            </div>
+                        </div>
+
+                        <div class="method">
+                            <h4>2. Chat에서 즉시 변경</h4>
+                            <div class="chat-model-selector">
+                                <div class="selector-demo">
+                                    <div class="model-dropdown">
+                                        <span class="current-model">GPT-4</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="model-list">
+                                        <div class="model-option">GPT-4</div>
+                                        <div class="model-option">Claude-3.5-Sonnet</div>
+                                        <div class="model-option">GPT-3.5-Turbo</div>
+                                        <div class="model-option">Cursor-Fast</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="method">
+                            <h4>3. 커맨드로 전환</h4>
+                            <div class="command-example">
+                                <code>@GPT4 복잡한 알고리즘을 구현해줘</code>
+                                <code>@Claude 이 코드를 자세히 설명해줘</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-tasks"></i> 작업별 최적 모델 가이드</h2>
+
+                <div class="task-model-guide">
+                    <div class="task-category">
+                        <h3><i class="fas fa-code"></i> 코드 작성</h3>
+                        <div class="task-grid">
+                            <div class="task-item">
+                                <h4>간단한 함수 작성</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag cursor-fast">Cursor-Fast</span>
+                                    <span class="model-tag gpt35">GPT-3.5</span>
+                                </div>
+                                <p>빠른 응답과 기본적인 구현에 충분</p>
+                            </div>
+                            <div class="task-item">
+                                <h4>복잡한 비즈니스 로직</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag gpt4">GPT-4</span>
+                                </div>
+                                <p>높은 추론 능력이 필요한 작업</p>
+                            </div>
+                            <div class="task-item">
+                                <h4>API 통합 코드</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag claude">Claude</span>
+                                    <span class="model-tag gpt4">GPT-4</span>
+                                </div>
+                                <p>정확성과 에러 처리가 중요</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-category">
+                        <h3><i class="fas fa-bug"></i> 디버깅 & 문제 해결</h3>
+                        <div class="task-grid">
+                            <div class="task-item">
+                                <h4>간단한 구문 오류</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag cursor-fast">Cursor-Fast</span>
+                                </div>
+                                <p>즉각적인 수정 제안</p>
+                            </div>
+                            <div class="task-item">
+                                <h4>복잡한 런타임 에러</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag gpt4">GPT-4</span>
+                                </div>
+                                <p>깊은 분석과 해결책 필요</p>
+                            </div>
+                            <div class="task-item">
+                                <h4>성능 최적화</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag gpt4">GPT-4</span>
+                                    <span class="model-tag claude">Claude</span>
+                                </div>
+                                <p>전체적인 코드 분석 필요</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-category">
+                        <h3><i class="fas fa-book"></i> 코드 이해 & 학습</h3>
+                        <div class="task-grid">
+                            <div class="task-item">
+                                <h4>코드 설명 요청</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag claude">Claude</span>
+                                </div>
+                                <p>상세하고 이해하기 쉬운 설명</p>
+                            </div>
+                            <div class="task-item">
+                                <h4>아키텍처 분석</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag claude">Claude</span>
+                                    <span class="model-tag gpt4">GPT-4</span>
+                                </div>
+                                <p>전체적인 구조 파악</p>
+                            </div>
+                            <div class="task-item">
+                                <h4>레거시 코드 이해</h4>
+                                <div class="model-suggestion">
+                                    <span class="model-tag claude">Claude</span>
+                                </div>
+                                <p>긴 컨텍스트 처리 능력</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-chart-line"></i> 모델별 실전 예제</h2>
+
+                <div class="model-examples">
+                    <h3>동일한 요청, 다른 응답</h3>
+                    <p>같은 프롬프트에 대한 각 모델의 응답 차이를 비교해봅시다.</p>
+
+                    <div class="example-prompt">
+                        <h4>프롬프트:</h4>
+                        <code>"React에서 무한 스크롤을 구현하는 커스텀 훅을 만들어줘"</code>
+                    </div>
+
+                    <div class="model-responses">
+                        <div class="response-tab-container">
+                            <div class="response-tabs">
+                                <button class="resp-tab active" data-model="gpt4">GPT-4</button>
+                                <button class="resp-tab" data-model="claude">Claude</button>
+                                <button class="resp-tab" data-model="gpt35">GPT-3.5</button>
+                            </div>
+
+                            <div class="response-content active" id="gpt4">
+                                <h5>GPT-4의 응답</h5>
+                                <pre><code>import { useState, useEffect, useCallback, useRef } from 'react';
+
+interface UseInfiniteScrollOptions {
+  threshold?: number;
+  rootMargin?: string;
+  onLoadMore: () => Promise<void>;
+  hasMore: boolean;
+}
+
+export const useInfiniteScroll = ({
+  threshold = 0.1,
+  rootMargin = '0px',
+  onLoadMore,
+  hasMore
+}: UseInfiniteScrollOptions) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  
+  const lastElementRef = useCallback((node: HTMLElement | null) => {
+    if (isLoading) return;
+    
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+    
+    if (!hasMore || !node) return;
+    
+    observerRef.current = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          setIsLoading(true);
+          try {
+            await onLoadMore();
+          } catch (error) {
+            console.error('Error loading more items:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        }
+      },
+      { threshold, rootMargin }
+    );
+    
+    observerRef.current.observe(node);
+  }, [isLoading, hasMore, onLoadMore, threshold, rootMargin]);
+  
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+  
+  return { lastElementRef, isLoading };
+};
+
+// 사용 예제
+const MyComponent = () => {
+  const [items, setItems] = useState<Item[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  
+  const loadMore = async () => {
+    const newItems = await fetchItems(page);
+    if (newItems.length === 0) {
+      setHasMore(false);
+    } else {
+      setItems(prev => [...prev, ...newItems]);
+      setPage(prev => prev + 1);
+    }
+  };
+  
+  const { lastElementRef, isLoading } = useInfiniteScroll({
+    onLoadMore: loadMore,
+    hasMore
+  });
+  
+  return (
+    <div>
+      {items.map((item, index) => (
+        <div
+          key={item.id}
+          ref={index === items.length - 1 ? lastElementRef : null}
+        >
+          {item.content}
+        </div>
+      ))}
+      {isLoading && <div>Loading...</div>}
+    </div>
+  );
+};</code></pre>
+                                <p class="response-analysis">
+                                    <strong>GPT-4의 특징:</strong>
+                                    <ul>
+                                        <li>TypeScript로 타입 안전성 확보</li>
+                                        <li>IntersectionObserver를 활용한 효율적 구현</li>
+                                        <li>에러 처리와 메모리 누수 방지 포함</li>
+                                        <li>완전한 사용 예제 제공</li>
+                                    </ul>
+                                </p>
+                            </div>
+
+                            <div class="response-content" id="claude">
+                                <h5>Claude의 응답</h5>
+                                <pre><code>import { useState, useEffect, useCallback, useRef } from 'react';
+
+/**
+ * 무한 스크롤을 위한 커스텀 훅
+ * 
+ * @param {Function} loadMore - 추가 데이터를 로드하는 함수
+ * @param {boolean} hasMore - 더 로드할 데이터가 있는지 여부
+ * @param {Object} options - 추가 옵션
+ * @returns {Object} - 관찰할 요소의 ref와 로딩 상태
+ */
+function useInfiniteScroll(loadMore, hasMore, options = {}) {
+  const {
+    threshold = 0.5,      // 요소가 얼마나 보여야 트리거되는지 (0-1)
+    rootMargin = '100px', // 뷰포트 확장 영역
+    enabled = true        // 훅 활성화 여부
+  } = options;
+
+  const [loading, setLoading] = useState(false);
+  const observerRef = useRef();
+  const loadingRef = useRef(loading);
+  
+  // loading 상태를 ref로도 추적 (클로저 문제 해결)
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+
+  // 관찰 대상 요소에 연결할 콜백 ref
+  const targetRef = useCallback((node) => {
+    // 기존 observer 정리
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    // 비활성화 상태거나 더 이상 로드할 것이 없으면 중단
+    if (!enabled || !hasMore || !node) return;
+
+    // IntersectionObserver 생성
+    observerRef.current = new IntersectionObserver(
+      async (entries) => {
+        const [entry] = entries;
+        
+        // 요소가 보이고 로딩 중이 아닐 때만 실행
+        if (entry.isIntersecting && !loadingRef.current) {
+          setLoading(true);
+          
+          try {
+            await loadMore();
+          } catch (error) {
+            console.error('무한 스크롤 로딩 중 오류:', error);
+            // 에러 발생 시에도 다시 시도할 수 있도록 loading을 false로
+          } finally {
+            setLoading(false);
+          }
+        }
+      },
+      {
+        threshold,
+        rootMargin
+      }
+    );
+
+    // 새 요소 관찰 시작
+    observerRef.current.observe(node);
+  }, [loadMore, hasMore, enabled, threshold, rootMargin]);
+
+  // 컴포넌트 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  return {
+    targetRef,  // 마지막 요소에 연결할 ref
+    loading,    // 로딩 상태
+    setLoading  // 수동으로 로딩 상태를 제어할 수 있도록
+  };
+}
+
+// 사용 예제
+function ItemList() {
+  const [items, setItems] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadMore = useCallback(async () => {
+    // API 호출 시뮬레이션
+    const response = await fetch(`/api/items?page=${page}`);
+    const newItems = await response.json();
+    
+    if (newItems.length === 0) {
+      setHasMore(false);
+    } else {
+      setItems(prev => [...prev, ...newItems]);
+      setPage(prev => prev + 1);
+    }
+  }, [page]);
+
+  const { targetRef, loading } = useInfiniteScroll(loadMore, hasMore, {
+    threshold: 0.8,  // 80% 보일 때 트리거
+    rootMargin: '50px'
+  });
+
+  return (
+    <div className="item-list">
+      {items.map((item, index) => (
+        <div 
+          key={item.id} 
+          className="item"
+          // 마지막 요소에만 ref 연결
+          ref={index === items.length - 1 ? targetRef : null}
+        >
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </div>
+      ))}
+      
+      {loading && (
+        <div className="loading-spinner">
+          데이터를 불러오는 중...
+        </div>
+      )}
+      
+      {!hasMore && items.length > 0 && (
+        <div className="end-message">
+          모든 항목을 불러왔습니다.
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default useInfiniteScroll;</code></pre>
+                                <p class="response-analysis">
+                                    <strong>Claude의 특징:</strong>
+                                    <ul>
+                                        <li>상세한 주석과 설명 포함</li>
+                                        <li>클로저 문제 해결을 위한 ref 활용</li>
+                                        <li>더 많은 옵션과 유연성 제공</li>
+                                        <li>실제 사용 시나리오 고려</li>
+                                    </ul>
+                                </p>
+                            </div>
+
+                            <div class="response-content" id="gpt35">
+                                <h5>GPT-3.5의 응답</h5>
+                                <pre><code>import { useState, useEffect, useRef } from 'react';
+
+const useInfiniteScroll = (callback) => {
+  const [isFetching, setIsFetching] = useState(false);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!isFetching) return;
+    fetchMoreData();
+  }, [isFetching]);
+
+  const handleScroll = () => {
+    if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || isFetching) return;
+    setIsFetching(true);
+  };
+
+  const fetchMoreData = async () => {
+    await callback();
+    setIsFetching(false);
+  };
+
+  return [isFetching, setIsFetching];
+};
+
+// 사용 예제
+function App() {
+  const [items, setItems] = useState(Array.from({length: 20}));
+  const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreData);
+
+  function fetchMoreData() {
+    setTimeout(() => {
+      setItems(prevItems => [...prevItems, ...Array.from({length: 20})]);
+    }, 2000);
+  }
+
+  return (
+    <div>
+      {items.map((item, index) => (
+        <div key={index} style={{height: 100, border: '1px solid black'}}>
+          Item {index}
+        </div>
+      ))}
+      {isFetching && <p>Loading more items...</p>}
+    </div>
+  );
+}</code></pre>
+                                <p class="response-analysis">
+                                    <strong>GPT-3.5의 특징:</strong>
+                                    <ul>
+                                        <li>기본적인 스크롤 이벤트 기반 구현</li>
+                                        <li>간단하고 이해하기 쉬운 코드</li>
+                                        <li>성능 최적화는 부족</li>
+                                        <li>기본적인 기능만 제공</li>
+                                    </ul>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-dollar-sign"></i> 비용 효율적인 모델 사용법</h2>
+
+                <div class="cost-optimization">
+                    <h3>토큰 사용량 최적화</h3>
+                    
+                    <div class="token-tips">
+                        <div class="tip-card">
+                            <h4>1. 단계별 모델 전환</h4>
+                            <div class="workflow-example">
+                                <div class="workflow-step">
+                                    <span class="step-model">Cursor-Fast</span>
+                                    <p>초기 코드 스케치와 기본 구조 작성</p>
+                                </div>
+                                <div class="arrow">↓</div>
+                                <div class="workflow-step">
+                                    <span class="step-model">GPT-3.5</span>
+                                    <p>기본 기능 구현과 간단한 리팩토링</p>
+                                </div>
+                                <div class="arrow">↓</div>
+                                <div class="workflow-step">
+                                    <span class="step-model">GPT-4/Claude</span>
+                                    <p>복잡한 로직과 최적화</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tip-card">
+                            <h4>2. 컨텍스트 관리</h4>
+                            <ul>
+                                <li>불필요한 파일은 닫아서 컨텍스트 줄이기</li>
+                                <li>긴 대화는 새로운 채팅으로 시작</li>
+                                <li>명확한 질문으로 반복 줄이기</li>
+                            </ul>
+                        </div>
+
+                        <div class="tip-card">
+                            <h4>3. 월별 사용량 모니터링</h4>
+                            <div class="usage-tracker">
+                                <div class="usage-bar">
+                                    <div class="usage-fill" style="width: 65%">
+                                        <span>GPT-4: 65%</span>
+                                    </div>
+                                </div>
+                                <p class="usage-tip">프리미엄 모델은 꼭 필요한 경우에만 사용</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 모델별 성능 비교</h2>
+
+                <div class="practice-content">
+                    <h3>같은 작업, 다른 모델</h3>
+                    <p>각 모델의 장단점을 직접 체험해보세요.</p>
+
+                    <div class="practice-tasks">
+                        <div class="task">
+                            <h4>Task 1: 간단한 유틸리티 함수</h4>
+                            <p>다음 함수를 각 모델로 구현해보세요:</p>
+                            <pre><code>// 배열에서 중복을 제거하고 정렬하는 함수
+// 입력: [3, 1, 4, 1, 5, 9, 2, 6, 5]
+// 출력: [1, 2, 3, 4, 5, 6, 9]</code></pre>
+                            <div class="model-test">
+                                <p>🏃 Cursor-Fast로 시작 → 빠른 기본 구현</p>
+                                <p>📚 Claude로 개선 → 다양한 방법 제시</p>
+                            </div>
+                        </div>
+
+                        <div class="task">
+                            <h4>Task 2: 복잡한 상태 관리</h4>
+                            <p>Redux 없이 전역 상태 관리 시스템 구현:</p>
+                            <pre><code>// 요구사항:
+// 1. 여러 컴포넌트에서 공유하는 상태
+// 2. 상태 변경 시 구독자에게 알림
+// 3. TypeScript 지원
+// 4. React Hooks 활용</code></pre>
+                            <div class="model-test">
+                                <p>🧠 GPT-4 추천 → 복잡한 패턴 구현</p>
+                            </div>
+                        </div>
+
+                        <div class="task">
+                            <h4>Task 3: 레거시 코드 분석</h4>
+                            <p>오래된 jQuery 코드를 현대적인 React로 변환:</p>
+                            <pre><code>// 레거시 코드를 복사해서 Claude에게 전달
+// 긴 컨텍스트 처리 능력 테스트</code></pre>
+                            <div class="model-test">
+                                <p>📜 Claude 추천 → 긴 코드 분석</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="practice-reflection">
+                        <h4>🤔 실습 후 고민해볼 점</h4>
+                        <ul>
+                            <li>각 모델의 응답 속도 차이는?</li>
+                            <li>코드 품질과 완성도 비교</li>
+                            <li>설명의 상세함과 정확성</li>
+                            <li>어떤 상황에서 어떤 모델이 적합한가?</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>모델별 특성 이해</h3>
+                        <p>각 AI 모델은 고유한 강점이 있으며, 작업의 성격에 따라 적절히 선택해야 합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>GPT-4는 복잡한 작업에</h3>
+                        <p>높은 추론 능력이 필요한 복잡한 로직이나 창의적인 솔루션이 필요할 때 선택합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>Claude는 분석과 설명에</h3>
+                        <p>긴 코드를 분석하거나 상세한 설명이 필요할 때, 그리고 안전한 코드가 중요할 때 선택합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>비용 효율성 고려</h3>
+                        <p>간단한 작업은 빠른 모델로, 복잡한 작업만 프리미엄 모델을 사용하여 비용을 최적화합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 Composer 기능을 활용하여 여러 파일을 동시에 편집하고 관리하는 방법을 배웁니다.</p>
+                    <a href="lesson07.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li>Cursor 소개와 설치</li>
+                    <li>첫 번째 AI 자동완성</li>
+                    <li>AI Chat 마스터하기</li>
+                    <li>Cmd+K 완벽 가이드</li>
+                    <li>프로젝트 컨텍스트</li>
+                    <li class="current">AI 모델 선택과 활용</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-robot"></i> 모델 빠른 참조</h3>
+                <div class="model-quick-ref">
+                    <div class="model-ref-item">
+                        <h4>GPT-4</h4>
+                        <p>복잡한 로직, 창의적 솔루션</p>
+                    </div>
+                    <div class="model-ref-item">
+                        <h4>Claude</h4>
+                        <p>코드 분석, 상세 설명</p>
+                    </div>
+                    <div class="model-ref-item">
+                        <h4>GPT-3.5</h4>
+                        <p>일반 코딩, 빠른 응답</p>
+                    </div>
+                    <div class="model-ref-item">
+                        <h4>Cursor-Fast</h4>
+                        <p>자동완성, 간단한 제안</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 작업을 시작할 때는 빠른 모델로 초안을 작성하고, 복잡한 부분만 프리미엄 모델로 개선하면 효율적입니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 20%"></div>
+            <span class="progress-text">6/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+    <script>
+        // Model response tab switching
+        document.querySelectorAll('.resp-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const model = tab.getAttribute('data-model');
+                
+                document.querySelectorAll('.resp-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.response-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(model).classList.add('active');
+            });
+        });
+
+        // Add interactive model selector demo
+        const modelDropdown = document.querySelector('.model-dropdown');
+        const modelList = document.querySelector('.model-list');
+        
+        if (modelDropdown) {
+            modelDropdown.addEventListener('click', () => {
+                modelList.style.display = modelList.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            document.querySelectorAll('.model-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelector('.current-model').textContent = option.textContent;
+                    modelList.style.display = 'none';
+                });
+            });
+        }
+    </script>
+</body>
+</html>

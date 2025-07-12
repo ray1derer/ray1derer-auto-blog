@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3강: 페이지 운영 - 중첩, 연결, 공유</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- 사이드바 내용은 index.html에서 동적으로 로드 -->
+        </aside>
+        <main class="main-content">
+            <h1>3강: 페이지 운영 - 중첩, 연결, 공유</h1>
+            <p>노션은 단순히 페이지를 만드는 것을 넘어, 페이지들을 서로 연결하고 계층적으로 구성하며, 필요에 따라 다른 사람들과 공유할 수 있는 강력한 기능을 제공합니다. 이 강의에서는 페이지를 효율적으로 관리하고 협업하는 방법을 배웁니다.</p>
+            
+            <h2>학습 목표</h2>
+            <ul>
+                <li>페이지 안에 하위 페이지를 만들어 계층적 구조를 구축합니다.</li>
+                <li><code>@</code> 및 <code>[[</code>를 사용하여 다른 페이지나 날짜, 사람을 참조하고 연결합니다.</li>
+                <li>페이지를 웹에 게시하고 다른 사용자와 공유하는 방법을 배웁니다.</li>
+            </ul>
+
+            <h2>주요 개념</h2>
+            <ul>
+                <li><strong>하위 페이지 (Sub-page):</strong> 페이지 안에 또 다른 페이지를 만들어 정보를 계층적으로 정리할 수 있습니다. 복잡한 프로젝트나 주제를 세분화하여 관리할 때 유용합니다.</li>
+                <li><strong>링크 투 페이지 (Link to Page):</strong> <code>/페이지 링크</code> 또는 <code>[[</code>를 입력하여 현재 페이지에서 다른 노션 페이지로 연결되는 링크를 생성합니다.</li>
+                <li><strong>백링크 (Backlinks):</strong> 특정 페이지를 다른 페이지에서 링크하면, 해당 페이지 하단에 자동으로 '백링크' 섹션이 생성되어 어떤 페이지에서 자신을 참조하는지 보여줍니다. 이는 정보 간의 연결성을 파악하는 데 매우 유용합니다.</li>
+                <li><strong>@멘션 (@Mention):</strong> <code>@</code>를 입력하여 다른 노션 페이지, 날짜, 또는 팀원을 언급하고 연결할 수 있습니다. 특히 팀 협업 시 특정 업무나 정보에 대한 담당자를 지정하거나 마감일을 명시할 때 유용합니다.</li>
+                <li><strong>공유 메뉴 (Share Menu):</strong> 노션 페이지를 웹에 공개하거나, 특정 사용자와 공유하여 협업할 수 있는 기능입니다. 권한 설정(읽기, 댓글, 편집 등)을 통해 접근 수준을 제어할 수 있습니다.</li>
+            </ul>
+
+            <h2>실습 과제</h2>
+            <p><strong>'프로젝트 알파'</strong>라는 메인 페이지를 만듭니다. 그 안에 <strong>'회의록'</strong>과 <strong>'아이디어'</strong>라는 두 개의 하위 페이지를 생성합니다. '회의록' 페이지에서 <code>@</code>를 사용하여 '아이디어' 페이지를 링크해 보세요. 또한, '프로젝트 알파' 페이지를 웹에 게시하여 링크를 확인해 봅니다.</p>
+
+            <div class="navigation">
+                <!-- 이전/다음 강의 링크 -->
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제26강: AI 기반 성능 프로파일링과 최적화 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-chart-line"></i> 제26강: AI 기반 성능 프로파일링과 최적화</h1>
+                <p class="lesson-subtitle">지능형 성능 분석과 자동 최적화 시스템 구축</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 고급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 70분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 고급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson25.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제26강: AI 기반 성능 프로파일링과 최적화</span>
+            <a href="lesson27.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 성능 병목 지점 자동 탐지</li>
+                    <li>실시간 성능 모니터링과 예측 분석</li>
+                    <li>자동 최적화 제안과 적용</li>
+                    <li>메모리 누수와 성능 저하 패턴 인식</li>
+                    <li>프로덕션 환경 성능 진단 도구 개발</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-microscope"></i> 지능형 성능 프로파일러</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 애플리케이션의 성능을 실시간으로 분석하고, 잠재적인 병목 지점을 자동으로 탐지하여 최적화 방안을 제시합니다. 머신러닝을 활용해 성능 패턴을 학습하고 예측합니다.</p>
+                </div>
+
+                <h3>AI 성능 분석 시스템</h3>
+                <div class="performance-analyzer">
+                    <div class="analyzer-implementation">
+                        <h4>실시간 성능 프로파일링 도구</h4>
+                        <pre><code>// profiler/AIPerformanceProfiler.ts
+import { CursorAI } from '@cursor/api';
+import { performance, PerformanceObserver } from 'perf_hooks';
+import * as v8 from 'v8';
+import * as pprof from 'pprof';
+
+export class AIPerformanceProfiler {
+    private cursor: CursorAI;
+    private metrics: Map<string, PerformanceMetric[]>;
+    private anomalyDetector: AnomalyDetector;
+    private optimizer: PerformanceOptimizer;
+    private isProfilingActive: boolean = false;
+
+    constructor() {
+        this.cursor = new CursorAI();
+        this.metrics = new Map();
+        this.anomalyDetector = new AnomalyDetector();
+        this.optimizer = new PerformanceOptimizer();
+        this.setupObservers();
+    }
+
+    async startProfiling(config: ProfilingConfig): Promise<void> {
+        this.isProfilingActive = true;
+        
+        // CPU 프로파일링 시작
+        if (config.cpu) {
+            await pprof.time.start({
+                durationMillis: config.duration || 60000,
+                intervalMicros: 1000
+            });
+        }
+
+        // 메모리 프로파일링 시작
+        if (config.memory) {
+            this.startMemoryProfiling();
+        }
+
+        // 네트워크 프로파일링
+        if (config.network) {
+            this.startNetworkProfiling();
+        }
+
+        // 실시간 분석 시작
+        this.startRealtimeAnalysis();
+    }
+
+    private setupObservers() {
+        // Performance Observer 설정
+        const obs = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                this.recordMetric(entry);
+                
+                // 실시간 이상 탐지
+                if (this.anomalyDetector.isAnomaly(entry)) {
+                    this.handleAnomaly(entry);
+                }
+            }
+        });
+
+        obs.observe({ 
+            entryTypes: ['measure', 'function', 'mark', 'navigation', 'resource'] 
+        });
+
+        // V8 이벤트 리스너
+        if (v8.setFlagsFromString) {
+            v8.setFlagsFromString('--expose-gc');
+        }
+    }
+
+    private async recordMetric(entry: PerformanceEntry) {
+        const metric: PerformanceMetric = {
+            name: entry.name,
+            type: entry.entryType,
+            startTime: entry.startTime,
+            duration: entry.duration,
+            timestamp: Date.now(),
+            metadata: await this.enrichMetadata(entry)
+        };
+
+        const key = `${entry.entryType}:${entry.name}`;
+        if (!this.metrics.has(key)) {
+            this.metrics.set(key, []);
+        }
+        
+        this.metrics.get(key)!.push(metric);
+
+        // 버퍼 크기 제한
+        const buffer = this.metrics.get(key)!;
+        if (buffer.length > 10000) {
+            buffer.shift();
+        }
+    }
+
+    private async enrichMetadata(entry: PerformanceEntry): Promise<any> {
+        const metadata: any = {};
+
+        // 스택 트레이스 수집
+        if (entry.duration > 100) { // 100ms 이상 소요된 작업
+            metadata.stackTrace = new Error().stack;
+        }
+
+        // 메모리 상태
+        metadata.memory = process.memoryUsage();
+
+        // CPU 사용률
+        metadata.cpuUsage = process.cpuUsage();
+
+        return metadata;
+    }
+
+    async analyzePerformance(): Promise<PerformanceReport> {
+        const report: PerformanceReport = {
+            summary: await this.generateSummary(),
+            bottlenecks: await this.identifyBottlenecks(),
+            memoryLeaks: await this.detectMemoryLeaks(),
+            optimizations: await this.suggestOptimizations(),
+            predictions: await this.predictFutureIssues()
+        };
+
+        return report;
+    }
+
+    private async identifyBottlenecks(): Promise<Bottleneck[]> {
+        const bottlenecks: Bottleneck[] = [];
+        
+        // 각 메트릭 카테고리 분석
+        for (const [key, metrics] of this.metrics) {
+            const analysis = await this.analyzeMetricPattern(metrics);
+            
+            if (analysis.isBottleneck) {
+                bottlenecks.push({
+                    type: analysis.type,
+                    location: analysis.location,
+                    impact: analysis.impact,
+                    frequency: analysis.frequency,
+                    suggestions: await this.generateOptimizationSuggestions(analysis)
+                });
+            }
+        }
+
+        // AI로 복잡한 패턴 분석
+        const aiAnalysis = await this.performAIAnalysis();
+        bottlenecks.push(...aiAnalysis.bottlenecks);
+
+        return bottlenecks.sort((a, b) => b.impact - a.impact);
+    }
+
+    private async performAIAnalysis(): Promise<AIAnalysisResult> {
+        const metricsSnapshot = this.exportMetricsForAI();
+        
+        const prompt = `
+성능 메트릭을 분석하여 병목 지점과 최적화 기회를 찾아주세요:
+
+메트릭 데이터:
+${JSON.stringify(metricsSnapshot, null, 2)}
+
+다음을 분석해주세요:
+1. 반복적인 성능 저하 패턴
+2. 리소스 사용 이상 징후
+3. 응답 시간 증가 추세
+4. 메모리 누수 가능성
+5. 비효율적인 알고리즘 사용
+
+각 문제에 대해:
+- 근본 원인
+- 영향도 (1-10)
+- 구체적인 해결 방안
+- 예상 성능 개선율
+`;
+
+        const response = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(response);
+    }
+
+    private async detectMemoryLeaks(): Promise<MemoryLeak[]> {
+        const leaks: MemoryLeak[] = [];
+        
+        // 힙 스냅샷 비교
+        const heapSnapshots = await this.collectHeapSnapshots();
+        
+        for (let i = 1; i < heapSnapshots.length; i++) {
+            const diff = await this.compareHeapSnapshots(
+                heapSnapshots[i - 1],
+                heapSnapshots[i]
+            );
+            
+            // 지속적으로 증가하는 객체 탐지
+            const growingObjects = diff.filter(obj => 
+                obj.retainedSizeDiff > 0 && 
+                obj.instanceCountDiff > 0
+            );
+            
+            for (const obj of growingObjects) {
+                if (this.isLikelyLeak(obj)) {
+                    leaks.push({
+                        className: obj.className,
+                        retainedSize: obj.retainedSize,
+                        instanceCount: obj.instanceCount,
+                        growthRate: obj.growthRate,
+                        stackTrace: await this.findAllocationStack(obj),
+                        severity: this.calculateLeakSeverity(obj),
+                        fix: await this.suggestLeakFix(obj)
+                    });
+                }
+            }
+        }
+
+        return leaks;
+    }
+
+    private async suggestOptimizations(): Promise<Optimization[]> {
+        const optimizations: Optimization[] = [];
+        
+        // 1. 함수 실행 시간 최적화
+        const slowFunctions = await this.identifySlowFunctions();
+        for (const func of slowFunctions) {
+            const optimization = await this.optimizeFunction(func);
+            if (optimization) {
+                optimizations.push(optimization);
+            }
+        }
+
+        // 2. 렌더링 최적화
+        const renderingIssues = await this.analyzeRendering();
+        optimizations.push(...renderingIssues.optimizations);
+
+        // 3. 네트워크 최적화
+        const networkOptimizations = await this.analyzeNetworkPerformance();
+        optimizations.push(...networkOptimizations);
+
+        // 4. 번들 크기 최적화
+        const bundleOptimizations = await this.analyzeBundleSize();
+        optimizations.push(...bundleOptimizations);
+
+        return optimizations.sort((a, b) => b.estimatedImprovement - a.estimatedImprovement);
+    }
+
+    private async optimizeFunction(func: SlowFunction): Promise<Optimization | null> {
+        const code = await this.getFunctionCode(func);
+        
+        const prompt = `
+다음 함수의 성능을 최적화해주세요:
+
+함수명: ${func.name}
+평균 실행 시간: ${func.avgDuration}ms
+호출 빈도: ${func.callCount}/분
+
+코드:
+\`\`\`javascript
+${code}
+\`\`\`
+
+최적화 제안:
+1. 알고리즘 개선
+2. 불필요한 연산 제거
+3. 캐싱 적용
+4. 비동기 처리
+5. 메모이제이션
+
+최적화된 코드와 예상 개선율을 제공해주세요.
+`;
+
+        const response = await this.cursor.ai.generateCode(prompt);
+        const optimization = JSON.parse(response);
+
+        return {
+            type: 'function',
+            target: func.name,
+            currentPerformance: func.avgDuration,
+            estimatedImprovement: optimization.improvementPercentage,
+            suggestion: optimization.description,
+            code: optimization.optimizedCode,
+            risk: optimization.risk || 'low'
+        };
+    }
+
+    private async predictFutureIssues(): Promise<PerformancePrediction[]> {
+        const predictions: PerformancePrediction[] = [];
+        
+        // 시계열 분석으로 트렌드 예측
+        for (const [key, metrics] of this.metrics) {
+            const trend = this.analyzeTrend(metrics);
+            
+            if (trend.isWorrying) {
+                const prediction = await this.generatePrediction(key, trend);
+                predictions.push(prediction);
+            }
+        }
+
+        // ML 모델로 복잡한 패턴 예측
+        const mlPredictions = await this.runMLPrediction();
+        predictions.push(...mlPredictions);
+
+        return predictions;
+    }
+
+    private analyzeTrend(metrics: PerformanceMetric[]): TrendAnalysis {
+        if (metrics.length < 10) {
+            return { isWorrying: false };
+        }
+
+        // 이동 평균 계산
+        const windowSize = Math.min(10, Math.floor(metrics.length / 3));
+        const movingAverages = [];
+        
+        for (let i = windowSize; i < metrics.length; i++) {
+            const window = metrics.slice(i - windowSize, i);
+            const avg = window.reduce((sum, m) => sum + m.duration, 0) / windowSize;
+            movingAverages.push(avg);
+        }
+
+        // 트렌드 계산
+        const trend = this.calculateTrendSlope(movingAverages);
+        
+        return {
+            isWorrying: trend.slope > 0.1 && trend.r2 > 0.7,
+            slope: trend.slope,
+            confidence: trend.r2,
+            projection: this.projectFuture(trend, movingAverages)
+        };
+    }
+
+    async applyOptimization(optimization: Optimization): Promise<ApplyResult> {
+        console.log(`🔧 최적화 적용 중: ${optimization.target}`);
+        
+        // 백업 생성
+        const backup = await this.createBackup(optimization.target);
+        
+        try {
+            // 최적화 적용
+            switch (optimization.type) {
+                case 'function':
+                    await this.applyFunctionOptimization(optimization);
+                    break;
+                case 'query':
+                    await this.applyQueryOptimization(optimization);
+                    break;
+                case 'rendering':
+                    await this.applyRenderingOptimization(optimization);
+                    break;
+                case 'caching':
+                    await this.applyCachingStrategy(optimization);
+                    break;
+            }
+
+            // 성능 검증
+            const validation = await this.validateOptimization(optimization);
+            
+            if (validation.improved) {
+                return {
+                    success: true,
+                    actualImprovement: validation.improvementPercentage,
+                    message: `성능이 ${validation.improvementPercentage}% 개선되었습니다.`
+                };
+            } else {
+                // 롤백
+                await this.rollback(backup);
+                return {
+                    success: false,
+                    message: '성능 개선이 확인되지 않아 롤백했습니다.'
+                };
+            }
+        } catch (error) {
+            await this.rollback(backup);
+            throw error;
+        }
+    }
+}
+
+// 실시간 성능 모니터링 대시보드
+export class PerformanceDashboard {
+    private profiler: AIPerformanceProfiler;
+    private websocket: WebSocket;
+    private charts: Map<string, Chart>;
+
+    constructor() {
+        this.profiler = new AIPerformanceProfiler();
+        this.charts = new Map();
+        this.setupRealtimeUpdates();
+    }
+
+    private setupRealtimeUpdates() {
+        // 실시간 메트릭 스트리밍
+        setInterval(async () => {
+            const metrics = await this.profiler.getCurrentMetrics();
+            this.updateCharts(metrics);
+            this.broadcastMetrics(metrics);
+        }, 1000);
+
+        // AI 분석 주기적 실행
+        setInterval(async () => {
+            const analysis = await this.profiler.analyzePerformance();
+            this.updateAnalysis(analysis);
+        }, 30000); // 30초마다
+    }
+
+    private updateCharts(metrics: RealtimeMetrics) {
+        // CPU 사용률 차트 업데이트
+        this.updateChart('cpu', {
+            timestamp: Date.now(),
+            value: metrics.cpu.usage,
+            threshold: 80
+        });
+
+        // 메모리 사용량 차트
+        this.updateChart('memory', {
+            timestamp: Date.now(),
+            value: metrics.memory.heapUsed / metrics.memory.heapTotal * 100,
+            threshold: 90
+        });
+
+        // 응답 시간 차트
+        this.updateChart('responseTime', {
+            timestamp: Date.now(),
+            value: metrics.responseTime.p95,
+            threshold: metrics.responseTime.sla
+        });
+
+        // 처리량 차트
+        this.updateChart('throughput', {
+            timestamp: Date.now(),
+            value: metrics.throughput.requestsPerSecond
+        });
+    }
+
+    async generatePerformanceReport(): Promise<string> {
+        const analysis = await this.profiler.analyzePerformance();
+        
+        return `
+# 성능 분석 보고서
+
+## 요약
+- 전체 성능 점수: ${analysis.summary.overallScore}/100
+- 주요 병목 지점: ${analysis.bottlenecks.length}개
+- 메모리 누수 의심: ${analysis.memoryLeaks.length}개
+- 최적화 제안: ${analysis.optimizations.length}개
+
+## 상세 분석
+
+### 1. 병목 지점
+${analysis.bottlenecks.map(b => `
+#### ${b.type} - ${b.location}
+- 영향도: ${b.impact}/10
+- 발생 빈도: ${b.frequency}회/분
+- 권장 조치: ${b.suggestions.join(', ')}
+`).join('\n')}
+
+### 2. 메모리 분석
+${analysis.memoryLeaks.map(leak => `
+#### ${leak.className}
+- 누수 크기: ${formatBytes(leak.retainedSize)}
+- 인스턴스 수: ${leak.instanceCount}
+- 심각도: ${leak.severity}
+- 해결 방안: ${leak.fix}
+`).join('\n')}
+
+### 3. 최적화 제안
+${analysis.optimizations.map(opt => `
+#### ${opt.target}
+- 예상 개선율: ${opt.estimatedImprovement}%
+- 위험도: ${opt.risk}
+- 구현 방법:
+\`\`\`javascript
+${opt.code}
+\`\`\`
+`).join('\n')}
+
+### 4. 향후 예측
+${analysis.predictions.map(pred => `
+- ${pred.metric}: ${pred.timeframe}내 ${pred.prediction}
+  - 신뢰도: ${pred.confidence}%
+  - 권장 조치: ${pred.recommendation}
+`).join('\n')}
+`;
+    }
+}
+
+// 성능 최적화 자동화
+export class AutoPerformanceOptimizer {
+    private profiler: AIPerformanceProfiler;
+    private config: OptimizerConfig;
+    private optimizationHistory: OptimizationHistory[];
+
+    constructor(config: OptimizerConfig) {
+        this.profiler = new AIPerformanceProfiler();
+        this.config = config;
+        this.optimizationHistory = [];
+    }
+
+    async startAutoOptimization(): Promise<void> {
+        console.log('🤖 자동 성능 최적화 시작...');
+        
+        // 지속적인 모니터링 및 최적화
+        setInterval(async () => {
+            await this.optimizationCycle();
+        }, this.config.interval || 300000); // 5분마다
+    }
+
+    private async optimizationCycle(): Promise<void> {
+        // 1. 성능 분석
+        const analysis = await this.profiler.analyzePerformance();
+        
+        // 2. 최적화 대상 선정
+        const targets = this.selectOptimizationTargets(analysis);
+        
+        // 3. 각 대상에 대해 최적화 수행
+        for (const target of targets) {
+            try {
+                const result = await this.optimizeTarget(target);
+                
+                this.optimizationHistory.push({
+                    timestamp: new Date(),
+                    target: target.name,
+                    result,
+                    improvement: result.actualImprovement
+                });
+                
+                // 성공적인 최적화 학습
+                if (result.success) {
+                    await this.learnFromSuccess(target, result);
+                }
+            } catch (error) {
+                console.error(`최적화 실패: ${target.name}`, error);
+            }
+        }
+        
+        // 4. 보고서 생성
+        await this.generateOptimizationReport();
+    }
+
+    private selectOptimizationTargets(analysis: PerformanceReport): OptimizationTarget[] {
+        const targets: OptimizationTarget[] = [];
+        
+        // 자동 최적화 가능한 항목 필터링
+        const autoOptimizable = analysis.optimizations.filter(opt => 
+            opt.risk === 'low' && 
+            opt.estimatedImprovement > this.config.minImprovement
+        );
+        
+        // 우선순위 정렬
+        return autoOptimizable
+            .sort((a, b) => b.estimatedImprovement - a.estimatedImprovement)
+            .slice(0, this.config.maxConcurrent || 3)
+            .map(opt => ({
+                name: opt.target,
+                type: opt.type,
+                optimization: opt
+            }));
+    }
+
+    private async optimizeTarget(target: OptimizationTarget): Promise<OptimizationResult> {
+        console.log(`🎯 최적화 대상: ${target.name}`);
+        
+        // 사전 성능 측정
+        const beforeMetrics = await this.measurePerformance(target);
+        
+        // 최적화 적용
+        await this.profiler.applyOptimization(target.optimization);
+        
+        // 안정화 대기
+        await this.waitForStabilization();
+        
+        // 사후 성능 측정
+        const afterMetrics = await this.measurePerformance(target);
+        
+        // 개선율 계산
+        const improvement = this.calculateImprovement(beforeMetrics, afterMetrics);
+        
+        return {
+            success: improvement > 0,
+            actualImprovement: improvement,
+            beforeMetrics,
+            afterMetrics
+        };
+    }
+
+    private async learnFromSuccess(
+        target: OptimizationTarget, 
+        result: OptimizationResult
+    ): Promise<void> {
+        // 성공적인 최적화 패턴 학습
+        const pattern = {
+            targetType: target.type,
+            optimization: target.optimization,
+            actualImprovement: result.actualImprovement,
+            context: await this.captureContext()
+        };
+        
+        // AI 모델 업데이트
+        await this.updateOptimizationModel(pattern);
+    }
+
+    private async generateOptimizationReport(): Promise<void> {
+        const report = {
+            period: {
+                from: this.optimizationHistory[0]?.timestamp || new Date(),
+                to: new Date()
+            },
+            totalOptimizations: this.optimizationHistory.length,
+            successfulOptimizations: this.optimizationHistory.filter(h => h.result.success).length,
+            totalImprovement: this.optimizationHistory.reduce((sum, h) => 
+                sum + (h.improvement || 0), 0
+            ),
+            topOptimizations: this.optimizationHistory
+                .sort((a, b) => (b.improvement || 0) - (a.improvement || 0))
+                .slice(0, 5)
+        };
+        
+        // 보고서 저장 및 알림
+        await this.saveReport(report);
+        await this.notifyStakeholders(report);
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+
+                <h3>메모리 프로파일링과 최적화</h3>
+                <div class="memory-profiling">
+                    <div class="memory-tools">
+                        <h4>고급 메모리 분석 도구</h4>
+                        <pre><code>// profiler/MemoryProfiler.ts
+export class AdvancedMemoryProfiler {
+    private heapSnapshots: HeapSnapshot[] = [];
+    private retainerGraphs: Map<string, RetainerGraph> = new Map();
+    private cursor: CursorAI;
+
+    constructor() {
+        this.cursor = new CursorAI();
+        this.setupMemoryTracking();
+    }
+
+    private setupMemoryTracking() {
+        // 가비지 컬렉션 이벤트 추적
+        if (global.gc) {
+            const originalGC = global.gc;
+            global.gc = () => {
+                const before = process.memoryUsage();
+                originalGC();
+                const after = process.memoryUsage();
+                
+                this.recordGCEvent({
+                    before,
+                    after,
+                    freed: before.heapUsed - after.heapUsed,
+                    timestamp: Date.now()
+                });
+            };
+        }
+
+        // 주기적 스냅샷
+        setInterval(() => {
+            this.takeHeapSnapshot();
+        }, 60000); // 1분마다
+    }
+
+    async analyzeMemoryLeaks(): Promise<MemoryLeakReport> {
+        if (this.heapSnapshots.length < 2) {
+            throw new Error('최소 2개의 힙 스냅샷이 필요합니다.');
+        }
+
+        const leaks: DetectedLeak[] = [];
+        
+        // 스냅샷 간 비교
+        for (let i = 1; i < this.heapSnapshots.length; i++) {
+            const prev = this.heapSnapshots[i - 1];
+            const curr = this.heapSnapshots[i];
+            
+            const growth = await this.compareSnapshots(prev, curr);
+            
+            // 지속적으로 증가하는 객체 찾기
+            for (const [className, stats] of growth) {
+                if (this.isLikelyLeak(stats)) {
+                    const leak = await this.analyzeLeakPattern(className, stats);
+                    leaks.push(leak);
+                }
+            }
+        }
+
+        // AI로 복잡한 메모리 패턴 분석
+        const aiAnalysis = await this.performAIMemoryAnalysis(leaks);
+        
+        return {
+            leaks: leaks.sort((a, b) => b.severity - a.severity),
+            recommendations: aiAnalysis.recommendations,
+            estimatedImpact: aiAnalysis.estimatedImpact,
+            fixStrategies: await this.generateFixStrategies(leaks)
+        };
+    }
+
+    private async analyzeLeakPattern(
+        className: string, 
+        stats: MemoryStats
+    ): Promise<DetectedLeak> {
+        // 객체의 리테이너 체인 분석
+        const retainerChain = await this.findRetainerChain(className);
+        
+        // 할당 스택 트레이스 찾기
+        const allocationStack = await this.findAllocationSource(className);
+        
+        // 누수 패턴 분류
+        const pattern = this.classifyLeakPattern(stats, retainerChain);
+        
+        return {
+            className,
+            pattern,
+            severity: this.calculateSeverity(stats),
+            growthRate: stats.growthRate,
+            retainedSize: stats.currentSize,
+            retainerChain,
+            allocationStack,
+            suggestedFix: await this.suggestFix(pattern, retainerChain)
+        };
+    }
+
+    private async performAIMemoryAnalysis(leaks: DetectedLeak[]): Promise<AIMemoryAnalysis> {
+        const prompt = `
+메모리 누수 패턴을 분석하고 해결 방안을 제시해주세요:
+
+발견된 누수:
+${JSON.stringify(leaks.map(l => ({
+    className: l.className,
+    pattern: l.pattern,
+    growthRate: l.growthRate,
+    retainerChain: l.retainerChain
+})), null, 2)}
+
+다음을 포함해주세요:
+1. 누수의 근본 원인
+2. 전체 시스템에 미치는 영향
+3. 우선순위가 높은 수정 사항
+4. 장기적인 메모리 관리 전략
+5. 예방 방법
+`;
+
+        const response = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(response);
+    }
+
+    private async suggestFix(pattern: LeakPattern, retainerChain: string[]): Promise<MemoryFix> {
+        const fixStrategies = {
+            'event-listener': {
+                description: '이벤트 리스너 제거',
+                code: `
+// 컴포넌트 언마운트 시 리스너 제거
+componentWillUnmount() {
+    this.eventEmitter.removeListener('event', this.handler);
+    // 또는
+    this.subscription?.unsubscribe();
+}
+
+// React Hook 사용 시
+useEffect(() => {
+    const handler = () => { /* ... */ };
+    element.addEventListener('click', handler);
+    
+    return () => {
+        element.removeEventListener('click', handler);
+    };
+}, []);`
+            },
+            'closure': {
+                description: '클로저 참조 해제',
+                code: `
+// 문제가 있는 코드
+function createHandler(largeData) {
+    return function() {
+        // largeData를 계속 참조
+        console.log(largeData.id);
+    };
+}
+
+// 개선된 코드
+function createHandler(largeData) {
+    const id = largeData.id; // 필요한 데이터만 추출
+    return function() {
+        console.log(id);
+    };
+}`
+            },
+            'dom-reference': {
+                description: 'DOM 참조 정리',
+                code: `
+// DOM 요소 참조 해제
+class Component {
+    cleanup() {
+        this.domElement = null;
+        this.childElements = [];
+        this.cache.clear();
+    }
+}
+
+// WeakMap 사용으로 자동 정리
+const domCache = new WeakMap();
+domCache.set(element, data); // element가 GC되면 자동 제거`
+            },
+            'timer': {
+                description: '타이머 정리',
+                code: `
+class Component {
+    timers = new Set();
+    
+    setTimeout(callback, delay) {
+        const timer = window.setTimeout(() => {
+            this.timers.delete(timer);
+            callback();
+        }, delay);
+        this.timers.add(timer);
+        return timer;
+    }
+    
+    cleanup() {
+        this.timers.forEach(timer => clearTimeout(timer));
+        this.timers.clear();
+    }
+}`
+            }
+        };
+
+        return fixStrategies[pattern] || {
+            description: '수동 분석 필요',
+            code: '// 구체적인 코드 컨텍스트를 확인해주세요'
+        };
+    }
+
+    async optimizeMemoryUsage(): Promise<MemoryOptimizationResult> {
+        const currentUsage = process.memoryUsage();
+        const optimizations: AppliedOptimization[] = [];
+
+        // 1. 큰 객체 풀링
+        const largeObjects = await this.identifyLargeObjects();
+        for (const obj of largeObjects) {
+            if (obj.canPool) {
+                const pooling = await this.implementObjectPooling(obj);
+                optimizations.push(pooling);
+            }
+        }
+
+        // 2. 문자열 인터닝
+        const duplicateStrings = await this.findDuplicateStrings();
+        if (duplicateStrings.saveable > 1024 * 1024) { // 1MB 이상
+            const interning = await this.implementStringInterning();
+            optimizations.push(interning);
+        }
+
+        // 3. 약한 참조 적용
+        const cacheOptimizations = await this.optimizeCaches();
+        optimizations.push(...cacheOptimizations);
+
+        // 4. 메모리 압축
+        if (currentUsage.external > 100 * 1024 * 1024) { // 100MB 이상
+            const compression = await this.implementMemoryCompression();
+            optimizations.push(compression);
+        }
+
+        const afterUsage = process.memoryUsage();
+        
+        return {
+            before: currentUsage,
+            after: afterUsage,
+            saved: currentUsage.heapUsed - afterUsage.heapUsed,
+            optimizations,
+            recommendations: await this.generateMemoryRecommendations()
+        };
+    }
+
+    private async implementObjectPooling(obj: LargeObject): Promise<AppliedOptimization> {
+        const poolCode = `
+class ${obj.className}Pool {
+    private pool: ${obj.className}[] = [];
+    private maxSize = ${obj.recommendedPoolSize};
+    
+    acquire(): ${obj.className} {
+        if (this.pool.length > 0) {
+            return this.pool.pop()!.reset();
+        }
+        return new ${obj.className}();
+    }
+    
+    release(obj: ${obj.className}): void {
+        if (this.pool.length < this.maxSize) {
+            obj.reset();
+            this.pool.push(obj);
+        }
+    }
+    
+    clear(): void {
+        this.pool = [];
+    }
+}
+
+// 사용 예
+const pool = new ${obj.className}Pool();
+const obj = pool.acquire();
+try {
+    // 객체 사용
+} finally {
+    pool.release(obj);
+}`;
+
+        return {
+            type: 'object-pooling',
+            target: obj.className,
+            code: poolCode,
+            estimatedSaving: obj.size * obj.instanceCount * 0.7,
+            applied: true
+        };
+    }
+}
+
+// 프로덕션 성능 모니터링
+export class ProductionPerformanceMonitor {
+    private metrics: MetricsCollector;
+    private alerts: AlertManager;
+    private dashboard: PerformanceDashboard;
+
+    constructor() {
+        this.metrics = new MetricsCollector();
+        this.alerts = new AlertManager();
+        this.dashboard = new PerformanceDashboard();
+        this.setupProductionMonitoring();
+    }
+
+    private setupProductionMonitoring() {
+        // APM (Application Performance Monitoring) 설정
+        this.setupAPM();
+        
+        // 커스텀 메트릭 수집
+        this.setupCustomMetrics();
+        
+        // 실시간 알림 설정
+        this.setupAlerts();
+        
+        // 성능 이상 자동 대응
+        this.setupAutoResponse();
+    }
+
+    private setupAPM() {
+        // 분산 트레이싱
+        const tracer = new DistributedTracer({
+            serviceName: 'my-app',
+            samplingRate: 0.1 // 10% 샘플링
+        });
+
+        // 모든 HTTP 요청 추적
+        app.use((req, res, next) => {
+            const span = tracer.startSpan('http-request', {
+                'http.method': req.method,
+                'http.url': req.url
+            });
+
+            res.on('finish', () => {
+                span.setTag('http.status_code', res.statusCode);
+                span.finish();
+            });
+
+            next();
+        });
+
+        // 데이터베이스 쿼리 추적
+        mongoose.plugin((schema) => {
+            schema.pre('find', function() {
+                this._startTime = Date.now();
+            });
+
+            schema.post('find', function() {
+                const duration = Date.now() - this._startTime;
+                tracer.recordMetric('db.query.duration', duration, {
+                    collection: this.mongooseCollection.name,
+                    operation: 'find'
+                });
+            });
+        });
+    }
+
+    private setupAlerts() {
+        // CPU 사용률 알림
+        this.alerts.addRule({
+            name: 'high-cpu',
+            condition: 'cpu.usage > 80',
+            duration: '5m',
+            action: async () => {
+                await this.notifyOps('높은 CPU 사용률 감지');
+                await this.triggerAutoScaling();
+            }
+        });
+
+        // 메모리 누수 알림
+        this.alerts.addRule({
+            name: 'memory-leak',
+            condition: 'memory.growth_rate > 10MB/min',
+            duration: '10m',
+            action: async () => {
+                const analysis = await this.analyzeMemoryLeak();
+                await this.notifyDev('메모리 누수 의심', analysis);
+            }
+        });
+
+        // 응답 시간 저하 알림
+        this.alerts.addRule({
+            name: 'slow-response',
+            condition: 'response_time.p95 > 1000ms',
+            duration: '3m',
+            action: async () => {
+                const bottlenecks = await this.identifyBottlenecks();
+                await this.applyEmergencyOptimizations(bottlenecks);
+            }
+        });
+    }
+
+    private async applyEmergencyOptimizations(bottlenecks: Bottleneck[]) {
+        for (const bottleneck of bottlenecks) {
+            switch (bottleneck.type) {
+                case 'database':
+                    // 쿼리 캐시 활성화
+                    await this.enableQueryCache();
+                    // 읽기 전용 복제본으로 트래픽 분산
+                    await this.enableReadReplicas();
+                    break;
+                    
+                case 'computation':
+                    // 무거운 연산을 워커로 이동
+                    await this.offloadToWorkers(bottleneck.target);
+                    break;
+                    
+                case 'memory':
+                    // 긴급 가비지 컬렉션
+                    if (global.gc) global.gc();
+                    // 캐시 크기 축소
+                    await this.reduceCacheSize();
+                    break;
+            }
+        }
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-brain"></i> 예측적 성능 관리</h2>
+                
+                <h3>ML 기반 성능 예측 시스템</h3>
+                <div class="predictive-performance">
+                    <div class="ml-prediction">
+                        <h4>성능 예측 및 사전 대응</h4>
+                        <pre><code>// ml/PerformancePredictor.ts
+export class PerformancePredictor {
+    private model: TensorFlowModel;
+    private historicalData: PerformanceTimeSeries;
+    private cursor: CursorAI;
+
+    constructor() {
+        this.cursor = new CursorAI();
+        this.model = this.loadOrTrainModel();
+        this.historicalData = new PerformanceTimeSeries();
+    }
+
+    async predictPerformanceIssues(horizon: number = 24): Promise<PredictionResult> {
+        const features = await this.extractFeatures();
+        const predictions = await this.model.predict(features, horizon);
+        
+        const issues = this.identifyPotentialIssues(predictions);
+        const recommendations = await this.generatePreventiveActions(issues);
+        
+        return {
+            predictions,
+            issues,
+            recommendations,
+            confidence: this.calculateConfidence(predictions)
+        };
+    }
+
+    private async extractFeatures(): Promise<Features> {
+        const now = Date.now();
+        const features = {
+            // 시간적 특징
+            hourOfDay: new Date(now).getHours(),
+            dayOfWeek: new Date(now).getDay(),
+            isWeekend: [0, 6].includes(new Date(now).getDay()),
+            
+            // 성능 메트릭
+            cpuUsage: await this.getAverageCPU(5), // 5분 평균
+            memoryUsage: await this.getAverageMemory(5),
+            responseTime: await this.getAverageResponseTime(5),
+            errorRate: await this.getErrorRate(5),
+            
+            // 트래픽 패턴
+            requestRate: await this.getRequestRate(),
+            uniqueUsers: await this.getUniqueUsers(60), // 1시간
+            
+            // 시스템 상태
+            dbConnections: await this.getDBConnections(),
+            cacheHitRate: await this.getCacheHitRate(),
+            
+            // 외부 요인
+            deploymentRecent: await this.wasRecentDeployment(60), // 1시간 내
+            maintenanceScheduled: await this.isMaintenanceScheduled(24) // 24시간 내
+        };
+        
+        return this.normalizeFeatures(features);
+    }
+
+    private identifyPotentialIssues(predictions: Predictions): PotentialIssue[] {
+        const issues: PotentialIssue[] = [];
+        
+        // CPU 스파이크 예측
+        const cpuSpikes = predictions.cpu.filter(p => p.value > 85);
+        if (cpuSpikes.length > 0) {
+            issues.push({
+                type: 'cpu-spike',
+                severity: 'high',
+                timeframe: cpuSpikes[0].timestamp,
+                probability: cpuSpikes[0].confidence,
+                impact: 'Service degradation expected'
+            });
+        }
+        
+        // 메모리 부족 예측
+        const memoryIssues = predictions.memory.filter(p => p.value > 90);
+        if (memoryIssues.length > 0) {
+            issues.push({
+                type: 'memory-exhaustion',
+                severity: 'critical',
+                timeframe: memoryIssues[0].timestamp,
+                probability: memoryIssues[0].confidence,
+                impact: 'Out of memory errors likely'
+            });
+        }
+        
+        // 트래픽 서지 예측
+        const trafficSurge = this.detectTrafficAnomaly(predictions.traffic);
+        if (trafficSurge) {
+            issues.push({
+                type: 'traffic-surge',
+                severity: 'medium',
+                timeframe: trafficSurge.timestamp,
+                probability: trafficSurge.confidence,
+                impact: 'Increased latency expected'
+            });
+        }
+        
+        return issues;
+    }
+
+    private async generatePreventiveActions(issues: PotentialIssue[]): Promise<PreventiveAction[]> {
+        const actions: PreventiveAction[] = [];
+        
+        for (const issue of issues) {
+            const prompt = `
+예측된 성능 문제에 대한 예방 조치를 제안해주세요:
+
+문제 유형: ${issue.type}
+심각도: ${issue.severity}
+예상 시간: ${new Date(issue.timeframe).toISOString()}
+발생 확률: ${issue.probability}%
+예상 영향: ${issue.impact}
+
+현재 시스템 상태:
+${JSON.stringify(await this.getCurrentSystemState(), null, 2)}
+
+다음을 포함한 조치 계획을 제시해주세요:
+1. 즉시 실행할 자동화 조치
+2. 수동 개입이 필요한 조치
+3. 예방 효과 추정치
+4. 부작용 및 위험
+`;
+
+            const response = await this.cursor.ai.generateCode(prompt);
+            const actionPlan = JSON.parse(response);
+            
+            actions.push({
+                issue: issue.type,
+                automated: actionPlan.automated,
+                manual: actionPlan.manual,
+                effectiveness: actionPlan.effectiveness,
+                risks: actionPlan.risks,
+                priority: this.calculatePriority(issue, actionPlan)
+            });
+        }
+        
+        return actions.sort((a, b) => b.priority - a.priority);
+    }
+
+    async executePreventiveActions(actions: PreventiveAction[]): Promise<ExecutionResult[]> {
+        const results: ExecutionResult[] = [];
+        
+        for (const action of actions) {
+            if (action.automated && action.priority > 7) {
+                try {
+                    const result = await this.executeAutomatedAction(action);
+                    results.push(result);
+                    
+                    // 실행 결과 학습
+                    await this.learnFromExecution(action, result);
+                } catch (error) {
+                    console.error(`예방 조치 실행 실패: ${action.issue}`, error);
+                    results.push({
+                        action: action.issue,
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+        }
+        
+        // 수동 조치 알림
+        const manualActions = actions.filter(a => !a.automated || a.priority <= 7);
+        if (manualActions.length > 0) {
+            await this.notifyOpsTeam(manualActions);
+        }
+        
+        return results;
+    }
+
+    private async executeAutomatedAction(action: PreventiveAction): Promise<ExecutionResult> {
+        console.log(`🤖 자동 예방 조치 실행: ${action.issue}`);
+        
+        switch (action.issue) {
+            case 'cpu-spike':
+                // 자동 스케일링
+                await this.scaleOut(2); // 인스턴스 2개 추가
+                // 요청 제한 임시 적용
+                await this.enableRateLimiting(1000); // 1000 req/min
+                break;
+                
+            case 'memory-exhaustion':
+                // 캐시 정리
+                await this.clearCaches(['session', 'query']);
+                // 메모리 집약적 작업 일시 중지
+                await this.pauseBackgroundJobs();
+                // 가비지 컬렉션 강제 실행
+                if (global.gc) global.gc();
+                break;
+                
+            case 'traffic-surge':
+                // CDN 캐시 예열
+                await this.warmCDNCache();
+                // 데이터베이스 연결 풀 확장
+                await this.expandConnectionPool(50);
+                // 읽기 복제본 활성화
+                await this.enableReadReplicas();
+                break;
+        }
+        
+        return {
+            action: action.issue,
+            success: true,
+            metrics: await this.measureActionImpact()
+        };
+    }
+
+    private async trainModel(): Promise<TensorFlowModel> {
+        console.log('🧠 성능 예측 모델 학습 중...');
+        
+        // 과거 데이터 로드
+        const trainingData = await this.loadHistoricalData();
+        
+        // LSTM 모델 구성
+        const model = tf.sequential({
+            layers: [
+                tf.layers.lstm({
+                    units: 128,
+                    returnSequences: true,
+                    inputShape: [24, 15] // 24시간, 15개 특징
+                }),
+                tf.layers.dropout({ rate: 0.2 }),
+                tf.layers.lstm({
+                    units: 64,
+                    returnSequences: false
+                }),
+                tf.layers.dense({ units: 32, activation: 'relu' }),
+                tf.layers.dense({ units: 4 }) // CPU, Memory, Response Time, Error Rate
+            ]
+        });
+        
+        model.compile({
+            optimizer: tf.train.adam(0.001),
+            loss: 'meanSquaredError',
+            metrics: ['mae']
+        });
+        
+        // 모델 학습
+        await model.fit(trainingData.features, trainingData.labels, {
+            epochs: 100,
+            batchSize: 32,
+            validationSplit: 0.2,
+            callbacks: {
+                onEpochEnd: (epoch, logs) => {
+                    console.log(`Epoch ${epoch}: loss = ${logs.loss.toFixed(4)}`);
+                }
+            }
+        });
+        
+        return model;
+    }
+}
+
+// 지능형 성능 최적화 제안
+export class IntelligentOptimizationSuggester {
+    private cursor: CursorAI;
+    private codeAnalyzer: CodeAnalyzer;
+    private benchmarker: Benchmarker;
+
+    async suggestOptimizations(targetFile: string): Promise<OptimizationSuggestion[]> {
+        const code = await fs.readFile(targetFile, 'utf-8');
+        const ast = this.codeAnalyzer.parse(code);
+        
+        const suggestions: OptimizationSuggestion[] = [];
+        
+        // 1. 알고리즘 최적화
+        const algorithmSuggestions = await this.analyzeAlgorithms(ast);
+        suggestions.push(...algorithmSuggestions);
+        
+        // 2. 데이터 구조 최적화
+        const dataStructureSuggestions = await this.analyzeDataStructures(ast);
+        suggestions.push(...dataStructureSuggestions);
+        
+        // 3. 비동기 패턴 최적화
+        const asyncSuggestions = await this.analyzeAsyncPatterns(ast);
+        suggestions.push(...asyncSuggestions);
+        
+        // 4. 메모리 사용 최적화
+        const memorySuggestions = await this.analyzeMemoryUsage(ast);
+        suggestions.push(...memorySuggestions);
+        
+        // 5. AI 기반 고급 최적화
+        const aiSuggestions = await this.getAISuggestions(code, suggestions);
+        suggestions.push(...aiSuggestions);
+        
+        // 각 제안의 영향도 측정
+        for (const suggestion of suggestions) {
+            suggestion.estimatedImprovement = await this.benchmarkSuggestion(
+                code,
+                suggestion
+            );
+        }
+        
+        return suggestions.sort((a, b) => 
+            b.estimatedImprovement - a.estimatedImprovement
+        );
+    }
+
+    private async analyzeAlgorithms(ast: AST): Promise<OptimizationSuggestion[]> {
+        const suggestions: OptimizationSuggestion[] = [];
+        
+        // 중첩 루프 감지
+        ast.traverse({
+            ForStatement(path) {
+                const nestedLoops = path.findDescendants('ForStatement');
+                if (nestedLoops.length > 0) {
+                    suggestions.push({
+                        type: 'algorithm',
+                        location: path.node.loc,
+                        issue: '중첩 루프 감지 (O(n²) 이상의 복잡도)',
+                        suggestion: '해시 테이블이나 더 효율적인 알고리즘 사용 고려',
+                        code: this.generateOptimizedLoop(path.node)
+                    });
+                }
+            }
+        });
+        
+        return suggestions;
+    }
+
+    private async getAISuggestions(
+        code: string, 
+        existingSuggestions: OptimizationSuggestion[]
+    ): Promise<OptimizationSuggestion[]> {
+        const prompt = `
+다음 코드의 성능을 최적화할 수 있는 고급 방법을 제안해주세요:
+
+코드:
+\`\`\`javascript
+${code}
+\`\`\`
+
+이미 발견된 최적화 포인트:
+${existingSuggestions.map(s => `- ${s.issue}`).join('\n')}
+
+다음 관점에서 추가 최적화를 찾아주세요:
+1. 병렬 처리 기회
+2. 캐싱 전략
+3. 레이지 로딩
+4. 메모이제이션
+5. 웹 워커 활용
+6. WASM 활용 가능성
+
+각 최적화에 대해 구체적인 구현 코드를 제공해주세요.
+`;
+
+        const response = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(response);
+    }
+
+    private async benchmarkSuggestion(
+        originalCode: string,
+        suggestion: OptimizationSuggestion
+    ): Promise<number> {
+        // 원본 코드 벤치마크
+        const originalPerf = await this.benchmarker.run(originalCode);
+        
+        // 최적화된 코드 벤치마크
+        const optimizedCode = this.applyOptimization(originalCode, suggestion);
+        const optimizedPerf = await this.benchmarker.run(optimizedCode);
+        
+        // 개선율 계산
+        const improvement = ((originalPerf.time - optimizedPerf.time) / originalPerf.time) * 100;
+        
+        return Math.max(0, improvement);
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice-section">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 종합 성능 최적화 시스템 구축</h2>
+                
+                <div class="exercise">
+                    <h3>과제: AI 기반 성능 모니터링 및 최적화 플랫폼</h3>
+                    <p>다음 요구사항을 만족하는 성능 관리 시스템을 구축하세요:</p>
+                    
+                    <div class="requirements">
+                        <h4>요구사항:</h4>
+                        <ul>
+                            <li>실시간 성능 메트릭 수집 및 시각화</li>
+                            <li>AI 기반 이상 탐지 및 예측</li>
+                            <li>자동 성능 최적화 실행</li>
+                            <li>메모리 누수 자동 탐지 및 수정</li>
+                            <li>성능 저하 예측 및 사전 대응</li>
+                            <li>상세한 성능 보고서 생성</li>
+                        </ul>
+                    </div>
+
+                    <div class="hints">
+                        <h4>힌트:</h4>
+                        <ul>
+                            <li>Performance Observer API 활용</li>
+                            <li>Worker Threads로 무거운 분석 작업 분리</li>
+                            <li>시계열 데이터베이스 사용 (InfluxDB 등)</li>
+                            <li>Grafana 연동으로 시각화</li>
+                            <li>TensorFlow.js로 예측 모델 구현</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary-section">
+                <h2><i class="fas fa-bookmark"></i> 핵심 요약</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>성능 프로파일링</h3>
+                        <ul>
+                            <li>실시간 메트릭 수집</li>
+                            <li>병목 지점 자동 탐지</li>
+                            <li>상세 분석 리포트</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>메모리 관리</h3>
+                        <ul>
+                            <li>누수 패턴 인식</li>
+                            <li>힙 스냅샷 분석</li>
+                            <li>자동 최적화</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>예측적 관리</h3>
+                        <ul>
+                            <li>ML 기반 예측</li>
+                            <li>사전 대응 자동화</li>
+                            <li>리스크 평가</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>최적화 자동화</h3>
+                        <ul>
+                            <li>코드 레벨 최적화</li>
+                            <li>시스템 레벨 조정</li>
+                            <li>지속적 개선</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="progress-indicator">
+                <h3>진행 상황</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 86.67%;"></div>
+                </div>
+                <span>26/30 강의 (86.67%)</span>
+            </div>
+
+            <nav class="lesson-nav-sidebar">
+                <h3>전체 강의</h3>
+                <ul>
+                    <li><a href="lesson24.html">제24강: 문서화 자동화</a></li>
+                    <li><a href="lesson25.html">제25강: 마이그레이션 도구</a></li>
+                    <li class="current">제26강: 성능 프로파일링</li>
+                    <li><a href="lesson27.html">제27강: AI 디버깅 도구</a></li>
+                    <li><a href="lesson28.html">제28강: 프로젝트 자동화</a></li>
+                </ul>
+            </nav>
+
+            <div class="study-tips">
+                <h3>학습 팁</h3>
+                <ul>
+                    <li>성능 최적화는 측정에서 시작합니다</li>
+                    <li>조기 최적화보다는 병목 지점 파악이 중요합니다</li>
+                    <li>프로덕션 환경의 실제 데이터로 분석하세요</li>
+                    <li>작은 개선이 모여 큰 성과를 만듭니다</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

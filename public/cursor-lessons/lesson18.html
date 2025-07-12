@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제18강: Docker와 Kubernetes 배포 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-ship"></i> 제18강: Docker와 Kubernetes 배포</h1>
+                <p class="lesson-subtitle">AI로 자동화하는 컨테이너화와 오케스트레이션</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 60분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson17.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제18강: Docker와 Kubernetes 배포</span>
+            <a href="lesson19.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 Dockerfile 최적화와 멀티스테이지 빌드</li>
+                    <li>Docker Compose로 개발 환경 자동 구성하기</li>
+                    <li>Kubernetes 매니페스트 자동 생성과 배포</li>
+                    <li>CI/CD 파이프라인 구축과 자동화</li>
+                    <li>모니터링과 로깅 시스템 구축하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fab fa-docker"></i> Docker 컨테이너화</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 애플리케이션의 특성을 분석하여 최적화된 Docker 이미지를 생성합니다. 보안, 크기 최적화, 빌드 속도까지 모든 측면을 고려합니다.</p>
+                </div>
+
+                <h3>멀티스테이지 Dockerfile 생성</h3>
+                <div class="docker-example">
+                    <div class="dockerfile-request">
+                        <h4>요구사항: Node.js 애플리케이션 컨테이너화</h4>
+                        <p>AI에게 요청: "프로덕션용 최적화된 Node.js Dockerfile을 만들어줘"</p>
+                    </div>
+
+                    <div class="ai-generated-dockerfile">
+                        <h4>AI가 생성한 Dockerfile</h4>
+                        <pre><code># Dockerfile
+# 빌드 스테이지
+FROM node:18-alpine AS builder
+
+# 빌드 의존성 설치
+RUN apk add --no-cache python3 make g++
+
+# pnpm 설치 (더 빠른 패키지 관리)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# 의존성 파일만 먼저 복사 (캐시 최적화)
+COPY package.json pnpm-lock.yaml* ./
+
+# 의존성 설치
+RUN pnpm install --frozen-lockfile
+
+# 소스 코드 복사
+COPY . .
+
+# TypeScript 빌드
+RUN pnpm run build
+
+# 프로덕션 의존성만 재설치
+RUN pnpm prune --prod
+
+# 런타임 스테이지
+FROM node:18-alpine AS runtime
+
+# 보안을 위한 non-root 사용자 생성
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# 필요한 런타임 의존성만 설치
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+# 빌드된 애플리케이션 복사
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
+
+# 환경 변수 설정
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# 헬스체크 추가
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD node healthcheck.js
+
+# non-root 사용자로 전환
+USER nodejs
+
+# 포트 노출
+EXPOSE 3000
+
+# dumb-init으로 프로세스 관리
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/server.js"]</code></pre>
+                    </div>
+
+                    <div class="docker-optimization">
+                        <h4>.dockerignore 파일</h4>
+                        <pre><code># .dockerignore
+# 개발 관련 파일
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# 빌드 아티팩트
+dist
+build
+.next
+out
+
+# 테스트 및 문서
+**/*.test.js
+**/*.spec.js
+coverage
+.nyc_output
+docs
+
+# 버전 관리
+.git
+.gitignore
+.gitattributes
+
+# IDE 설정
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# 환경 설정
+.env
+.env.*
+!.env.example
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# 기타
+README.md
+CHANGELOG.md
+docker-compose*.yml
+Dockerfile*
+.dockerignore</code></pre>
+                    </div>
+
+                    <div class="docker-compose">
+                        <h4>개발 환경 Docker Compose</h4>
+                        <pre><code># docker-compose.yml
+version: '3.9'
+
+services:
+  # 애플리케이션 서비스
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - NODE_ENV=development
+    container_name: myapp
+    ports:
+      - "3000:3000"
+      - "9229:9229" # 디버깅 포트
+    volumes:
+      - .:/app
+      - /app/node_modules # node_modules 제외
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://user:password@postgres:5432/myapp
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - app-network
+    command: npm run dev
+
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:15-alpine
+    container_name: myapp-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=myapp
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d myapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Redis 캐시
+  redis:
+    image: redis:7-alpine
+    container_name: myapp-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redis_password
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+  # Nginx 리버스 프록시
+  nginx:
+    image: nginx:alpine
+    container_name: myapp-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+  # 모니터링 - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: myapp-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - app-network
+
+  # 모니터링 - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: myapp-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  app-network:
+    driver: bridge</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-dharmachakra"></i> Kubernetes 배포</h2>
+
+                <div class="kubernetes-deployment">
+                    <h3>Kubernetes 매니페스트 자동 생성</h3>
+                    
+                    <div class="k8s-deployment">
+                        <h4>AI가 생성한 Deployment</h4>
+                        <pre><code># deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  namespace: production
+  labels:
+    app: myapp
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: myapp
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: myapp
+        image: myregistry.io/myapp:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: myapp-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: myapp-secrets
+              key: redis-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+        - name: secrets
+          mountPath: /app/secrets
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: myapp-config
+      - name: secrets
+        secret:
+          secretName: myapp-secrets
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - myapp
+              topologyKey: kubernetes.io/hostname</code></pre>
+                    </div>
+
+                    <div class="k8s-service">
+                        <h4>Service와 Ingress</h4>
+                        <pre><code># service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp
+  namespace: production
+  labels:
+    app: myapp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: myapp
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  namespace: production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+spec:
+  tls:
+  - hosts:
+    - api.myapp.com
+    secretName: myapp-tls
+  rules:
+  - host: api.myapp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp
+            port:
+              number: 80</code></pre>
+                    </div>
+
+                    <div class="k8s-autoscaling">
+                        <h4>자동 스케일링 설정</h4>
+                        <pre><code># hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: myapp
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+
+---
+# vpa.yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: myapp
+  namespace: production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: myapp
+      minAllowed:
+        cpu: 100m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-infinity"></i> CI/CD 파이프라인</h2>
+
+                <div class="cicd-pipeline">
+                    <h3>GitHub Actions 워크플로우</h3>
+                    
+                    <div class="github-actions">
+                        <h4>AI가 생성한 CI/CD 파이프라인</h4>
+                        <pre><code># .github/workflows/deploy.yml
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run tests
+      run: npm run test:ci
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.27.0'
+    
+    - name: Configure kubectl
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > ~/.kube/config
+    
+    - name: Deploy to staging
+      run: |
+        kubectl set image deployment/myapp myapp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop-${{ github.sha }} -n staging
+        kubectl rollout status deployment/myapp -n staging
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://api.myapp.com
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.27.0'
+    
+    - name: Configure kubectl
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > ~/.kube/config
+    
+    - name: Deploy to production
+      run: |
+        kubectl set image deployment/myapp myapp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }} -n production
+        kubectl rollout status deployment/myapp -n production
+    
+    - name: Run smoke tests
+      run: |
+        npm run test:smoke
+    
+    - name: Notify deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Production deployment completed!'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()</code></pre>
+                    </div>
+
+                    <div class="gitlab-ci">
+                        <h4>GitLab CI/CD</h4>
+                        <pre><code># .gitlab-ci.yml
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+# 테스트 스테이지
+test:unit:
+  stage: test
+  image: node:18-alpine
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+  script:
+    - npm ci
+    - npm run lint
+    - npm run test:ci
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  artifacts:
+    reports:
+      junit: junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+# 보안 스캔
+security:scan:
+  stage: test
+  image: aquasec/trivy:latest
+  script:
+    - trivy fs --exit-code 1 --severity HIGH,CRITICAL .
+  allow_failure: true
+
+# Docker 빌드
+build:docker:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+    - docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    - main
+    - develop
+
+# Kubernetes 배포
+deploy:staging:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl config use-context $KUBE_CONTEXT_STAGING
+    - kubectl set image deployment/myapp myapp=$IMAGE_TAG -n staging
+    - kubectl rollout status deployment/myapp -n staging
+  environment:
+    name: staging
+    url: https://staging.myapp.com
+  only:
+    - develop
+
+deploy:production:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl config use-context $KUBE_CONTEXT_PRODUCTION
+    - kubectl set image deployment/myapp myapp=$IMAGE_TAG -n production
+    - kubectl rollout status deployment/myapp -n production
+  environment:
+    name: production
+    url: https://api.myapp.com
+  when: manual
+  only:
+    - main</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-chart-line"></i> 모니터링과 로깅</h2>
+
+                <div class="monitoring">
+                    <h3>Prometheus와 Grafana 설정</h3>
+                    
+                    <div class="prometheus-config">
+                        <h4>Prometheus 설정</h4>
+                        <pre><code># prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+rule_files:
+  - "alerts/*.yml"
+
+scrape_configs:
+  # Kubernetes 서비스 디스커버리
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+    - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+    - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+      action: keep
+      regex: default;kubernetes;https
+
+  # 앱 메트릭
+  - job_name: 'myapp'
+    kubernetes_sd_configs:
+    - role: pod
+    relabel_configs:
+    - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+      action: keep
+      regex: true
+    - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+      action: replace
+      target_label: __metrics_path__
+      regex: (.+)
+    - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+      action: replace
+      regex: ([^:]+)(?::\d+)?;(\d+)
+      replacement: $1:$2
+      target_label: __address__
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_(.+)
+    - source_labels: [__meta_kubernetes_namespace]
+      action: replace
+      target_label: kubernetes_namespace
+    - source_labels: [__meta_kubernetes_pod_name]
+      action: replace
+      target_label: kubernetes_pod_name
+
+  # Node Exporter
+  - job_name: 'node-exporter'
+    kubernetes_sd_configs:
+    - role: node
+    relabel_configs:
+    - source_labels: [__address__]
+      regex: '(.*):10250'
+      replacement: '${1}:9100'
+      target_label: __address__
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(.+)</code></pre>
+                    </div>
+
+                    <div class="logging-stack">
+                        <h4>ELK Stack 설정</h4>
+                        <pre><code># fluentd-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: kube-system
+data:
+  fluent.conf: |
+    <source>
+      @type tail
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
+      tag kubernetes.*
+      read_from_head true
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
+        </pattern>
+        <pattern>
+          format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+          time_format %Y-%m-%dT%H:%M:%S.%N%:z
+        </pattern>
+      </parse>
+    </source>
+
+    <filter kubernetes.**>
+      @type kubernetes_metadata
+      @id filter_kube_metadata
+      kubernetes_url "#{ENV['KUBERNETES_URL']}"
+      verify_ssl "#{ENV['KUBERNETES_VERIFY_SSL']}"
+      ca_file "#{ENV['KUBERNETES_CA_FILE']}"
+      skip_labels false
+      skip_container_metadata false
+      skip_master_url false
+      skip_namespace_metadata false
+    </filter>
+
+    <match **>
+      @type elasticsearch
+      @id out_es
+      @log_level info
+      include_tag_key true
+      host "#{ENV['ELASTICSEARCH_HOST']}"
+      port "#{ENV['ELASTICSEARCH_PORT']}"
+      scheme "#{ENV['ELASTICSEARCH_SCHEME']}"
+      ssl_verify "#{ENV['ELASTICSEARCH_SSL_VERIFY']}"
+      ssl_version "#{ENV['ELASTICSEARCH_SSL_VERSION']}"
+      user "#{ENV['ELASTICSEARCH_USER']}"
+      password "#{ENV['ELASTICSEARCH_PASSWORD']}"
+      reload_connections false
+      reconnect_on_error true
+      reload_on_failure true
+      log_es_400_reason false
+      logstash_prefix "#{ENV['LOGSTASH_PREFIX']}"
+      logstash_dateformat %Y.%m.%d
+      type_name "#{ENV['LOGSTASH_PREFIX']}"
+      <buffer>
+        @type file
+        path /var/log/fluentd-buffers/kubernetes.system.buffer
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_thread_count 2
+        flush_interval 5s
+        retry_forever
+        retry_max_interval 30
+        chunk_limit_size "#{ENV['OUTPUT_BUFFER_CHUNK_LIMIT']}"
+        queue_limit_length "#{ENV['OUTPUT_BUFFER_QUEUE_LIMIT']}"
+        overflow_action block
+      </buffer>
+    </match></code></pre>
+                    </div>
+
+                    <div class="alerts">
+                        <h4>알림 규칙</h4>
+                        <pre><code># alerts/app-alerts.yml
+groups:
+  - name: myapp
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+          /
+          sum(rate(http_requests_total[5m])) by (service)
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.service }}"
+
+      - alert: HighMemoryUsage
+        expr: |
+          (container_memory_usage_bytes{pod=~"myapp-.*"} / container_spec_memory_limit_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.pod }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} for {{ $labels.pod }}"
+
+      - alert: PodCrashLooping
+        expr: |
+          rate(kube_pod_container_status_restarts_total{pod=~"myapp-.*"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} is crash looping"
+          description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes"
+
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time on {{ $labels.service }}"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.service }}"</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 전체 배포 파이프라인 구축</h2>
+
+                <div class="practice-content">
+                    <h3>마이크로서비스 배포하기</h3>
+                    <p>AI와 함께 완전한 배포 파이프라인을 구축해봅시다.</p>
+
+                    <div class="deployment-requirements">
+                        <h4>요구사항</h4>
+                        <ul>
+                            <li>3개의 마이크로서비스 (API, Worker, Frontend)</li>
+                            <li>각 서비스별 Docker 이미지 빌드</li>
+                            <li>Kubernetes 클러스터에 배포</li>
+                            <li>자동 스케일링 설정</li>
+                            <li>모니터링 대시보드 구성</li>
+                            <li>CI/CD 파이프라인 구축</li>
+                        </ul>
+                    </div>
+
+                    <div class="deployment-steps">
+                        <h4>구현 단계</h4>
+                        
+                        <div class="step">
+                            <h5>1. 서비스 컨테이너화</h5>
+                            <p>Chat에 요청: "3개 마이크로서비스를 위한 최적화된 Dockerfile들을 만들어줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>2. Kubernetes 매니페스트</h5>
+                            <p>Cmd+K: "각 서비스별 Kubernetes deployment와 service 생성"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>3. Helm 차트 생성</h5>
+                            <p>Composer로 Helm 차트 구조 생성</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>4. CI/CD 설정</h5>
+                            <p>AI에게: "GitHub Actions로 전체 배포 워크플로우 만들어줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>5. 모니터링 구성</h5>
+                            <p>Prometheus와 Grafana 대시보드 설정</p>
+                        </div>
+                    </div>
+
+                    <div class="best-practices">
+                        <h4>🏆 베스트 프랙티스</h4>
+                        <ul>
+                            <li>이미지 크기 최소화 (Alpine Linux 사용)</li>
+                            <li>레이어 캐싱 최적화</li>
+                            <li>보안 스캔 자동화</li>
+                            <li>블루-그린 배포 전략</li>
+                            <li>자동 롤백 메커니즘</li>
+                            <li>비밀 정보 관리 (Sealed Secrets)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>최적화된 컨테이너 이미지</h3>
+                        <p>멀티스테이지 빌드와 보안 모범 사례를 적용한 효율적인 Docker 이미지를 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>Kubernetes 자동 구성</h3>
+                        <p>애플리케이션 특성에 맞는 최적의 Kubernetes 리소스를 자동으로 생성합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>완전 자동화된 CI/CD</h3>
+                        <p>테스트부터 배포까지 모든 과정이 자동화된 파이프라인을 구축합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>종합 모니터링 시스템</h3>
+                        <p>메트릭, 로그, 추적을 통합한 완벽한 관찰 가능성을 제공합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 성능 최적화와 보안 강화 방법을 배웁니다.</p>
+                    <a href="lesson19.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="completed">API 개발과 문서화</li>
+                    <li class="completed">데이터베이스 설계와 최적화</li>
+                    <li class="completed">프론트엔드 프레임워크와 Cursor AI</li>
+                    <li class="completed">백엔드 프레임워크와 Cursor AI</li>
+                    <li class="current">Docker와 Kubernetes 배포</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-tools"></i> 배포 도구</h3>
+                <div class="deployment-tools">
+                    <div class="tool-category">
+                        <h4>컨테이너</h4>
+                        <span class="tool-badge">Docker</span>
+                        <span class="tool-badge">Podman</span>
+                        <span class="tool-badge">Buildah</span>
+                    </div>
+                    <div class="tool-category">
+                        <h4>오케스트레이션</h4>
+                        <span class="tool-badge">Kubernetes</span>
+                        <span class="tool-badge">OpenShift</span>
+                        <span class="tool-badge">Nomad</span>
+                    </div>
+                    <div class="tool-category">
+                        <h4>CI/CD</h4>
+                        <span class="tool-badge">GitHub Actions</span>
+                        <span class="tool-badge">GitLab CI</span>
+                        <span class="tool-badge">Jenkins</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 Docker 이미지를 빌드할 때는 항상 .dockerignore 파일을 먼저 작성하세요. 불필요한 파일이 포함되면 이미지 크기가 커지고 빌드 시간이 늘어납니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 60%"></div>
+            <span class="progress-text">18/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

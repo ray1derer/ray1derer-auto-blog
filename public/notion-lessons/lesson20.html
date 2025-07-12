@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20강: 필수 수식 함수와 논리</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- 사이드바 내용은 index.html에서 동적으로 로드 -->
+        </aside>
+        <main class="main-content">
+            <h1>20강: 필수 수식 함수와 논리</h1>
+            <p>Notion Formula 2.0은 다양한 내장 함수와 논리 연산자를 제공하여 데이터를 조작하고 조건에 따라 다른 결과를 반환할 수 있게 합니다. 이 강의에서는 가장 자주 사용되는 필수 수식 함수와 조건 논리를 익혀 데이터베이스를 더욱 동적으로 활용하는 방법을 배웁니다.</p>
+            
+            <h2>학습 목표</h2>
+            <ul>
+                <li>기본 수학 연산자(+, -, *, /)를 사용합니다.</li>
+                <li><code>format()</code>, <code>join()</code>, <code>concat()</code>으로 텍스트를 조작합니다.</li>
+                <li><code>if()</code>와 <code>ifs()</code>로 조건문을 작성합니다.</li>
+            </ul>
+
+            <h2>주요 개념</h2>
+            <ul>
+                <li><strong>연산자 (Operators):</strong>
+                    <ul>
+                        <li><strong>수학 연산자:</strong> <code>+</code> (더하기), <code>-</code> (빼기), <code>*</code> (곱하기), <code>/</code> (나누기)</li>
+                        <li><strong>비교 연산자:</strong> <code>==</code> (같다), <code>!=</code> (같지 않다), <code>></code> (크다), <code><</code> (작다), <code>>=</code> (크거나 같다), <code><=</code> (작거나 같다)</li>
+                        <li><strong>논리 연산자:</strong> <code>and</code> (논리곱), <code>or</code> (논리합), <code>not</code> (논리 부정)</li>
+                    </ul>
+                </li>
+                <li><strong>텍스트 함수:</strong>
+                    <ul>
+                        <li><code>format(value)</code>: 어떤 값을 텍스트로 변환합니다.</li>
+                        <li><code>join(array, separator)</code>: 배열의 요소들을 구분자로 연결하여 하나의 텍스트로 만듭니다.</li>
+                        <li><code>concat(text1, text2, ...)</code>: 여러 텍스트를 연결합니다.</li>
+                    </ul>
+                </li>
+                <li><strong>조건 논리:</strong>
+                    <ul>
+                        <li><code>if(condition, true_value, false_value)</code>: 조건이 참이면 첫 번째 값을, 거짓이면 두 번째 값을 반환합니다.</li>
+                        <li><code>ifs(condition1, value1, condition2, value2, ..., default_value)</code>: 여러 조건을 순차적으로 평가하여 첫 번째로 참인 조건에 해당하는 값을 반환합니다.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h2>실습 과제</h2>
+            <p><strong>'업무'</strong> 데이터베이스를 생성합니다. <strong>'우선순위'</strong>(선택: 높음, 중간, 낮음)와 <strong>'마감일'</strong>(날짜) 속성을 추가합니다. 새로운 '수식' 속성을 추가하여 다음 조건을 만족하는 수식을 작성해 보세요:</p>
+            <ul>
+                <li>'우선순위'가 '높음'이고 '마감일'이 오늘이면 <strong>"즉시 실행!"</strong>을 출력합니다.</li>
+                <li>그렇지 않으면 <strong>"나중에 해도 됨"</strong>을 출력합니다.</li>
+            </ul>
+            <p><strong>힌트:</strong> <code>now()</code> 함수를 사용하여 현재 날짜를 가져올 수 있습니다. 날짜 비교 시에는 <code>formatDate(prop("마감일"), "YYYY-MM-DD") == formatDate(now(), "YYYY-MM-DD")</code>와 같이 날짜 형식을 통일하여 비교하는 것이 좋습니다.</p>
+
+            <div class="navigation">
+                <!-- 이전/다음 강의 링크 -->
+            </div>
+        </main>
+    </div>
+</body>
+</html>

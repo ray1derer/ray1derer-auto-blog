@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제14강: API 개발과 문서화 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-plug"></i> 제14강: API 개발과 문서화</h1>
+                <p class="lesson-subtitle">AI로 RESTful API를 설계하고 자동으로 문서화하기</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 중급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 50분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 중급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson13.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제14강: API 개발과 문서화</span>
+            <a href="lesson15.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 RESTful API 설계 원칙 이해하기</li>
+                    <li>OpenAPI(Swagger) 명세 자동 생성하기</li>
+                    <li>API 보안과 인증 구현하기</li>
+                    <li>자동화된 API 테스트 작성하기</li>
+                    <li>실시간 API 문서 생성과 유지보수하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-project-diagram"></i> AI 기반 API 설계</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 비즈니스 요구사항을 분석하여 RESTful 원칙을 따르는 API를 설계하고, 자동으로 문서화합니다. 엔드포인트 구조, 데이터 모델, 보안 정책까지 종합적으로 고려합니다.</p>
+                </div>
+
+                <h3>API 설계 프로세스</h3>
+                <div class="api-design-process">
+                    <div class="design-example">
+                        <h4>요구사항: 블로그 API 설계</h4>
+                        <div class="requirements">
+                            <p>다음 기능이 필요한 블로그 API를 설계해주세요:</p>
+                            <ul>
+                                <li>사용자 등록/로그인</li>
+                                <li>블로그 포스트 CRUD</li>
+                                <li>댓글 기능</li>
+                                <li>카테고리와 태그</li>
+                                <li>검색과 필터링</li>
+                            </ul>
+                        </div>
+
+                        <div class="ai-generated-api">
+                            <h4>AI가 생성한 API 구조</h4>
+                            <pre><code># API 엔드포인트 설계
+
+## 인증 (Authentication)
+POST   /api/auth/register     # 회원가입
+POST   /api/auth/login        # 로그인
+POST   /api/auth/refresh      # 토큰 갱신
+POST   /api/auth/logout       # 로그아웃
+
+## 사용자 (Users)
+GET    /api/users            # 사용자 목록
+GET    /api/users/:id        # 사용자 상세
+PUT    /api/users/:id        # 사용자 정보 수정
+DELETE /api/users/:id        # 계정 삭제
+
+## 포스트 (Posts)
+GET    /api/posts           # 포스트 목록 (페이징, 필터링)
+POST   /api/posts           # 포스트 작성
+GET    /api/posts/:id       # 포스트 상세
+PUT    /api/posts/:id       # 포스트 수정
+DELETE /api/posts/:id       # 포스트 삭제
+GET    /api/posts/search    # 포스트 검색
+
+## 댓글 (Comments)
+GET    /api/posts/:postId/comments      # 댓글 목록
+POST   /api/posts/:postId/comments      # 댓글 작성
+PUT    /api/comments/:id                # 댓글 수정
+DELETE /api/comments/:id                # 댓글 삭제
+
+## 카테고리 (Categories)
+GET    /api/categories      # 카테고리 목록
+POST   /api/categories      # 카테고리 생성
+PUT    /api/categories/:id  # 카테고리 수정
+DELETE /api/categories/:id  # 카테고리 삭제
+
+## 태그 (Tags)
+GET    /api/tags           # 태그 목록
+GET    /api/tags/popular   # 인기 태그</code></pre>
+                        </div>
+
+                        <div class="data-models">
+                            <h4>데이터 모델 (TypeScript)</h4>
+                            <pre><code>// API 응답 타입 정의
+interface ApiResponse<T> {
+    success: boolean;
+    data?: T;
+    error?: {
+        code: string;
+        message: string;
+        details?: any;
+    };
+    meta?: {
+        page?: number;
+        limit?: number;
+        total?: number;
+    };
+}
+
+// 엔티티 모델
+interface User {
+    id: string;
+    username: string;
+    email: string;
+    avatar?: string;
+    bio?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface Post {
+    id: string;
+    title: string;
+    slug: string;
+    content: string;
+    excerpt?: string;
+    coverImage?: string;
+    author: User;
+    category?: Category;
+    tags: Tag[];
+    status: 'draft' | 'published' | 'archived';
+    publishedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    commentCount: number;
+    viewCount: number;
+}
+
+interface Comment {
+    id: string;
+    content: string;
+    author: User;
+    post: Post;
+    parentId?: string; // 대댓글 지원
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    parentId?: string; // 계층 구조 지원
+}
+
+interface Tag {
+    id: string;
+    name: string;
+    slug: string;
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-code"></i> Express.js API 구현</h2>
+
+                <div class="api-implementation">
+                    <h3>AI가 생성한 컨트롤러 코드</h3>
+                    
+                    <div class="controller-example">
+                        <h4>포스트 컨트롤러</h4>
+                        <pre><code>// controllers/postController.ts
+import { Request, Response, NextFunction } from 'express';
+import { PostService } from '../services/postService';
+import { ApiResponse } from '../types/api';
+import { validatePost } from '../validators/postValidator';
+import { cache } from '../middleware/cache';
+
+export class PostController {
+    constructor(private postService: PostService) {}
+
+    /**
+     * @swagger
+     * /api/posts:
+     *   get:
+     *     summary: 포스트 목록 조회
+     *     tags: [Posts]
+     *     parameters:
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: integer
+     *           default: 1
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *           default: 10
+     *       - in: query
+     *         name: category
+     *         schema:
+     *           type: string
+     *       - in: query
+     *         name: tags
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: string
+     *       - in: query
+     *         name: status
+     *         schema:
+     *           type: string
+     *           enum: [draft, published, archived]
+     *     responses:
+     *       200:
+     *         description: 포스트 목록
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/PostListResponse'
+     */
+    @cache({ ttl: 300 }) // 5분 캐싱
+    async getPosts(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {
+                page = 1,
+                limit = 10,
+                category,
+                tags,
+                status = 'published',
+                sort = '-publishedAt'
+            } = req.query;
+
+            const filters = {
+                status,
+                ...(category && { category }),
+                ...(tags && { tags: { $in: Array.isArray(tags) ? tags : [tags] } })
+            };
+
+            const posts = await this.postService.findPosts({
+                filters,
+                page: Number(page),
+                limit: Number(limit),
+                sort
+            });
+
+            const response: ApiResponse<typeof posts> = {
+                success: true,
+                data: posts.data,
+                meta: {
+                    page: posts.page,
+                    limit: posts.limit,
+                    total: posts.total
+                }
+            };
+
+            res.json(response);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * @swagger
+     * /api/posts:
+     *   post:
+     *     summary: 새 포스트 작성
+     *     tags: [Posts]
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/CreatePostRequest'
+     *     responses:
+     *       201:
+     *         description: 생성된 포스트
+     *       400:
+     *         description: 유효성 검사 실패
+     *       401:
+     *         description: 인증 필요
+     */
+    async createPost(req: Request, res: Response, next: NextFunction) {
+        try {
+            const validation = validatePost(req.body);
+            if (!validation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        message: 'Invalid post data',
+                        details: validation.errors
+                    }
+                });
+            }
+
+            const post = await this.postService.createPost({
+                ...req.body,
+                authorId: req.user.id
+            });
+
+            res.status(201).json({
+                success: true,
+                data: post
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * @swagger
+     * /api/posts/{id}:
+     *   get:
+     *     summary: 포스트 상세 조회
+     *     tags: [Posts]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: 포스트 상세
+     *       404:
+     *         description: 포스트를 찾을 수 없음
+     */
+    async getPost(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const post = await this.postService.findPostById(id);
+
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    error: {
+                        code: 'NOT_FOUND',
+                        message: 'Post not found'
+                    }
+                });
+            }
+
+            // 조회수 증가 (비동기로 처리)
+            this.postService.incrementViewCount(id).catch(console.error);
+
+            res.json({
+                success: true,
+                data: post
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // 나머지 CRUD 메서드들...
+}</code></pre>
+                    </div>
+
+                    <h3>미들웨어와 보안</h3>
+                    <div class="security-implementation">
+                        <h4>인증 미들웨어</h4>
+                        <pre><code>// middleware/auth.ts
+import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
+
+interface JwtPayload {
+    userId: string;
+    email: string;
+}
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: JwtPayload;
+        }
+    }
+}
+
+export const authenticate = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'UNAUTHORIZED',
+                    message: 'Authentication required'
+                }
+            });
+        }
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET!
+        ) as JwtPayload;
+        
+        req.user = decoded;
+        next();
+    } catch (error) {
+        if (error instanceof jwt.TokenExpiredError) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'TOKEN_EXPIRED',
+                    message: 'Token has expired'
+                }
+            });
+        }
+        
+        return res.status(401).json({
+            success: false,
+            error: {
+                code: 'INVALID_TOKEN',
+                message: 'Invalid authentication token'
+            }
+        });
+    }
+};
+
+// Rate limiting
+import rateLimit from 'express-rate-limit';
+
+export const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15분
+    max: 100, // 최대 100개 요청
+    message: {
+        success: false,
+        error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: 'Too many requests, please try again later'
+        }
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// 보안 헤더
+import helmet from 'helmet';
+export const securityHeaders = helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:"],
+        },
+    },
+});
+
+// CORS 설정
+import cors from 'cors';
+export const corsOptions: cors.CorsOptions = {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Count']
+};</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-book"></i> OpenAPI 문서 자동 생성</h2>
+
+                <div class="api-documentation">
+                    <h3>Swagger 설정과 문서화</h3>
+                    
+                    <div class="swagger-setup">
+                        <pre><code>// swagger.config.ts
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import { Express } from 'express';
+
+const options: swaggerJsdoc.Options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Blog API',
+            version: '1.0.0',
+            description: 'A comprehensive blog API with authentication, posts, comments, and more',
+            contact: {
+                name: 'API Support',
+                email: 'api@example.com'
+            }
+        },
+        servers: [
+            {
+                url: 'http://localhost:3000',
+                description: 'Development server'
+            },
+            {
+                url: 'https://api.example.com',
+                description: 'Production server'
+            }
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            },
+            schemas: {
+                Error: {
+                    type: 'object',
+                    properties: {
+                        success: { type: 'boolean', example: false },
+                        error: {
+                            type: 'object',
+                            properties: {
+                                code: { type: 'string' },
+                                message: { type: 'string' },
+                                details: { type: 'object' }
+                            }
+                        }
+                    }
+                },
+                Post: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid' },
+                        title: { type: 'string' },
+                        slug: { type: 'string' },
+                        content: { type: 'string' },
+                        excerpt: { type: 'string' },
+                        coverImage: { type: 'string', format: 'uri' },
+                        author: { $ref: '#/components/schemas/User' },
+                        category: { $ref: '#/components/schemas/Category' },
+                        tags: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/Tag' }
+                        },
+                        status: {
+                            type: 'string',
+                            enum: ['draft', 'published', 'archived']
+                        },
+                        publishedAt: { type: 'string', format: 'date-time' },
+                        createdAt: { type: 'string', format: 'date-time' },
+                        updatedAt: { type: 'string', format: 'date-time' }
+                    }
+                }
+                // 더 많은 스키마 정의...
+            }
+        }
+    },
+    apis: ['./src/controllers/*.ts', './src/routes/*.ts']
+};
+
+const specs = swaggerJsdoc(options);
+
+export function setupSwagger(app: Express) {
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Blog API Documentation'
+    }));
+    
+    // JSON 형식으로도 제공
+    app.get('/api-docs.json', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(specs);
+    });
+}</code></pre>
+                    </div>
+
+                    <h3>API 문서 자동 생성 결과</h3>
+                    <div class="swagger-ui-preview">
+                        <img src="../assets/swagger-preview.png" alt="Swagger UI Preview" />
+                        <p>Swagger UI를 통해 API를 시각적으로 탐색하고 테스트할 수 있습니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-vial"></i> API 테스트 자동화</h2>
+
+                <div class="api-testing">
+                    <h3>통합 테스트 작성</h3>
+                    
+                    <pre><code>// __tests__/api/posts.test.ts
+import request from 'supertest';
+import { app } from '../../src/app';
+import { setupTestDatabase, teardownTestDatabase } from '../utils/testDb';
+import { generateAuthToken } from '../utils/auth';
+
+describe('Posts API', () => {
+    let authToken: string;
+    let testUserId: string;
+    
+    beforeAll(async () => {
+        await setupTestDatabase();
+        const { token, userId } = await generateAuthToken();
+        authToken = token;
+        testUserId = userId;
+    });
+    
+    afterAll(async () => {
+        await teardownTestDatabase();
+    });
+    
+    describe('POST /api/posts', () => {
+        it('should create a new post with valid data', async () => {
+            const postData = {
+                title: 'Test Post',
+                content: 'This is a test post content',
+                categoryId: 'test-category-id',
+                tags: ['test', 'api']
+            };
+            
+            const response = await request(app)
+                .post('/api/posts')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(postData)
+                .expect(201);
+            
+            expect(response.body).toMatchObject({
+                success: true,
+                data: {
+                    title: postData.title,
+                    content: postData.content,
+                    author: {
+                        id: testUserId
+                    }
+                }
+            });
+            
+            expect(response.body.data).toHaveProperty('id');
+            expect(response.body.data).toHaveProperty('slug');
+        });
+        
+        it('should return 400 for invalid post data', async () => {
+            const invalidData = {
+                // title is missing
+                content: 'Content without title'
+            };
+            
+            const response = await request(app)
+                .post('/api/posts')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(invalidData)
+                .expect(400);
+            
+            expect(response.body).toMatchObject({
+                success: false,
+                error: {
+                    code: 'VALIDATION_ERROR'
+                }
+            });
+        });
+        
+        it('should return 401 without authentication', async () => {
+            const response = await request(app)
+                .post('/api/posts')
+                .send({ title: 'Test', content: 'Test' })
+                .expect(401);
+            
+            expect(response.body.error.code).toBe('UNAUTHORIZED');
+        });
+    });
+    
+    describe('GET /api/posts', () => {
+        it('should return paginated posts', async () => {
+            const response = await request(app)
+                .get('/api/posts')
+                .query({ page: 1, limit: 10 })
+                .expect(200);
+            
+            expect(response.body).toMatchObject({
+                success: true,
+                data: expect.any(Array),
+                meta: {
+                    page: 1,
+                    limit: 10,
+                    total: expect.any(Number)
+                }
+            });
+        });
+        
+        it('should filter posts by category', async () => {
+            const response = await request(app)
+                .get('/api/posts')
+                .query({ category: 'technology' })
+                .expect(200);
+            
+            response.body.data.forEach(post => {
+                expect(post.category.slug).toBe('technology');
+            });
+        });
+        
+        it('should search posts by keyword', async () => {
+            const response = await request(app)
+                .get('/api/posts/search')
+                .query({ q: 'javascript' })
+                .expect(200);
+            
+            expect(response.body.data).toBeInstanceOf(Array);
+            // 검색 결과가 있다면 관련성 확인
+            if (response.body.data.length > 0) {
+                response.body.data.forEach(post => {
+                    const hasKeyword = 
+                        post.title.toLowerCase().includes('javascript') ||
+                        post.content.toLowerCase().includes('javascript');
+                    expect(hasKeyword).toBe(true);
+                });
+            }
+        });
+    });
+});
+
+// API 성능 테스트
+describe('API Performance', () => {
+    it('should respond within acceptable time', async () => {
+        const start = Date.now();
+        
+        await request(app)
+            .get('/api/posts')
+            .expect(200);
+        
+        const duration = Date.now() - start;
+        expect(duration).toBeLessThan(200); // 200ms 이내 응답
+    });
+    
+    it('should handle concurrent requests', async () => {
+        const requests = Array(10).fill(null).map(() => 
+            request(app).get('/api/posts')
+        );
+        
+        const responses = await Promise.all(requests);
+        
+        responses.forEach(response => {
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+        });
+    });
+});</code></pre>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-sync-alt"></i> API 버전 관리</h2>
+
+                <div class="api-versioning">
+                    <h3>버전 관리 전략</h3>
+                    
+                    <pre><code>// routes/index.ts
+import { Router } from 'express';
+import v1Routes from './v1';
+import v2Routes from './v2';
+
+const router = Router();
+
+// 버전별 라우팅
+router.use('/api/v1', v1Routes);
+router.use('/api/v2', v2Routes);
+
+// 기본 버전 (최신)
+router.use('/api', v2Routes);
+
+// 버전 정보 엔드포인트
+router.get('/api/version', (req, res) => {
+    res.json({
+        current: 'v2',
+        supported: ['v1', 'v2'],
+        deprecated: [],
+        sunset: {
+            v1: '2025-01-01'
+        }
+    });
+});
+
+// routes/v2/posts.ts
+import { Router } from 'express';
+import { PostControllerV2 } from '../../controllers/v2/postController';
+
+const router = Router();
+const controller = new PostControllerV2();
+
+// V2에서 추가된 기능
+router.get('/posts', controller.getPosts); // 향상된 필터링
+router.get('/posts/:id', controller.getPost);
+router.post('/posts', authenticate, controller.createPost);
+router.put('/posts/:id', authenticate, controller.updatePost);
+router.delete('/posts/:id', authenticate, controller.deletePost);
+
+// V2 전용 새 기능
+router.post('/posts/:id/publish', authenticate, controller.publishPost);
+router.post('/posts/:id/schedule', authenticate, controller.schedulePost);
+router.get('/posts/:id/analytics', authenticate, controller.getPostAnalytics);
+
+export default router;</code></pre>
+                </div>
+            </section>
+
+            <section class="practice">
+                <h2><i class="fas fa-laptop-code"></i> 실습: 완전한 API 구축</h2>
+
+                <div class="practice-content">
+                    <h3>할 일 관리 API 만들기</h3>
+                    <p>AI와 함께 완전한 Todo API를 구축해봅시다.</p>
+
+                    <div class="practice-requirements">
+                        <h4>요구사항</h4>
+                        <ul>
+                            <li>사용자 인증 (JWT)</li>
+                            <li>Todo CRUD 작업</li>
+                            <li>카테고리별 분류</li>
+                            <li>우선순위 관리</li>
+                            <li>마감일 알림</li>
+                            <li>공유 기능</li>
+                        </ul>
+                    </div>
+
+                    <div class="practice-steps">
+                        <h4>구현 단계</h4>
+                        
+                        <div class="step">
+                            <h5>1. API 설계</h5>
+                            <p>Chat에 요청: "Todo 관리 API의 RESTful 엔드포인트를 설계해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>2. 데이터 모델</h5>
+                            <p>Composer 사용: "Todo, User, Category 모델과 관계를 정의해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>3. 컨트롤러 구현</h5>
+                            <p>Cmd+K: "Express 컨트롤러와 미들웨어를 구현해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>4. 문서화</h5>
+                            <p>AI에게: "Swagger 문서를 자동으로 생성하는 설정을 추가해줘"</p>
+                        </div>
+                        
+                        <div class="step">
+                            <h5>5. 테스트</h5>
+                            <p>테스트 작성: "각 엔드포인트에 대한 통합 테스트를 작성해줘"</p>
+                        </div>
+                    </div>
+
+                    <div class="bonus-features">
+                        <h4>🌟 보너스 기능</h4>
+                        <ul>
+                            <li>WebSocket으로 실시간 업데이트</li>
+                            <li>GraphQL 버전 추가</li>
+                            <li>파일 업로드 (첨부파일)</li>
+                            <li>이메일 알림 통합</li>
+                            <li>OAuth2 소셜 로그인</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary">
+                <h2><i class="fas fa-check-circle"></i> 핵심 정리</h2>
+                
+                <div class="key-points">
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>자동 API 설계</h3>
+                        <p>비즈니스 요구사항을 바탕으로 RESTful 원칙을 따르는 API를 자동으로 설계합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>문서 자동 생성</h3>
+                        <p>코드에서 OpenAPI 명세를 자동으로 추출하여 항상 최신 문서를 유지합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>보안 베스트 프랙티스</h3>
+                        <p>인증, 권한 부여, 속도 제한 등 보안 기능을 자동으로 구현합니다.</p>
+                    </div>
+                    
+                    <div class="point">
+                        <i class="fas fa-star"></i>
+                        <h3>테스트 자동화</h3>
+                        <p>엔드포인트별 테스트 케이스를 자동으로 생성하여 API 품질을 보장합니다.</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>다음 강의 예고</h3>
+                    <p>다음 강의에서는 데이터베이스 설계와 최적화를 AI와 함께 수행하는 방법을 배웁니다.</p>
+                    <a href="lesson15.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> 다음 강의로 이동
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-list"></i> 강의 목차</h3>
+                <ol class="lesson-list">
+                    <li class="completed">Cursor 소개와 설치</li>
+                    <li class="completed">첫 번째 AI 자동완성</li>
+                    <li class="completed">AI Chat 마스터하기</li>
+                    <li class="completed">Cmd+K 완벽 가이드</li>
+                    <li class="completed">프로젝트 컨텍스트</li>
+                    <li class="completed">AI 모델 선택과 활용</li>
+                    <li class="completed">Composer 기능 활용</li>
+                    <li class="completed">터미널 통합</li>
+                    <li class="completed">디버깅과 에러 해결</li>
+                    <li class="completed">단축키와 설정 최적화</li>
+                    <li class="completed">Git 통합과 버전 관리</li>
+                    <li class="completed">테스트 작성과 TDD</li>
+                    <li class="completed">리팩토링과 코드 품질</li>
+                    <li class="current">API 개발과 문서화</li>
+                </ol>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-plug"></i> HTTP 메서드</h3>
+                <div class="http-methods">
+                    <div class="method-item">
+                        <span class="method get">GET</span>
+                        <span>리소스 조회</span>
+                    </div>
+                    <div class="method-item">
+                        <span class="method post">POST</span>
+                        <span>리소스 생성</span>
+                    </div>
+                    <div class="method-item">
+                        <span class="method put">PUT</span>
+                        <span>리소스 전체 수정</span>
+                    </div>
+                    <div class="method-item">
+                        <span class="method patch">PATCH</span>
+                        <span>리소스 부분 수정</span>
+                    </div>
+                    <div class="method-item">
+                        <span class="method delete">DELETE</span>
+                        <span>리소스 삭제</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-lightbulb"></i> 프로 팁</h3>
+                <div class="tip-box">
+                    <p>💡 API 설계 시 버전 관리를 처음부터 고려하세요. /api/v1/ 형식으로 시작하면 나중에 변경이 쉽습니다.</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="progress-tracker">
+            <div class="progress-bar" style="width: 46.67%"></div>
+            <span class="progress-text">14/30 완료</span>
+        </div>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

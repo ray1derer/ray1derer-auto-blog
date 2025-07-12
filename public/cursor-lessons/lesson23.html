@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제23강: AI 코드 리뷰와 품질 관리 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-search-plus"></i> 제23강: AI 코드 리뷰와 품질 관리</h1>
+                <p class="lesson-subtitle">AI를 활용한 자동화된 코드 품질 검증과 개선</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 고급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 65분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 고급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson22.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제23강: AI 코드 리뷰와 품질 관리</span>
+            <a href="lesson24.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI 기반 자동 코드 리뷰 시스템 구축하기</li>
+                    <li>코드 품질 메트릭스 분석과 개선 전략</li>
+                    <li>보안 취약점 자동 탐지와 수정</li>
+                    <li>리팩토링 제안과 자동화</li>
+                    <li>팀 코드 스타일 일관성 유지하기</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-robot"></i> AI 자동 코드 리뷰 시스템</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 커밋 전 자동으로 코드를 분석하여 잠재적 문제를 찾아내고, 개선 사항을 제안합니다. 이는 코드 품질을 일관되게 유지하고 버그를 조기에 발견하는 데 도움이 됩니다.</p>
+                </div>
+
+                <h3>자동 코드 리뷰 봇 구현</h3>
+                <div class="code-review-bot">
+                    <div class="bot-implementation">
+                        <h4>코드 리뷰 자동화 시스템</h4>
+                        <pre><code>// .cursor/code-review-bot.js
+import { CursorAI } from '@cursor/api';
+import { GitHubAPI } from '@octokit/rest';
+import { ESLint } from 'eslint';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+
+class AICodeReviewBot {
+    constructor(config) {
+        this.cursor = new CursorAI(config.cursorApiKey);
+        this.github = new GitHubAPI({ auth: config.githubToken });
+        this.eslint = new ESLint({
+            baseConfig: config.eslintConfig,
+            useEslintrc: true
+        });
+        
+        this.reviewRules = {
+            complexity: {
+                maxCyclomaticComplexity: 10,
+                maxCognitiveComplexity: 15,
+                maxLinesPerFunction: 50,
+                maxParameters: 4
+            },
+            security: {
+                checkSQLInjection: true,
+                checkXSS: true,
+                checkSensitiveData: true,
+                checkDependencies: true
+            },
+            performance: {
+                checkN1Queries: true,
+                checkMemoryLeaks: true,
+                checkAsyncPatterns: true,
+                checkBundleSize: true
+            },
+            maintainability: {
+                checkDuplication: true,
+                checkNaming: true,
+                checkDocumentation: true,
+                checkTestCoverage: true
+            }
+        };
+    }
+
+    async reviewPullRequest(owner, repo, pullNumber) {
+        const pr = await this.github.pulls.get({
+            owner,
+            repo,
+            pull_number: pullNumber
+        });
+
+        const files = await this.github.pulls.listFiles({
+            owner,
+            repo,
+            pull_number: pullNumber
+        });
+
+        const reviews = [];
+        
+        for (const file of files.data) {
+            if (this.shouldReviewFile(file.filename)) {
+                const review = await this.reviewFile(file);
+                if (review.issues.length > 0) {
+                    reviews.push(review);
+                }
+            }
+        }
+
+        return this.generateReviewReport(reviews);
+    }
+
+    async reviewFile(file) {
+        const content = await this.getFileContent(file);
+        
+        const reviews = {
+            filename: file.filename,
+            issues: [],
+            suggestions: [],
+            metrics: {}
+        };
+
+        // 1. ESLint 검사
+        const lintResults = await this.runESLint(content, file.filename);
+        reviews.issues.push(...this.formatLintIssues(lintResults));
+
+        // 2. 복잡도 분석
+        const complexityIssues = await this.analyzeComplexity(content);
+        reviews.issues.push(...complexityIssues);
+        
+        // 3. 보안 취약점 검사
+        const securityIssues = await this.checkSecurity(content);
+        reviews.issues.push(...securityIssues);
+        
+        // 4. AI 기반 코드 분석
+        const aiReview = await this.getAIReview(content, file.filename);
+        reviews.suggestions.push(...aiReview.suggestions);
+        
+        // 5. 성능 분석
+        const performanceIssues = await this.analyzePerformance(content);
+        reviews.issues.push(...performanceIssues);
+
+        // 6. 코드 메트릭스 수집
+        reviews.metrics = await this.collectMetrics(content);
+
+        return reviews;
+    }
+
+    async analyzeComplexity(code) {
+        const issues = [];
+        const ast = parse(code, {
+            sourceType: 'module',
+            plugins: ['jsx', 'typescript']
+        });
+
+        traverse(ast, {
+            FunctionDeclaration: (path) => {
+                const complexity = this.calculateCyclomaticComplexity(path.node);
+                if (complexity > this.reviewRules.complexity.maxCyclomaticComplexity) {
+                    issues.push({
+                        line: path.node.loc.start.line,
+                        severity: 'warning',
+                        message: `함수 '${path.node.id.name}'의 순환 복잡도가 ${complexity}입니다. (최대: ${this.reviewRules.complexity.maxCyclomaticComplexity})`,
+                        suggestion: '함수를 더 작은 단위로 분리하는 것을 고려해보세요.'
+                    });
+                }
+            },
+            ArrowFunctionExpression: (path) => {
+                const lineCount = path.node.loc.end.line - path.node.loc.start.line;
+                if (lineCount > this.reviewRules.complexity.maxLinesPerFunction) {
+                    issues.push({
+                        line: path.node.loc.start.line,
+                        severity: 'warning',
+                        message: `함수가 너무 깁니다 (${lineCount}줄). 최대 ${this.reviewRules.complexity.maxLinesPerFunction}줄을 권장합니다.`,
+                        suggestion: '함수를 더 작은 단위로 분리하세요.'
+                    });
+                }
+            }
+        });
+
+        return issues;
+    }
+
+    async checkSecurity(code) {
+        const issues = [];
+        
+        // SQL Injection 검사
+        const sqlPatterns = [
+            /query\s*\(\s*['"`].*\$\{.*\}.*['"`]\s*\)/gi,
+            /execute\s*\(\s*['"`].*\+.*['"`]\s*\)/gi
+        ];
+        
+        sqlPatterns.forEach(pattern => {
+            const matches = code.matchAll(pattern);
+            for (const match of matches) {
+                const line = code.substring(0, match.index).split('\n').length;
+                issues.push({
+                    line,
+                    severity: 'error',
+                    message: 'SQL Injection 취약점이 발견되었습니다.',
+                    suggestion: 'Prepared statements나 파라미터화된 쿼리를 사용하세요.'
+                });
+            }
+        });
+
+        // XSS 검사
+        const xssPatterns = [
+            /innerHTML\s*=\s*[^'"`]*\$/gi,
+            /dangerouslySetInnerHTML/gi
+        ];
+        
+        xssPatterns.forEach(pattern => {
+            const matches = code.matchAll(pattern);
+            for (const match of matches) {
+                const line = code.substring(0, match.index).split('\n').length;
+                issues.push({
+                    line,
+                    severity: 'warning',
+                    message: 'XSS 취약점 가능성이 있습니다.',
+                    suggestion: 'textContent를 사용하거나 입력값을 적절히 이스케이프하세요.'
+                });
+            }
+        });
+
+        // 민감한 정보 노출 검사
+        const sensitivePatterns = [
+            /api[_-]?key\s*[:=]\s*['"`][^'"`]+['"`]/gi,
+            /password\s*[:=]\s*['"`][^'"`]+['"`]/gi,
+            /secret\s*[:=]\s*['"`][^'"`]+['"`]/gi
+        ];
+        
+        sensitivePatterns.forEach(pattern => {
+            const matches = code.matchAll(pattern);
+            for (const match of matches) {
+                const line = code.substring(0, match.index).split('\n').length;
+                issues.push({
+                    line,
+                    severity: 'error',
+                    message: '하드코딩된 민감한 정보가 발견되었습니다.',
+                    suggestion: '환경 변수나 보안 저장소를 사용하세요.'
+                });
+            }
+        });
+
+        return issues;
+    }
+
+    async getAIReview(code, filename) {
+        const prompt = `
+다음 코드를 리뷰하고 개선 사항을 제안해주세요:
+
+파일명: ${filename}
+코드:
+\`\`\`
+${code}
+\`\`\`
+
+다음 측면을 중점적으로 검토해주세요:
+1. 코드 품질과 가독성
+2. 성능 최적화 가능성
+3. 잠재적 버그나 엣지 케이스
+4. 더 나은 패턴이나 관용구 사용
+5. 테스트 가능성과 유지보수성
+
+각 제안사항에 대해 구체적인 코드 예시를 제공해주세요.
+`;
+
+        const response = await this.cursor.chat.sendMessage(prompt);
+        return this.parseAIResponse(response);
+    }
+
+    async analyzePerformance(code) {
+        const issues = [];
+        
+        // N+1 쿼리 패턴 검사
+        const n1Patterns = [
+            /\.map\s*\(.*await.*\)/gi,
+            /for\s*\(.*\)\s*{[^}]*await[^}]*}/gi
+        ];
+        
+        n1Patterns.forEach(pattern => {
+            const matches = code.matchAll(pattern);
+            for (const match of matches) {
+                const line = code.substring(0, match.index).split('\n').length;
+                issues.push({
+                    line,
+                    severity: 'warning',
+                    message: 'N+1 쿼리 패턴이 감지되었습니다.',
+                    suggestion: 'Promise.all()을 사용하거나 쿼리를 배치로 처리하세요.'
+                });
+            }
+        });
+
+        // 메모리 누수 가능성 검사
+        const memoryLeakPatterns = [
+            /addEventListener[^}]*(?!removeEventListener)/gi,
+            /setInterval\s*\([^)]*\)/gi
+        ];
+        
+        memoryLeakPatterns.forEach(pattern => {
+            const matches = code.matchAll(pattern);
+            for (const match of matches) {
+                const line = code.substring(0, match.index).split('\n').length;
+                issues.push({
+                    line,
+                    severity: 'warning',
+                    message: '메모리 누수 가능성이 있습니다.',
+                    suggestion: '적절한 cleanup 로직을 추가하세요.'
+                });
+            }
+        });
+
+        return issues;
+    }
+
+    async collectMetrics(code) {
+        const lines = code.split('\n');
+        const ast = parse(code, {
+            sourceType: 'module',
+            plugins: ['jsx', 'typescript']
+        });
+
+        let functionCount = 0;
+        let classCount = 0;
+        let maxDepth = 0;
+        let currentDepth = 0;
+
+        traverse(ast, {
+            enter(path) {
+                currentDepth++;
+                maxDepth = Math.max(maxDepth, currentDepth);
+            },
+            exit() {
+                currentDepth--;
+            },
+            FunctionDeclaration() {
+                functionCount++;
+            },
+            ArrowFunctionExpression() {
+                functionCount++;
+            },
+            ClassDeclaration() {
+                classCount++;
+            }
+        });
+
+        return {
+            lines: lines.length,
+            functions: functionCount,
+            classes: classCount,
+            maxDepth,
+            commentRatio: this.calculateCommentRatio(code),
+            duplicateLines: this.findDuplicateLines(lines)
+        };
+    }
+
+    calculateCommentRatio(code) {
+        const commentLines = (code.match(/\/\/.*$/gm) || []).length +
+                           (code.match(/\/\*[\s\S]*?\*\//g) || [])
+                               .reduce((sum, comment) => sum + comment.split('\n').length, 0);
+        const totalLines = code.split('\n').length;
+        return (commentLines / totalLines * 100).toFixed(2);
+    }
+
+    findDuplicateLines(lines) {
+        const lineMap = new Map();
+        let duplicates = 0;
+        
+        lines.forEach((line, index) => {
+            const trimmed = line.trim();
+            if (trimmed && trimmed.length > 10) {
+                if (lineMap.has(trimmed)) {
+                    duplicates++;
+                } else {
+                    lineMap.set(trimmed, index);
+                }
+            }
+        });
+        
+        return duplicates;
+    }
+
+    async generateReviewReport(reviews) {
+        const totalIssues = reviews.reduce((sum, r) => sum + r.issues.length, 0);
+        const criticalIssues = reviews.reduce((sum, r) => 
+            sum + r.issues.filter(i => i.severity === 'error').length, 0);
+        
+        const report = {
+            summary: {
+                totalFiles: reviews.length,
+                totalIssues,
+                criticalIssues,
+                warnings: totalIssues - criticalIssues,
+                overallScore: this.calculateOverallScore(reviews)
+            },
+            fileReviews: reviews,
+            recommendations: await this.generateRecommendations(reviews)
+        };
+
+        return report;
+    }
+
+    calculateOverallScore(reviews) {
+        let score = 100;
+        
+        reviews.forEach(review => {
+            review.issues.forEach(issue => {
+                if (issue.severity === 'error') {
+                    score -= 10;
+                } else if (issue.severity === 'warning') {
+                    score -= 5;
+                }
+            });
+        });
+        
+        return Math.max(0, score);
+    }
+
+    async generateRecommendations(reviews) {
+        const recommendations = [];
+        
+        // 복잡도가 높은 파일들
+        const complexFiles = reviews.filter(r => 
+            r.metrics && r.metrics.maxDepth > 5
+        );
+        
+        if (complexFiles.length > 0) {
+            recommendations.push({
+                type: 'refactoring',
+                priority: 'high',
+                message: `${complexFiles.length}개 파일의 복잡도가 높습니다. 리팩토링을 고려하세요.`,
+                files: complexFiles.map(f => f.filename)
+            });
+        }
+        
+        // 테스트 커버리지가 낮은 파일들
+        const lowCoverageFiles = reviews.filter(r => 
+            r.metrics && r.metrics.testCoverage < 80
+        );
+        
+        if (lowCoverageFiles.length > 0) {
+            recommendations.push({
+                type: 'testing',
+                priority: 'medium',
+                message: `${lowCoverageFiles.length}개 파일의 테스트 커버리지가 낮습니다.`,
+                files: lowCoverageFiles.map(f => f.filename)
+            });
+        }
+        
+        return recommendations;
+    }
+}
+
+// GitHub Actions 통합
+export async function runCodeReview() {
+    const bot = new AICodeReviewBot({
+        cursorApiKey: process.env.CURSOR_API_KEY,
+        githubToken: process.env.GITHUB_TOKEN,
+        eslintConfig: require('./.eslintrc.js')
+    });
+
+    const pullNumber = process.env.GITHUB_PR_NUMBER;
+    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    
+    const report = await bot.reviewPullRequest(owner, repo, pullNumber);
+    
+    // GitHub PR에 코멘트 작성
+    await bot.github.issues.createComment({
+        owner,
+        repo,
+        issue_number: pullNumber,
+        body: formatReviewComment(report)
+    });
+    
+    // 심각한 이슈가 있으면 PR 블록
+    if (report.summary.criticalIssues > 0) {
+        process.exit(1);
+    }
+}
+
+function formatReviewComment(report) {
+    return `## 🤖 AI 코드 리뷰 결과
+
+### 📊 요약
+- 검토한 파일: ${report.summary.totalFiles}개
+- 발견된 이슈: ${report.summary.totalIssues}개
+- 심각한 이슈: ${report.summary.criticalIssues}개
+- 경고: ${report.summary.warnings}개
+- 전체 점수: ${report.summary.overallScore}/100
+
+### 📋 상세 리뷰
+${report.fileReviews.map(formatFileReview).join('\n\n')}
+
+### 💡 권장사항
+${report.recommendations.map(formatRecommendation).join('\n')}
+`;
+}
+</code></pre>
+                    </div>
+                </div>
+
+                <h3>코드 품질 메트릭스 대시보드</h3>
+                <div class="metrics-dashboard">
+                    <div class="dashboard-implementation">
+                        <h4>실시간 코드 품질 모니터링</h4>
+                        <pre><code>// components/CodeQualityDashboard.tsx
+import React, { useState, useEffect } from 'react';
+import { Line, Bar, Radar } from 'react-chartjs-2';
+import { CursorAI } from '@cursor/api';
+
+interface CodeMetrics {
+    complexity: number;
+    maintainability: number;
+    testCoverage: number;
+    duplicateCode: number;
+    technicalDebt: number;
+    securityScore: number;
+}
+
+export function CodeQualityDashboard() {
+    const [metrics, setMetrics] = useState<CodeMetrics | null>(null);
+    const [trend, setTrend] = useState<any[]>([]);
+    const [fileAnalysis, setFileAnalysis] = useState<any[]>([]);
+    
+    useEffect(() => {
+        loadMetrics();
+        const interval = setInterval(loadMetrics, 60000); // 1분마다 업데이트
+        return () => clearInterval(interval);
+    }, []);
+
+    const loadMetrics = async () => {
+        const cursor = new CursorAI();
+        
+        // 프로젝트 전체 분석
+        const analysis = await cursor.ai.analyzeProject({
+            includeMetrics: true,
+            includeSecurity: true,
+            includePerformance: true
+        });
+        
+        setMetrics(analysis.metrics);
+        setTrend(analysis.trend);
+        setFileAnalysis(analysis.fileAnalysis);
+    };
+
+    const radarData = {
+        labels: [
+            '복잡도',
+            '유지보수성',
+            '테스트 커버리지',
+            '코드 중복',
+            '기술 부채',
+            '보안'
+        ],
+        datasets: [{
+            label: '현재 프로젝트',
+            data: metrics ? [
+                100 - metrics.complexity,
+                metrics.maintainability,
+                metrics.testCoverage,
+                100 - metrics.duplicateCode,
+                100 - metrics.technicalDebt,
+                metrics.securityScore
+            ] : [],
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgb(59, 130, 246)',
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(59, 130, 246)'
+        }]
+    };
+
+    return (
+        <div className="quality-dashboard">
+            <h2>코드 품질 대시보드</h2>
+            
+            <div className="metrics-overview">
+                <div className="metric-card">
+                    <h3>전체 품질 점수</h3>
+                    <div className="score-display">
+                        <span className="score">{metrics?.overallScore || 0}</span>
+                        <span className="score-label">/100</span>
+                    </div>
+                </div>
+                
+                <div className="metric-card">
+                    <h3>테스트 커버리지</h3>
+                    <div className="coverage-bar">
+                        <div 
+                            className="coverage-fill"
+                            style={{ width: `${metrics?.testCoverage || 0}%` }}
+                        />
+                    </div>
+                    <span>{metrics?.testCoverage || 0}%</span>
+                </div>
+                
+                <div className="metric-card">
+                    <h3>보안 점수</h3>
+                    <div className="security-indicator">
+                        <span className={`security-level ${getSecurityLevel(metrics?.securityScore)}`}>
+                            {getSecurityLevel(metrics?.securityScore)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="charts-container">
+                <div className="chart-section">
+                    <h3>코드 품질 레이더 차트</h3>
+                    <Radar data={radarData} />
+                </div>
+                
+                <div className="chart-section">
+                    <h3>품질 추세</h3>
+                    <Line data={trendData} />
+                </div>
+            </div>
+
+            <div className="file-analysis">
+                <h3>파일별 분석</h3>
+                <table className="analysis-table">
+                    <thead>
+                        <tr>
+                            <th>파일</th>
+                            <th>복잡도</th>
+                            <th>유지보수성</th>
+                            <th>이슈</th>
+                            <th>액션</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {fileAnalysis.map((file, index) => (
+                            <tr key={index} className={file.issues > 5 ? 'high-risk' : ''}>
+                                <td>{file.path}</td>
+                                <td>
+                                    <span className={`complexity ${getComplexityClass(file.complexity)}`}>
+                                        {file.complexity}
+                                    </span>
+                                </td>
+                                <td>{file.maintainability}</td>
+                                <td>{file.issues}</td>
+                                <td>
+                                    <button onClick={() => reviewFile(file.path)}>
+                                        리뷰
+                                    </button>
+                                    <button onClick={() => refactorFile(file.path)}>
+                                        리팩토링
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="ai-suggestions">
+                <h3>AI 개선 제안</h3>
+                <div className="suggestions-list">
+                    {suggestions.map((suggestion, index) => (
+                        <div key={index} className="suggestion-card">
+                            <h4>{suggestion.title}</h4>
+                            <p>{suggestion.description}</p>
+                            <pre><code>{suggestion.example}</code></pre>
+                            <button onClick={() => applySuggestion(suggestion)}>
+                                적용하기
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-shield-alt"></i> 보안 취약점 자동 탐지</h2>
+                
+                <h3>AI 기반 보안 스캐너</h3>
+                <div class="security-scanner">
+                    <div class="scanner-implementation">
+                        <h4>실시간 보안 취약점 탐지 시스템</h4>
+                        <pre><code>// security/AISecurityScanner.ts
+import { CursorAI } from '@cursor/api';
+import { DependencyCheck } from 'dependency-check';
+import { Snyk } from '@snyk/sdk';
+import * as semver from 'semver';
+
+export class AISecurityScanner {
+    private cursor: CursorAI;
+    private snyk: Snyk;
+    private vulnerabilityDB: Map<string, Vulnerability[]>;
+
+    constructor() {
+        this.cursor = new CursorAI();
+        this.snyk = new Snyk({ token: process.env.SNYK_TOKEN });
+        this.vulnerabilityDB = new Map();
+        this.loadVulnerabilityDatabase();
+    }
+
+    async scanProject(projectPath: string): Promise<SecurityReport> {
+        const report: SecurityReport = {
+            vulnerabilities: [],
+            dependencies: [],
+            codeIssues: [],
+            recommendations: [],
+            overallRisk: 'low'
+        };
+
+        // 1. 의존성 취약점 스캔
+        const depVulns = await this.scanDependencies(projectPath);
+        report.dependencies = depVulns;
+
+        // 2. 코드 보안 취약점 스캔
+        const codeVulns = await this.scanCode(projectPath);
+        report.codeIssues = codeVulns;
+
+        // 3. AI 기반 고급 분석
+        const aiAnalysis = await this.performAIAnalysis(projectPath);
+        report.vulnerabilities.push(...aiAnalysis.vulnerabilities);
+
+        // 4. 위험도 평가
+        report.overallRisk = this.assessRisk(report);
+
+        // 5. 개선 권장사항 생성
+        report.recommendations = await this.generateRecommendations(report);
+
+        return report;
+    }
+
+    async scanDependencies(projectPath: string): Promise<DependencyVulnerability[]> {
+        const packageJson = await this.readPackageJson(projectPath);
+        const vulnerabilities: DependencyVulnerability[] = [];
+
+        for (const [pkg, version] of Object.entries(packageJson.dependencies || {})) {
+            // Snyk DB 검사
+            const snykVulns = await this.snyk.test(pkg, version as string);
+            
+            // 자체 DB 검사
+            const knownVulns = this.vulnerabilityDB.get(pkg) || [];
+            
+            for (const vuln of [...snykVulns, ...knownVulns]) {
+                if (semver.satisfies(version as string, vuln.affectedVersions)) {
+                    vulnerabilities.push({
+                        package: pkg,
+                        version: version as string,
+                        vulnerability: vuln,
+                        severity: vuln.severity,
+                        fixedIn: vuln.fixedIn,
+                        recommendation: `${pkg}를 ${vuln.fixedIn} 이상으로 업데이트하세요.`
+                    });
+                }
+            }
+        }
+
+        return vulnerabilities;
+    }
+
+    async scanCode(projectPath: string): Promise<CodeVulnerability[]> {
+        const vulnerabilities: CodeVulnerability[] = [];
+        const files = await this.getAllSourceFiles(projectPath);
+
+        for (const file of files) {
+            const content = await fs.readFile(file, 'utf-8');
+            
+            // OWASP Top 10 체크
+            vulnerabilities.push(...await this.checkOWASPTop10(content, file));
+            
+            // 민감한 정보 노출 체크
+            vulnerabilities.push(...await this.checkSensitiveData(content, file));
+            
+            // 암호화 취약점 체크
+            vulnerabilities.push(...await this.checkCryptography(content, file));
+        }
+
+        return vulnerabilities;
+    }
+
+    async checkOWASPTop10(code: string, filePath: string): Promise<CodeVulnerability[]> {
+        const vulnerabilities: CodeVulnerability[] = [];
+
+        // A01:2021 – Broken Access Control
+        const accessControlPatterns = [
+            {
+                pattern: /router\.(get|post|put|delete)\s*\([^,]+,\s*(?!authenticate)/gi,
+                message: '인증 미들웨어가 누락되었을 수 있습니다.',
+                severity: 'high' as const
+            },
+            {
+                pattern: /req\.user\.\w+\s*===?\s*['"`]admin['"`]/gi,
+                message: '하드코딩된 권한 체크가 발견되었습니다.',
+                severity: 'medium' as const
+            }
+        ];
+
+        // A02:2021 – Cryptographic Failures
+        const cryptoPatterns = [
+            {
+                pattern: /crypto\.createHash\(['"`]md5['"`]\)/gi,
+                message: 'MD5는 안전하지 않습니다. SHA-256 이상을 사용하세요.',
+                severity: 'high' as const
+            },
+            {
+                pattern: /Math\.random\(\)/gi,
+                message: '암호화 목적으로 Math.random()을 사용하지 마세요.',
+                severity: 'high' as const
+            }
+        ];
+
+        // A03:2021 – Injection
+        const injectionPatterns = [
+            {
+                pattern: /exec\s*\([^)]*\$\{[^}]+\}[^)]*\)/gi,
+                message: '명령어 주입 취약점이 발견되었습니다.',
+                severity: 'critical' as const
+            },
+            {
+                pattern: /new Function\s*\([^)]*\$\{[^}]+\}[^)]*\)/gi,
+                message: '코드 주입 취약점이 발견되었습니다.',
+                severity: 'critical' as const
+            }
+        ];
+
+        const allPatterns = [
+            ...accessControlPatterns,
+            ...cryptoPatterns,
+            ...injectionPatterns
+        ];
+
+        for (const { pattern, message, severity } of allPatterns) {
+            const matches = code.matchAll(pattern);
+            for (const match of matches) {
+                const line = code.substring(0, match.index).split('\n').length;
+                vulnerabilities.push({
+                    type: 'OWASP',
+                    severity,
+                    file: filePath,
+                    line,
+                    message,
+                    code: match[0],
+                    recommendation: await this.getAIRecommendation(match[0], message)
+                });
+            }
+        }
+
+        return vulnerabilities;
+    }
+
+    async performAIAnalysis(projectPath: string): Promise<AIAnalysisResult> {
+        const prompt = `
+프로젝트 경로: ${projectPath}
+
+다음 보안 측면을 분석해주세요:
+1. 인증 및 권한 부여 구현
+2. 데이터 검증 및 살균
+3. 에러 처리 및 로깅
+4. 세션 관리
+5. API 보안
+6. 파일 업로드 보안
+7. 써드파티 통합 보안
+
+각 취약점에 대해 다음을 포함해주세요:
+- 심각도 (critical/high/medium/low)
+- 구체적인 위치
+- 수정 방법
+- 예시 코드
+`;
+
+        const response = await this.cursor.ai.analyzeCode(prompt);
+        return this.parseAISecurityAnalysis(response);
+    }
+
+    async generateRecommendations(report: SecurityReport): Promise<SecurityRecommendation[]> {
+        const recommendations: SecurityRecommendation[] = [];
+
+        // 심각한 취약점에 대한 즉시 조치 사항
+        const criticalVulns = report.vulnerabilities.filter(v => v.severity === 'critical');
+        if (criticalVulns.length > 0) {
+            recommendations.push({
+                priority: 'immediate',
+                title: '심각한 보안 취약점 발견',
+                description: `${criticalVulns.length}개의 심각한 취약점이 발견되었습니다. 즉시 수정이 필요합니다.`,
+                actions: criticalVulns.map(v => ({
+                    file: v.file,
+                    line: v.line,
+                    fix: v.recommendation
+                }))
+            });
+        }
+
+        // 의존성 업데이트 권장
+        const outdatedDeps = report.dependencies.filter(d => d.fixedIn);
+        if (outdatedDeps.length > 0) {
+            recommendations.push({
+                priority: 'high',
+                title: '의존성 업데이트 필요',
+                description: `${outdatedDeps.length}개의 취약한 의존성이 발견되었습니다.`,
+                actions: outdatedDeps.map(d => ({
+                    package: d.package,
+                    current: d.version,
+                    recommended: d.fixedIn,
+                    command: `npm update ${d.package}@${d.fixedIn}`
+                }))
+            });
+        }
+
+        // 보안 헤더 설정
+        recommendations.push({
+            priority: 'medium',
+            title: '보안 헤더 구성',
+            description: 'HTTP 보안 헤더를 설정하여 일반적인 공격을 방어하세요.',
+            actions: [{
+                code: `// Express.js 보안 헤더 설정
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:"],
+        },
+    },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    }
+}));`
+            }]
+        });
+
+        return recommendations;
+    }
+
+    assessRisk(report: SecurityReport): RiskLevel {
+        const criticalCount = report.vulnerabilities.filter(v => v.severity === 'critical').length;
+        const highCount = report.vulnerabilities.filter(v => v.severity === 'high').length;
+        
+        if (criticalCount > 0) return 'critical';
+        if (highCount > 5) return 'high';
+        if (highCount > 0) return 'medium';
+        return 'low';
+    }
+}
+
+// GitHub Actions 워크플로우
+export async function runSecurityScan() {
+    const scanner = new AISecurityScanner();
+    const report = await scanner.scanProject(process.cwd());
+    
+    // 보고서 생성
+    await generateSecurityReport(report);
+    
+    // 심각한 취약점이 있으면 빌드 실패
+    if (report.overallRisk === 'critical' || report.overallRisk === 'high') {
+        console.error('🚨 심각한 보안 취약점이 발견되었습니다!');
+        process.exit(1);
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice-section">
+                <h2><i class="fas fa-laptop-code"></i> 실습: AI 코드 리뷰 시스템 구축</h2>
+                
+                <div class="exercise">
+                    <h3>과제: 팀을 위한 자동 코드 리뷰 봇 만들기</h3>
+                    <p>다음 요구사항을 만족하는 코드 리뷰 자동화 시스템을 구축하세요:</p>
+                    
+                    <div class="requirements">
+                        <h4>요구사항:</h4>
+                        <ul>
+                            <li>Pull Request 생성 시 자동으로 코드 리뷰 실행</li>
+                            <li>코딩 스타일, 복잡도, 보안 취약점 검사</li>
+                            <li>AI 기반 개선 제안 생성</li>
+                            <li>리뷰 결과를 PR 코멘트로 자동 작성</li>
+                            <li>심각한 이슈 발견 시 PR 머지 차단</li>
+                        </ul>
+                    </div>
+
+                    <div class="hints">
+                        <h4>힌트:</h4>
+                        <ul>
+                            <li>GitHub Actions와 Cursor API를 조합하여 사용</li>
+                            <li>ESLint, TSLint 등의 정적 분석 도구 통합</li>
+                            <li>코드 복잡도는 AST 분석을 통해 계산</li>
+                            <li>보안 패턴은 정규식과 AST 패턴 매칭 활용</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary-section">
+                <h2><i class="fas fa-bookmark"></i> 핵심 요약</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>자동 코드 리뷰</h3>
+                        <ul>
+                            <li>AI 기반 코드 분석</li>
+                            <li>실시간 품질 모니터링</li>
+                            <li>PR 통합 자동화</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>품질 메트릭스</h3>
+                        <ul>
+                            <li>복잡도 측정</li>
+                            <li>유지보수성 평가</li>
+                            <li>테스트 커버리지</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>보안 스캐닝</h3>
+                        <ul>
+                            <li>취약점 자동 탐지</li>
+                            <li>의존성 검사</li>
+                            <li>OWASP 준수 체크</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>개선 자동화</h3>
+                        <ul>
+                            <li>리팩토링 제안</li>
+                            <li>자동 수정 적용</li>
+                            <li>지속적 개선</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="progress-indicator">
+                <h3>진행 상황</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 76.67%;"></div>
+                </div>
+                <span>23/30 강의 (76.67%)</span>
+            </div>
+
+            <nav class="lesson-nav-sidebar">
+                <h3>전체 강의</h3>
+                <ul>
+                    <li><a href="lesson21.html">제21강: AI 페어 프로그래밍</a></li>
+                    <li><a href="lesson22.html">제22강: 커스텀 명령어 개발</a></li>
+                    <li class="current">제23강: AI 코드 리뷰</li>
+                    <li><a href="lesson24.html">제24강: 문서화 자동화</a></li>
+                    <li><a href="lesson25.html">제25강: 마이그레이션 도구</a></li>
+                </ul>
+            </nav>
+
+            <div class="study-tips">
+                <h3>학습 팁</h3>
+                <ul>
+                    <li>코드 리뷰는 단순한 오류 찾기가 아닌 지식 공유의 기회입니다</li>
+                    <li>AI 제안을 맹목적으로 따르지 말고 항상 검증하세요</li>
+                    <li>팀의 코딩 스타일을 AI에게 학습시켜 일관성을 유지하세요</li>
+                    <li>보안 스캔은 개발 초기부터 지속적으로 수행하세요</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>

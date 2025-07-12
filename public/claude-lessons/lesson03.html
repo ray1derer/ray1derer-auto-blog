@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제3강: 효과적인 대화법 - 프롬프트의 기술 | Claude 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div id="sidebar-content"></div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="lesson-header">
+                <div class="lesson-meta">
+                    <span class="lesson-module">모듈 1: 첫 걸음</span>
+                    <span class="lesson-difficulty">입문</span>
+                    <span class="lesson-duration">45분</span>
+                </div>
+                <h1>제3강: 효과적인 대화법 - 프롬프트의 기술</h1>
+                <p class="lesson-subtitle">Claude에게 정확히 원하는 것 얻기</p>
+            </header>
+            
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>CLEAR 프레임워크를 활용한 효과적인 프롬프트 작성</li>
+                    <li>맥락과 예시를 통한 명확한 커뮤니케이션</li>
+                    <li>반복적 개선을 통한 최적의 결과 도출</li>
+                    <li>다양한 상황별 프롬프트 템플릿 활용</li>
+                </ul>
+            </section>
+            
+            <section class="key-concepts">
+                <h2><i class="fas fa-lightbulb"></i> 핵심 개념</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>CLEAR 프레임워크</h3>
+                        <p>Context(맥락), Language(언어), Examples(예시), Action(행동), Result(결과)의 체계적 접근법</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>컨텍스트 제공</h3>
+                        <p>배경 정보와 상황을 명확히 설명하여 Claude가 맥락을 이해하도록 돕기</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>구체적 지시</h3>
+                        <p>모호한 요청보다 구체적이고 측정 가능한 요구사항 제시</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>반복적 개선</h3>
+                        <p>첫 응답을 기반으로 추가 요청과 수정을 통해 완성도 높이기</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="practice-section">
+                <h2><i class="fas fa-laptop-code"></i> 실습: CLEAR 프레임워크 마스터하기</h2>
+                <div class="practice-container">
+                    <div class="practice-step">
+                        <h4>1. Context (맥락) - 상황 설명하기</h4>
+                        <div class="comparison-example">
+                            <div class="bad-example">
+                                <h5>❌ 나쁜 예:</h5>
+                                <pre><code>이메일 써줘</code></pre>
+                            </div>
+                            <div class="good-example">
+                                <h5>✅ 좋은 예:</h5>
+                                <pre><code>저는 마케팅 팀장입니다. 
+내일 있을 신제품 런칭 회의를 위해 
+팀원들에게 보낼 준비사항 안내 이메일이 필요합니다.</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>2. Language (언어) - 명확한 표현</h4>
+                        <div class="comparison-example">
+                            <div class="bad-example">
+                                <h5>❌ 나쁜 예:</h5>
+                                <pre><code>좀 더 좋게 만들어줘</code></pre>
+                            </div>
+                            <div class="good-example">
+                                <h5>✅ 좋은 예:</h5>
+                                <pre><code>다음과 같이 개선해주세요:
+- 문장을 20% 더 간결하게
+- 전문 용어를 일반인도 이해할 수 있게
+- 친근하면서도 전문적인 톤으로</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>3. Examples (예시) - 참고 자료 제공</h4>
+                        <pre><code>다음과 같은 스타일로 작성해주세요:
+
+예시:
+"안녕하세요 팀원 여러분,
+내일 오후 2시 예정된 신제품 런칭 회의를 앞두고..."
+
+이런 느낌으로 시작해서, 준비사항을 
+번호 목록으로 정리해주세요.</code></pre>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>4. Action (행동) - 구체적 작업 지시</h4>
+                        <pre><code>다음 작업을 수행해주세요:
+1. 인사말로 시작 (1-2문장)
+2. 회의 일시와 장소 명시
+3. 준비사항 5개를 번호 목록으로
+4. 각 항목에 담당자 지정란 포함
+5. 긍정적인 마무리 문장</code></pre>
+                    </div>
+                    
+                    <div class="practice-step">
+                        <h4>5. Result (결과) - 원하는 결과물 명시</h4>
+                        <pre><code>최종 결과물:
+- 길이: 200-250단어
+- 형식: 비즈니스 이메일
+- 톤: 전문적이면서 친근한
+- 특징: 실행 가능한 체크리스트 포함</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="templates-section">
+                <h2><i class="fas fa-file-alt"></i> 상황별 프롬프트 템플릿</h2>
+                <div class="template-grid">
+                    <div class="template-card">
+                        <h3>📝 문서 작성</h3>
+                        <pre><code>역할: [당신의 직책/상황]
+목적: [문서의 목적]
+대상: [읽을 사람]
+내용: [포함할 주요 내용]
+형식: [원하는 형식]
+분량: [대략적인 길이]</code></pre>
+                    </div>
+                    
+                    <div class="template-card">
+                        <h3>🔍 분석 요청</h3>
+                        <pre><code>분석 대상: [데이터/텍스트]
+분석 관점: [어떤 측면]
+원하는 인사이트: [기대하는 발견]
+결과 형식: [표/리스트/문단]
+활용 목적: [분석 결과 용도]</code></pre>
+                    </div>
+                    
+                    <div class="template-card">
+                        <h3>💡 아이디어 생성</h3>
+                        <pre><code>주제: [브레인스토밍 주제]
+배경: [현재 상황]
+제약사항: [고려할 제한]
+원하는 개수: [아이디어 수]
+평가 기준: [좋은 아이디어 기준]</code></pre>
+                    </div>
+                    
+                    <div class="template-card">
+                        <h3>📚 학습 도우미</h3>
+                        <pre><code>학습 주제: [배우고 싶은 것]
+현재 수준: [초급/중급/고급]
+학습 목표: [달성하고 싶은 것]
+선호 방식: [설명/예제/연습]
+시간: [투자 가능한 시간]</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="project-section">
+                <h2><i class="fas fa-project-diagram"></i> 미니 프로젝트</h2>
+                <div class="project-brief">
+                    <h3>🎯 "완벽한 프롬프트 작성하기"</h3>
+                    <p>실제 업무 상황을 가정하고 CLEAR 프레임워크로 프롬프트를 작성해봅니다.</p>
+                    <div class="project-requirements">
+                        <h4>과제:</h4>
+                        <ol>
+                            <li>실제 필요한 문서/작업 선택</li>
+                            <li>CLEAR 프레임워크 적용</li>
+                            <li>첫 번째 시도</li>
+                            <li>결과 분석 및 개선</li>
+                            <li>최종 완성본 도출</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="interactive-demo">
+                <h2><i class="fas fa-play-circle"></i> 인터랙티브 연습</h2>
+                <div class="demo-container">
+                    <h4>프롬프트 개선 연습</h4>
+                    <div class="before-after">
+                        <div class="before">
+                            <h5>개선 전:</h5>
+                            <p>"발표 자료 만들어줘"</p>
+                        </div>
+                        <div class="after">
+                            <h5>개선 후:</h5>
+                            <p>"저는 IT 스타트업의 제품 매니저입니다. 다음 주 투자자 미팅에서 사용할 10분 발표 자료가 필요합니다. 우리 제품은 AI 기반 고객 서비스 챗봇이고, 주요 강점은 다국어 지원과 감정 분석 기능입니다. 슬라이드 10장 분량으로, 각 슬라이드의 제목과 핵심 내용을 구성해주세요."</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="tips-section">
+                <h2><i class="fas fa-info-circle"></i> 💡 Pro Tips</h2>
+                <div class="tip-box">
+                    <h4>프롬프트 작성 고급 팁:</h4>
+                    <ul>
+                        <li><strong>역할 부여:</strong> "당신은 경험 많은 [전문가]입니다"로 시작</li>
+                        <li><strong>단계별 사고:</strong> "단계별로 생각해보고" 추가하기</li>
+                        <li><strong>형식 지정:</strong> 원하는 출력 형식을 명확히 제시</li>
+                        <li><strong>제약 조건:</strong> 하지 말아야 할 것도 명시</li>
+                        <li><strong>검증 요청:</strong> "이해한 내용을 먼저 요약해주세요"</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <nav class="lesson-navigation">
+                <a href="lesson02.html" class="nav-prev">
+                    <i class="fas fa-chevron-left"></i> 이전 강의
+                </a>
+                <a href="lesson04.html" class="nav-next">
+                    다음 강의 <i class="fas fa-chevron-right"></i>
+                </a>
+            </nav>
+        </main>
+    </div>
+    
+    <script>
+        fetch('../assets/sidebar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('sidebar-content').innerHTML = data;
+                const currentPath = window.location.pathname.split('/').pop();
+                const lessonLinks = document.querySelectorAll('.lesson-link');
+                lessonLinks.forEach(link => {
+                    if (link.getAttribute('href').includes(currentPath)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        
+        // 강의 완료 처리
+        if (!localStorage.getItem('lesson03_complete')) {
+            setTimeout(() => {
+                localStorage.setItem('lesson03_complete', 'true');
+                if (typeof progressTracker !== 'undefined') {
+                    progressTracker.completeLesson(3);
+                }
+            }, 30000); // 30초 후 자동 완료
+        }
+    </script>
+    <script src="../assets/js/progress.js"></script>
+</body>
+</html>

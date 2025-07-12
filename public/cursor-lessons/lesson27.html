@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제27강: AI 기반 디버깅과 문제 해결 도구 | Cursor AI 마스터 클래스</title>
+    <link rel="stylesheet" href="../assets/lesson-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lesson-container">
+        <header class="lesson-header">
+            <div class="lesson-title">
+                <h1><i class="fas fa-bug"></i> 제27강: AI 기반 디버깅과 문제 해결 도구</h1>
+                <p class="lesson-subtitle">지능형 디버거로 복잡한 버그를 빠르게 해결하기</p>
+            </div>
+            <div class="lesson-meta">
+                <span class="difficulty"><i class="fas fa-signal"></i> 난이도: 고급</span>
+                <span class="duration"><i class="fas fa-clock"></i> 예상 시간: 65분</span>
+                <span class="category"><i class="fas fa-folder"></i> 카테고리: 고급</span>
+            </div>
+        </header>
+
+        <nav class="lesson-nav">
+            <a href="lesson26.html" class="nav-link prev">
+                <i class="fas fa-chevron-left"></i> 이전 강의
+            </a>
+            <span class="nav-title">제27강: AI 기반 디버깅과 문제 해결 도구</span>
+            <a href="lesson28.html" class="nav-link next">
+                다음 강의 <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <main class="lesson-content">
+            <section class="learning-objectives">
+                <h2><i class="fas fa-bullseye"></i> 학습 목표</h2>
+                <ul>
+                    <li>AI를 활용한 버그 자동 탐지와 원인 분석</li>
+                    <li>스택 트레이스 분석과 해결책 제안</li>
+                    <li>시간 여행 디버깅과 상태 재현</li>
+                    <li>분산 시스템 디버깅 자동화</li>
+                    <li>예측적 버그 탐지와 예방</li>
+                </ul>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-search"></i> 지능형 버그 탐지 시스템</h2>
+                
+                <div class="info-box">
+                    <p>Cursor AI는 코드 실행을 실시간으로 분석하여 버그를 자동으로 탐지하고, 근본 원인을 파악하여 구체적인 해결 방안을 제시합니다. 복잡한 버그도 AI의 패턴 인식으로 빠르게 해결할 수 있습니다.</p>
+                </div>
+
+                <h3>AI 디버거 구현</h3>
+                <div class="ai-debugger">
+                    <div class="debugger-implementation">
+                        <h4>스마트 디버깅 시스템</h4>
+                        <pre><code>// debugger/AIDebugger.ts
+import { CursorAI } from '@cursor/api';
+import { SourceMapConsumer } from 'source-map';
+import * as inspector from 'inspector';
+import { AsyncLocalStorage } from 'async_hooks';
+
+export class AIDebugger {
+    private cursor: CursorAI;
+    private session: inspector.Session;
+    private executionContext: AsyncLocalStorage<ExecutionContext>;
+    private breakpoints: Map<string, Breakpoint>;
+    private errorPatterns: ErrorPatternDatabase;
+
+    constructor() {
+        this.cursor = new CursorAI();
+        this.session = new inspector.Session();
+        this.session.connect();
+        this.executionContext = new AsyncLocalStorage();
+        this.breakpoints = new Map();
+        this.errorPatterns = new ErrorPatternDatabase();
+        this.setupDebugger();
+    }
+
+    private setupDebugger() {
+        // 전역 에러 핸들러 설정
+        process.on('uncaughtException', async (error, origin) => {
+            await this.handleError(error, origin);
+        });
+
+        process.on('unhandledRejection', async (reason, promise) => {
+            await this.handleRejection(reason, promise);
+        });
+
+        // 디버거 프로토콜 활성화
+        this.session.post('Debugger.enable');
+        this.session.post('Runtime.enable');
+        this.session.post('Profiler.enable');
+        
+        // 브레이크포인트 이벤트 리스너
+        this.session.on('Debugger.paused', async (params) => {
+            await this.handleBreakpoint(params);
+        });
+    }
+
+    async analyzeError(error: Error): Promise<ErrorAnalysis> {
+        const stackFrames = await this.parseStackTrace(error.stack!);
+        const sourceCode = await this.extractRelevantCode(stackFrames);
+        const executionHistory = this.getExecutionHistory();
+
+        // AI로 에러 분석
+        const prompt = `
+다음 에러를 분석하고 해결 방안을 제시해주세요:
+
+에러 메시지: ${error.message}
+에러 타입: ${error.name}
+
+스택 트레이스:
+${error.stack}
+
+관련 코드:
+${sourceCode.map(s => `
+파일: ${s.file}
+라인 ${s.line}:
+\`\`\`javascript
+${s.code}
+\`\`\`
+`).join('\n')}
+
+실행 컨텍스트:
+${JSON.stringify(executionHistory, null, 2)}
+
+다음을 포함해주세요:
+1. 에러의 근본 원인
+2. 구체적인 해결 방법
+3. 재발 방지 방안
+4. 관련된 다른 잠재적 문제
+`;
+
+        const analysis = await this.cursor.ai.generateCode(prompt);
+        const parsedAnalysis = JSON.parse(analysis);
+
+        return {
+            error: {
+                type: error.name,
+                message: error.message,
+                stack: stackFrames
+            },
+            rootCause: parsedAnalysis.rootCause,
+            solutions: parsedAnalysis.solutions,
+            preventiveMeasures: parsedAnalysis.preventiveMeasures,
+            relatedIssues: parsedAnalysis.relatedIssues,
+            confidence: this.calculateConfidence(parsedAnalysis)
+        };
+    }
+
+    private async parseStackTrace(stack: string): Promise<StackFrame[]> {
+        const frames: StackFrame[] = [];
+        const lines = stack.split('\n');
+        
+        for (const line of lines) {
+            const match = line.match(/at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/);
+            if (match) {
+                const [, functionName, file, lineStr, columnStr] = match;
+                const line = parseInt(lineStr);
+                const column = parseInt(columnStr);
+                
+                // 소스맵 처리
+                const originalPosition = await this.resolveSourceMap(file, line, column);
+                
+                frames.push({
+                    functionName,
+                    file: originalPosition.source || file,
+                    line: originalPosition.line || line,
+                    column: originalPosition.column || column,
+                    source: await this.getSourceCode(originalPosition.source || file, originalPosition.line || line)
+                });
+            }
+        }
+        
+        return frames;
+    }
+
+    async setSmartBreakpoint(condition: string): Promise<void> {
+        // AI로 브레이크포인트 조건 생성
+        const prompt = `
+다음 조건에 맞는 브레이크포인트 설정을 생성해주세요:
+
+조건: ${condition}
+
+다음 형식으로 제공해주세요:
+- 파일 패턴
+- 라인 번호 또는 함수명
+- 조건식 (JavaScript)
+- 수집할 데이터
+`;
+
+        const config = await this.cursor.ai.generateCode(prompt);
+        const breakpointConfig = JSON.parse(config);
+
+        // 브레이크포인트 설정
+        const files = await this.findMatchingFiles(breakpointConfig.filePattern);
+        
+        for (const file of files) {
+            const breakpoint = await this.createBreakpoint({
+                file,
+                line: breakpointConfig.line,
+                condition: breakpointConfig.condition,
+                dataCollection: breakpointConfig.dataCollection
+            });
+            
+            this.breakpoints.set(breakpoint.id, breakpoint);
+        }
+    }
+
+    private async handleBreakpoint(params: any): Promise<void> {
+        const callFrames = params.callFrames;
+        const breakpointId = params.hitBreakpoints[0];
+        const breakpoint = this.breakpoints.get(breakpointId);
+        
+        if (!breakpoint) return;
+
+        // 실행 컨텍스트 수집
+        const context = await this.collectExecutionContext(callFrames);
+        
+        // AI 분석
+        const analysis = await this.analyzeBreakpointHit(breakpoint, context);
+        
+        // 조건부 계속 실행
+        if (analysis.shouldContinue) {
+            this.session.post('Debugger.resume');
+        } else {
+            // 문제 발견 - 상세 분석
+            await this.performDeepAnalysis(context, analysis);
+        }
+    }
+
+    async debugAsyncFlow(functionName: string): Promise<AsyncFlowAnalysis> {
+        const traces: AsyncTrace[] = [];
+        const errors: AsyncError[] = [];
+        
+        // 비동기 훅 설정
+        const asyncHook = async_hooks.createHook({
+            init(asyncId, type, triggerAsyncId) {
+                if (this.shouldTrack(type)) {
+                    traces.push({
+                        asyncId,
+                        type,
+                        triggerAsyncId,
+                        timestamp: Date.now(),
+                        stack: new Error().stack
+                    });
+                }
+            },
+            before(asyncId) {
+                const trace = traces.find(t => t.asyncId === asyncId);
+                if (trace) {
+                    trace.executionStart = Date.now();
+                }
+            },
+            after(asyncId) {
+                const trace = traces.find(t => t.asyncId === asyncId);
+                if (trace) {
+                    trace.executionEnd = Date.now();
+                    trace.duration = trace.executionEnd - trace.executionStart!;
+                }
+            },
+            destroy(asyncId) {
+                const index = traces.findIndex(t => t.asyncId === asyncId);
+                if (index !== -1) {
+                    traces.splice(index, 1);
+                }
+            }
+        });
+        
+        asyncHook.enable();
+        
+        // 함수 실행 추적
+        try {
+            await this.executeWithTracking(functionName);
+        } catch (error) {
+            errors.push({
+                error,
+                asyncId: async_hooks.executionAsyncId(),
+                context: this.executionContext.getStore()
+            });
+        } finally {
+            asyncHook.disable();
+        }
+        
+        // 비동기 흐름 분석
+        return this.analyzeAsyncFlow(traces, errors);
+    }
+
+    private async analyzeAsyncFlow(
+        traces: AsyncTrace[], 
+        errors: AsyncError[]
+    ): Promise<AsyncFlowAnalysis> {
+        // 비동기 체인 재구성
+        const chains = this.reconstructAsyncChains(traces);
+        
+        // 병목 지점 식별
+        const bottlenecks = chains
+            .filter(chain => chain.totalDuration > 1000)
+            .sort((a, b) => b.totalDuration - a.totalDuration);
+        
+        // 에러 전파 경로 추적
+        const errorPaths = errors.map(error => 
+            this.traceErrorPropagation(error, traces)
+        );
+        
+        // AI 분석
+        const prompt = `
+비동기 실행 흐름을 분석해주세요:
+
+비동기 체인:
+${JSON.stringify(chains, null, 2)}
+
+에러 발생:
+${JSON.stringify(errorPaths, null, 2)}
+
+다음을 분석해주세요:
+1. 비효율적인 비동기 패턴
+2. 잠재적 레이스 컨디션
+3. 에러 처리 누락
+4. 성능 개선 기회
+`;
+
+        const analysis = await this.cursor.ai.generateCode(prompt);
+        
+        return {
+            chains,
+            bottlenecks,
+            errors: errorPaths,
+            recommendations: JSON.parse(analysis)
+        };
+    }
+
+    async timeTravel(targetState: string): Promise<TimeTravelResult> {
+        // 실행 히스토리에서 타겟 상태 찾기
+        const snapshot = await this.findStateSnapshot(targetState);
+        
+        if (!snapshot) {
+            throw new Error('해당 상태를 찾을 수 없습니다.');
+        }
+        
+        // 상태 복원
+        await this.restoreState(snapshot);
+        
+        // 실행 경로 재현
+        const executionPath = await this.replayExecution(snapshot);
+        
+        return {
+            snapshot,
+            executionPath,
+            variables: snapshot.variables,
+            callStack: snapshot.callStack
+        };
+    }
+}
+
+// 분산 시스템 디버거
+export class DistributedDebugger {
+    private debuggers: Map<string, AIDebugger>;
+    private correlator: TraceCorrelator;
+    private cursor: CursorAI;
+
+    constructor() {
+        this.debuggers = new Map();
+        this.correlator = new TraceCorrelator();
+        this.cursor = new CursorAI();
+    }
+
+    async traceDistributedRequest(requestId: string): Promise<DistributedTrace> {
+        const traces: ServiceTrace[] = [];
+        
+        // 모든 서비스에서 트레이스 수집
+        for (const [service, debugger] of this.debuggers) {
+            const serviceTraces = await debugger.getTracesForRequest(requestId);
+            traces.push({
+                service,
+                traces: serviceTraces,
+                logs: await this.getServiceLogs(service, requestId),
+                metrics: await this.getServiceMetrics(service, requestId)
+            });
+        }
+        
+        // 트레이스 상관관계 분석
+        const correlation = await this.correlator.correlate(traces);
+        
+        // 분산 시스템 문제 진단
+        const diagnosis = await this.diagnoseDistributedIssues(correlation);
+        
+        return {
+            requestId,
+            services: traces,
+            correlation,
+            diagnosis,
+            visualization: this.generateTraceVisualization(correlation)
+        };
+    }
+
+    private async diagnoseDistributedIssues(
+        correlation: TraceCorrelation
+    ): Promise<DistributedDiagnosis> {
+        const issues: DistributedIssue[] = [];
+        
+        // 1. 타임아웃 캐스케이드 검사
+        const timeoutCascades = this.detectTimeoutCascades(correlation);
+        issues.push(...timeoutCascades);
+        
+        // 2. 서비스 간 불일치 검사
+        const inconsistencies = this.detectInconsistencies(correlation);
+        issues.push(...inconsistencies);
+        
+        // 3. 분산 데드락 검사
+        const deadlocks = await this.detectDistributedDeadlocks(correlation);
+        issues.push(...deadlocks);
+        
+        // AI 진단
+        const prompt = `
+분산 시스템 트레이스를 분석해주세요:
+
+서비스 수: ${correlation.services.length}
+총 실행 시간: ${correlation.totalDuration}ms
+에러 발생: ${correlation.errors.length}
+
+트레이스 데이터:
+${JSON.stringify(correlation, null, 2)}
+
+다음을 진단해주세요:
+1. 근본 원인 서비스
+2. 에러 전파 경로
+3. 성능 병목 지점
+4. 해결 우선순위
+5. 장기적 개선 방안
+`;
+
+        const aiDiagnosis = await this.cursor.ai.generateCode(prompt);
+        
+        return {
+            issues,
+            rootCause: JSON.parse(aiDiagnosis).rootCause,
+            propagationPath: JSON.parse(aiDiagnosis).propagationPath,
+            recommendations: JSON.parse(aiDiagnosis).recommendations
+        };
+    }
+}
+
+// 예측적 버그 탐지
+export class PredictiveBugDetector {
+    private cursor: CursorAI;
+    private codeAnalyzer: CodeAnalyzer;
+    private historicalBugs: BugDatabase;
+    private ml: MachineLearningEngine;
+
+    async analyzeFutureRisks(codebase: string): Promise<RiskAnalysis> {
+        const risks: PotentialBug[] = [];
+        
+        // 1. 정적 분석으로 위험 패턴 탐지
+        const staticRisks = await this.performStaticAnalysis(codebase);
+        risks.push(...staticRisks);
+        
+        // 2. 과거 버그 패턴과 비교
+        const historicalPatterns = await this.matchHistoricalPatterns(codebase);
+        risks.push(...historicalPatterns);
+        
+        // 3. ML 모델로 잠재적 버그 예측
+        const mlPredictions = await this.ml.predictBugs(codebase);
+        risks.push(...mlPredictions);
+        
+        // 4. AI 종합 분석
+        const aiAnalysis = await this.performAIRiskAnalysis(codebase, risks);
+        
+        return {
+            risks: risks.sort((a, b) => b.probability - a.probability),
+            criticalPaths: aiAnalysis.criticalPaths,
+            preventiveMeasures: aiAnalysis.preventiveMeasures,
+            testSuggestions: await this.generateTestSuggestions(risks)
+        };
+    }
+
+    private async performStaticAnalysis(codebase: string): Promise<PotentialBug[]> {
+        const bugs: PotentialBug[] = [];
+        const files = await this.getSourceFiles(codebase);
+        
+        for (const file of files) {
+            const ast = await this.codeAnalyzer.parse(file);
+            
+            // 위험한 패턴 검사
+            ast.traverse({
+                // Null/Undefined 참조 위험
+                MemberExpression(path) {
+                    if (!path.node.optional && this.isNullableType(path.node.object)) {
+                        bugs.push({
+                            type: 'null-reference',
+                            file: file.path,
+                            line: path.node.loc.start.line,
+                            probability: 0.7,
+                            impact: 'runtime-error',
+                            description: 'Null 또는 undefined 참조 가능성',
+                            suggestion: 'Optional chaining (?.) 사용'
+                        });
+                    }
+                },
+                
+                // 무한 루프 위험
+                WhileStatement(path) {
+                    if (!this.hasBreakCondition(path.node)) {
+                        bugs.push({
+                            type: 'infinite-loop',
+                            file: file.path,
+                            line: path.node.loc.start.line,
+                            probability: 0.8,
+                            impact: 'performance',
+                            description: '무한 루프 가능성',
+                            suggestion: '명확한 종료 조건 추가'
+                        });
+                    }
+                },
+                
+                // 메모리 누수 위험
+                CallExpression(path) {
+                    if (this.isEventListenerAdd(path.node) && 
+                        !this.hasCorrespondingRemove(path)) {
+                        bugs.push({
+                            type: 'memory-leak',
+                            file: file.path,
+                            line: path.node.loc.start.line,
+                            probability: 0.6,
+                            impact: 'memory',
+                            description: '이벤트 리스너 메모리 누수',
+                            suggestion: 'removeEventListener 추가'
+                        });
+                    }
+                }
+            });
+        }
+        
+        return bugs;
+    }
+
+    private async performAIRiskAnalysis(
+        codebase: string, 
+        risks: PotentialBug[]
+    ): Promise<AIRiskAnalysis> {
+        const prompt = `
+코드베이스의 잠재적 위험을 분석해주세요:
+
+발견된 위험 요소:
+${JSON.stringify(risks.slice(0, 20), null, 2)}
+
+전체 통계:
+- 총 위험 요소: ${risks.length}
+- 높음: ${risks.filter(r => r.probability > 0.7).length}
+- 중간: ${risks.filter(r => r.probability >= 0.4 && r.probability <= 0.7).length}
+- 낮음: ${risks.filter(r => r.probability < 0.4).length}
+
+다음을 분석해주세요:
+1. 가장 위험한 코드 경로
+2. 시스템 전체에 미칠 영향
+3. 우선적으로 수정해야 할 항목
+4. 예방 전략
+5. 테스트 커버리지 강화 방안
+`;
+
+        const response = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(response);
+    }
+
+    async generateTestSuggestions(risks: PotentialBug[]): Promise<TestSuggestion[]> {
+        const suggestions: TestSuggestion[] = [];
+        
+        // 위험별 테스트 케이스 생성
+        for (const risk of risks.slice(0, 10)) { // 상위 10개
+            const prompt = `
+다음 잠재적 버그를 검증하는 테스트 케이스를 생성해주세요:
+
+버그 유형: ${risk.type}
+위치: ${risk.file}:${risk.line}
+설명: ${risk.description}
+확률: ${risk.probability}
+
+테스트 케이스를 Jest 형식으로 작성해주세요.
+`;
+
+            const testCode = await this.cursor.ai.generateCode(prompt);
+            
+            suggestions.push({
+                risk,
+                testCode,
+                framework: 'jest',
+                priority: risk.probability * this.getImpactScore(risk.impact)
+            });
+        }
+        
+        return suggestions.sort((a, b) => b.priority - a.priority);
+    }
+}
+
+// 실시간 디버깅 UI
+export class DebuggerUI {
+    private debugger: AIDebugger;
+    private websocket: WebSocket;
+    private visualization: DebugVisualization;
+
+    constructor() {
+        this.debugger = new AIDebugger();
+        this.visualization = new DebugVisualization();
+        this.setupRealtimeDebugging();
+    }
+
+    private setupRealtimeDebugging() {
+        // WebSocket으로 실시간 디버깅 정보 전송
+        this.websocket.on('connection', (socket) => {
+            // 실시간 변수 감시
+            socket.on('watch', async (expression) => {
+                const watcher = await this.debugger.createWatcher(expression);
+                watcher.on('change', (value) => {
+                    socket.emit('watchUpdate', { expression, value });
+                });
+            });
+            
+            // 조건부 브레이크포인트
+            socket.on('conditionalBreak', async (condition) => {
+                await this.debugger.setSmartBreakpoint(condition);
+            });
+            
+            // 시간 여행 디버깅
+            socket.on('timeTravel', async (targetState) => {
+                const result = await this.debugger.timeTravel(targetState);
+                socket.emit('timeTravelResult', result);
+            });
+        });
+    }
+
+    async visualizeExecutionFlow(functionName: string): Promise<string> {
+        const flow = await this.debugger.traceExecutionFlow(functionName);
+        
+        return `
+<div class="execution-flow">
+    <h3>실행 흐름: ${functionName}</h3>
+    
+    <div class="flow-diagram">
+        ${this.visualization.generateFlowDiagram(flow)}
+    </div>
+    
+    <div class="performance-metrics">
+        <h4>성능 메트릭</h4>
+        <ul>
+            <li>총 실행 시간: ${flow.totalDuration}ms</li>
+            <li>함수 호출 수: ${flow.functionCalls}</li>
+            <li>메모리 할당: ${flow.memoryAllocated}MB</li>
+        </ul>
+    </div>
+    
+    <div class="bottlenecks">
+        <h4>병목 지점</h4>
+        ${flow.bottlenecks.map(b => `
+            <div class="bottleneck">
+                <span class="location">${b.location}</span>
+                <span class="duration">${b.duration}ms</span>
+                <span class="percentage">${b.percentage}%</span>
+            </div>
+        `).join('')}
+    </div>
+    
+    <div class="ai-insights">
+        <h4>AI 인사이트</h4>
+        ${flow.insights.map(insight => `
+            <div class="insight ${insight.type}">
+                <i class="fas fa-${insight.icon}"></i>
+                ${insight.message}
+            </div>
+        `).join('')}
+    </div>
+</div>
+        `;
+    }
+}
+
+// 버그 자동 수정
+export class AutoBugFixer {
+    private cursor: CursorAI;
+    private testRunner: TestRunner;
+    private versionControl: VersionControl;
+
+    async attemptAutoFix(bug: DetectedBug): Promise<AutoFixResult> {
+        console.log(`🔧 자동 수정 시도: ${bug.type}`);
+        
+        // 1. 버그 유형별 수정 전략 선택
+        const strategy = this.selectFixStrategy(bug);
+        
+        // 2. AI로 수정 코드 생성
+        const fixedCode = await this.generateFix(bug, strategy);
+        
+        // 3. 수정 적용 (임시)
+        const backup = await this.createBackup(bug.file);
+        await this.applyFix(bug.file, fixedCode);
+        
+        // 4. 테스트 실행
+        const testResult = await this.testRunner.run();
+        
+        if (testResult.passed) {
+            // 5. 수정 확정
+            await this.versionControl.commit(
+                `fix: ${bug.type} in ${bug.file}:${bug.line}`,
+                fixedCode
+            );
+            
+            return {
+                success: true,
+                fixedCode,
+                testsPassed: true,
+                confidence: 0.9
+            };
+        } else {
+            // 롤백
+            await this.restore(backup);
+            
+            return {
+                success: false,
+                reason: 'Tests failed after fix',
+                testErrors: testResult.errors
+            };
+        }
+    }
+
+    private async generateFix(bug: DetectedBug, strategy: FixStrategy): Promise<string> {
+        const context = await this.gatherContext(bug);
+        
+        const prompt = `
+다음 버그를 수정해주세요:
+
+버그 정보:
+- 유형: ${bug.type}
+- 위치: ${bug.file}:${bug.line}
+- 설명: ${bug.description}
+
+원본 코드:
+\`\`\`javascript
+${context.originalCode}
+\`\`\`
+
+컨텍스트:
+${JSON.stringify(context.surroundingCode, null, 2)}
+
+수정 전략: ${strategy.approach}
+
+요구사항:
+1. 버그를 완전히 수정
+2. 기존 기능을 보존
+3. 코드 스타일 유지
+4. 성능 저하 없음
+`;
+
+        const fixedCode = await this.cursor.ai.generateCode(prompt);
+        return fixedCode;
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+
+                <h3>고급 디버깅 기법</h3>
+                <div class="advanced-debugging">
+                    <div class="debugging-techniques">
+                        <h4>시간 여행 디버깅과 상태 재현</h4>
+                        <pre><code>// debugger/TimeTravelDebugger.ts
+export class TimeTravelDebugger {
+    private stateSnapshots: StateSnapshot[] = [];
+    private maxSnapshots: number = 1000;
+    private recordingActive: boolean = false;
+    private cursor: CursorAI;
+
+    startRecording() {
+        this.recordingActive = true;
+        this.instrumentCode();
+        
+        console.log('⏺️ 시간 여행 디버깅 녹화 시작...');
+    }
+
+    private instrumentCode() {
+        // Proxy를 사용한 상태 변경 감지
+        const handler = {
+            set: (target: any, property: string, value: any) => {
+                if (this.recordingActive) {
+                    this.recordStateChange({
+                        timestamp: Date.now(),
+                        target,
+                        property,
+                        oldValue: target[property],
+                        newValue: value,
+                        stack: new Error().stack
+                    });
+                }
+                target[property] = value;
+                return true;
+            },
+            
+            deleteProperty: (target: any, property: string) => {
+                if (this.recordingActive) {
+                    this.recordStateChange({
+                        timestamp: Date.now(),
+                        target,
+                        property,
+                        oldValue: target[property],
+                        newValue: undefined,
+                        operation: 'delete',
+                        stack: new Error().stack
+                    });
+                }
+                delete target[property];
+                return true;
+            }
+        };
+        
+        // 전역 객체 프록시화
+        global.window = new Proxy(global.window || {}, handler);
+        global.document = new Proxy(global.document || {}, handler);
+    }
+
+    private recordStateChange(change: StateChange) {
+        const snapshot: StateSnapshot = {
+            id: this.generateSnapshotId(),
+            timestamp: change.timestamp,
+            changes: [change],
+            memoryUsage: process.memoryUsage(),
+            callStack: this.captureCallStack(),
+            asyncContext: this.captureAsyncContext()
+        };
+        
+        this.stateSnapshots.push(snapshot);
+        
+        // 메모리 관리
+        if (this.stateSnapshots.length > this.maxSnapshots) {
+            this.stateSnapshots.shift();
+        }
+        
+        // 중요한 변경 사항 분석
+        if (this.isSignificantChange(change)) {
+            this.analyzeStateChange(change);
+        }
+    }
+
+    async travelTo(timestamp: number): Promise<ApplicationState> {
+        const targetSnapshot = this.findNearestSnapshot(timestamp);
+        
+        if (!targetSnapshot) {
+            throw new Error('해당 시점의 스냅샷을 찾을 수 없습니다.');
+        }
+        
+        // 상태 복원
+        const restoredState = await this.restoreState(targetSnapshot);
+        
+        // 실행 컨텍스트 재현
+        await this.recreateExecutionContext(targetSnapshot);
+        
+        return restoredState;
+    }
+
+    async findBugOrigin(errorState: ErrorState): Promise<BugOrigin> {
+        // 에러 발생 시점의 스냅샷 찾기
+        const errorSnapshot = this.stateSnapshots.find(s => 
+            s.timestamp >= errorState.timestamp - 100 &&
+            s.timestamp <= errorState.timestamp + 100
+        );
+        
+        if (!errorSnapshot) {
+            throw new Error('에러 발생 시점의 스냅샷을 찾을 수 없습니다.');
+        }
+        
+        // 역방향 추적
+        let currentIndex = this.stateSnapshots.indexOf(errorSnapshot);
+        const suspiciousChanges: StateChange[] = [];
+        
+        while (currentIndex >= 0) {
+            const snapshot = this.stateSnapshots[currentIndex];
+            
+            // AI로 의심스러운 변경 사항 분석
+            const analysis = await this.analyzeSnapshotForBugs(snapshot, errorState);
+            
+            if (analysis.isSuspicious) {
+                suspiciousChanges.push(...snapshot.changes);
+                
+                if (analysis.isLikelyOrigin) {
+                    break;
+                }
+            }
+            
+            currentIndex--;
+        }
+        
+        // 근본 원인 분석
+        const rootCause = await this.analyzeRootCause(suspiciousChanges, errorState);
+        
+        return {
+            originSnapshot: this.stateSnapshots[currentIndex],
+            suspiciousChanges,
+            rootCause,
+            timeline: this.generateBugTimeline(currentIndex, errorSnapshot)
+        };
+    }
+
+    private async analyzeSnapshotForBugs(
+        snapshot: StateSnapshot, 
+        errorState: ErrorState
+    ): Promise<SnapshotAnalysis> {
+        const prompt = `
+상태 스냅샷을 분석하여 버그와의 연관성을 판단해주세요:
+
+에러 정보:
+${JSON.stringify(errorState, null, 2)}
+
+스냅샷 정보:
+- 시간: ${new Date(snapshot.timestamp).toISOString()}
+- 변경 사항: ${JSON.stringify(snapshot.changes, null, 2)}
+- 콜 스택: ${snapshot.callStack.slice(0, 5).join('\n')}
+
+다음을 판단해주세요:
+1. 이 변경이 에러와 관련있을 가능성 (0-1)
+2. 버그의 근본 원인일 가능성 (0-1)
+3. 의심스러운 패턴
+4. 추가 조사가 필요한 부분
+`;
+
+        const analysis = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(analysis);
+    }
+
+    async generateReplayScript(startTime: number, endTime: number): Promise<string> {
+        const snapshots = this.stateSnapshots.filter(s => 
+            s.timestamp >= startTime && s.timestamp <= endTime
+        );
+        
+        const replayScript = `
+// 자동 생성된 재현 스크립트
+// 시작: ${new Date(startTime).toISOString()}
+// 종료: ${new Date(endTime).toISOString()}
+
+async function replayExecution() {
+    const states = [];
+    
+${snapshots.map(snapshot => `
+    // ${new Date(snapshot.timestamp).toISOString()}
+    await delay(${snapshot.timestamp - (snapshots[0]?.timestamp || 0)});
+    ${snapshot.changes.map(change => 
+        this.generateReplayCommand(change)
+    ).join('\n    ')}
+    states.push(captureCurrentState());
+`).join('\n')}
+    
+    return states;
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function captureCurrentState() {
+    return {
+        timestamp: Date.now(),
+        dom: document.body.innerHTML,
+        globals: Object.keys(window),
+        memory: performance.memory
+    };
+}
+
+// 실행
+replayExecution().then(states => {
+    console.log('재현 완료:', states);
+});
+`;
+        
+        return replayScript;
+    }
+}
+
+// 비주얼 디버깅
+export class VisualDebugger {
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private debugger: AIDebugger;
+
+    async visualizeDataFlow(functionName: string): Promise<void> {
+        const flow = await this.debugger.traceDataFlow(functionName);
+        
+        // 데이터 흐름 시각화
+        this.clearCanvas();
+        
+        // 노드 그리기 (변수, 함수)
+        flow.nodes.forEach(node => {
+            this.drawNode(node);
+        });
+        
+        // 엣지 그리기 (데이터 흐름)
+        flow.edges.forEach(edge => {
+            this.drawEdge(edge);
+        });
+        
+        // 애니메이션
+        this.animateDataFlow(flow);
+    }
+
+    private drawNode(node: DataNode) {
+        const { x, y } = node.position;
+        const radius = 30;
+        
+        // 노드 타입별 색상
+        const colors = {
+            variable: '#3498db',
+            function: '#2ecc71',
+            parameter: '#f39c12',
+            return: '#e74c3c'
+        };
+        
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        this.ctx.fillStyle = colors[node.type] || '#95a5a6';
+        this.ctx.fill();
+        
+        // 라벨
+        this.ctx.fillStyle = '#fff';
+        this.ctx.font = '12px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(node.name, x, y);
+        
+        // 값 표시
+        if (node.value !== undefined) {
+            this.ctx.font = '10px Arial';
+            this.ctx.fillStyle = '#333';
+            this.ctx.fillText(String(node.value), x, y + radius + 10);
+        }
+    }
+
+    private animateDataFlow(flow: DataFlow) {
+        let currentStep = 0;
+        
+        const animate = () => {
+            if (currentStep >= flow.steps.length) {
+                currentStep = 0;
+            }
+            
+            const step = flow.steps[currentStep];
+            
+            // 현재 단계 하이라이트
+            this.highlightStep(step);
+            
+            // 데이터 이동 애니메이션
+            if (step.dataTransfer) {
+                this.animateDataTransfer(
+                    step.dataTransfer.from,
+                    step.dataTransfer.to,
+                    step.dataTransfer.value
+                );
+            }
+            
+            currentStep++;
+            
+            setTimeout(() => {
+                requestAnimationFrame(animate);
+            }, 1000);
+        };
+        
+        animate();
+    }
+
+    async visualizeMemoryLayout(snapshot: MemorySnapshot): Promise<void> {
+        const layout = this.analyzeMemoryLayout(snapshot);
+        
+        // 메모리 맵 그리기
+        this.drawMemoryMap(layout);
+        
+        // 객체 참조 그래프
+        this.drawReferenceGraph(layout.references);
+        
+        // 메모리 사용량 히트맵
+        this.drawMemoryHeatmap(layout.usage);
+        
+        // 가비지 컬렉션 예상
+        this.highlightGCCandidates(layout.gcCandidates);
+    }
+}
+
+// 협업 디버깅
+export class CollaborativeDebugger {
+    private session: DebugSession;
+    private participants: Map<string, Participant>;
+    private sharedBreakpoints: SharedBreakpoint[];
+
+    async createDebugSession(problem: string): Promise<string> {
+        this.session = {
+            id: this.generateSessionId(),
+            problem,
+            created: new Date(),
+            participants: [],
+            sharedState: {}
+        };
+        
+        // WebRTC 연결 설정
+        await this.setupPeerConnections();
+        
+        // 공유 디버깅 환경 초기화
+        await this.initializeSharedEnvironment();
+        
+        return this.session.id;
+    }
+
+    async shareBreakpoint(breakpoint: Breakpoint, annotation: string) {
+        const shared: SharedBreakpoint = {
+            ...breakpoint,
+            sharedBy: this.currentUser,
+            annotation,
+            timestamp: Date.now()
+        };
+        
+        this.sharedBreakpoints.push(shared);
+        
+        // 다른 참가자에게 브로드캐스트
+        this.broadcast('breakpoint-shared', shared);
+        
+        // AI 도우미 활성화
+        if (this.session.aiAssistant) {
+            const suggestion = await this.getAISuggestion(shared);
+            this.broadcast('ai-suggestion', suggestion);
+        }
+    }
+
+    async collaborativeAnalysis(error: Error): Promise<CollaborativeAnalysis> {
+        // 모든 참가자의 관점 수집
+        const perspectives = await this.collectPerspectives(error);
+        
+        // AI 종합 분석
+        const synthesis = await this.synthesizeAnalysis(perspectives);
+        
+        // 투표를 통한 해결책 우선순위 결정
+        const votedSolutions = await this.voteSolutions(synthesis.solutions);
+        
+        return {
+            error,
+            perspectives,
+            synthesis,
+            agreedSolution: votedSolutions[0],
+            actionItems: this.assignActionItems(votedSolutions)
+        };
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2><i class="fas fa-magic"></i> 자동 문제 해결</h2>
+                
+                <h3>AI 기반 자동 수정 시스템</h3>
+                <div class="auto-fix-system">
+                    <div class="auto-fix-implementation">
+                        <h4>스마트 버그 수정 엔진</h4>
+                        <pre><code>// fixer/SmartBugFixer.ts
+export class SmartBugFixer {
+    private cursor: CursorAI;
+    private testSuite: TestSuite;
+    private codebase: Codebase;
+
+    async fixBug(bug: Bug): Promise<FixResult> {
+        console.log(`🤖 버그 자동 수정 시작: ${bug.id}`);
+        
+        // 1. 버그 컨텍스트 수집
+        const context = await this.gatherBugContext(bug);
+        
+        // 2. 수정 전략 결정
+        const strategies = await this.determineFixStrategies(bug, context);
+        
+        // 3. 각 전략별로 수정 시도
+        for (const strategy of strategies) {
+            try {
+                const fix = await this.applyStrategy(strategy, bug, context);
+                
+                // 4. 수정 검증
+                const validation = await this.validateFix(fix);
+                
+                if (validation.success) {
+                    // 5. 회귀 테스트
+                    const regressionTest = await this.runRegressionTests(fix);
+                    
+                    if (regressionTest.passed) {
+                        return {
+                            success: true,
+                            fix,
+                            validation,
+                            confidence: this.calculateConfidence(fix, validation)
+                        };
+                    }
+                }
+            } catch (error) {
+                console.error(`전략 ${strategy.name} 실패:`, error);
+            }
+        }
+        
+        // 자동 수정 실패 시 수동 수정 가이드 제공
+        return {
+            success: false,
+            manualFixGuide: await this.generateManualFixGuide(bug, context)
+        };
+    }
+
+    private async determineFixStrategies(
+        bug: Bug, 
+        context: BugContext
+    ): Promise<FixStrategy[]> {
+        const strategies: FixStrategy[] = [];
+        
+        // 1. 패턴 기반 수정
+        if (this.knownPatterns.has(bug.type)) {
+            strategies.push({
+                name: 'pattern-based',
+                apply: async () => this.applyPatternFix(bug, context)
+            });
+        }
+        
+        // 2. AI 생성 수정
+        strategies.push({
+            name: 'ai-generated',
+            apply: async () => this.generateAIFix(bug, context)
+        });
+        
+        // 3. 유사 버그 참조 수정
+        const similarBugs = await this.findSimilarBugs(bug);
+        if (similarBugs.length > 0) {
+            strategies.push({
+                name: 'similarity-based',
+                apply: async () => this.applySimilarFix(bug, similarBugs[0])
+            });
+        }
+        
+        // 4. 점진적 수정
+        strategies.push({
+            name: 'incremental',
+            apply: async () => this.applyIncrementalFix(bug, context)
+        });
+        
+        return strategies;
+    }
+
+    private async generateAIFix(bug: Bug, context: BugContext): Promise<Fix> {
+        const prompt = `
+다음 버그를 수정하는 코드를 생성해주세요:
+
+버그 정보:
+- ID: ${bug.id}
+- 유형: ${bug.type}
+- 설명: ${bug.description}
+- 파일: ${bug.location.file}
+- 라인: ${bug.location.line}
+
+에러 메시지:
+${bug.errorMessage}
+
+스택 트레이스:
+${bug.stackTrace}
+
+현재 코드:
+\`\`\`${context.language}
+${context.buggyCode}
+\`\`\`
+
+주변 코드:
+\`\`\`${context.language}
+${context.surroundingCode}
+\`\`\`
+
+관련 테스트:
+\`\`\`${context.language}
+${context.relatedTests}
+\`\`\`
+
+요구사항:
+1. 버그를 완전히 수정
+2. 기존 테스트를 통과
+3. 새로운 버그를 만들지 않음
+4. 코드 스타일 유지
+5. 성능 저하 없음
+`;
+
+        const fixedCode = await this.cursor.ai.generateCode(prompt);
+        
+        // 수정 사항 파싱
+        const diff = this.generateDiff(context.buggyCode, fixedCode);
+        
+        return {
+            id: this.generateFixId(),
+            bugId: bug.id,
+            code: fixedCode,
+            diff,
+            explanation: await this.explainFix(bug, fixedCode),
+            confidence: 0.85
+        };
+    }
+
+    private async validateFix(fix: Fix): Promise<ValidationResult> {
+        const validation: ValidationResult = {
+            success: true,
+            tests: [],
+            issues: []
+        };
+        
+        // 1. 문법 검사
+        const syntaxCheck = await this.checkSyntax(fix.code);
+        if (!syntaxCheck.valid) {
+            validation.success = false;
+            validation.issues.push({
+                type: 'syntax',
+                message: syntaxCheck.error
+            });
+            return validation;
+        }
+        
+        // 2. 타입 검사
+        const typeCheck = await this.checkTypes(fix.code);
+        if (!typeCheck.valid) {
+            validation.issues.push({
+                type: 'type',
+                message: typeCheck.error,
+                severity: 'warning'
+            });
+        }
+        
+        // 3. 단위 테스트
+        const unitTests = await this.runUnitTests(fix);
+        validation.tests.push(...unitTests);
+        
+        if (unitTests.some(t => !t.passed)) {
+            validation.success = false;
+        }
+        
+        // 4. 통합 테스트
+        const integrationTests = await this.runIntegrationTests(fix);
+        validation.tests.push(...integrationTests);
+        
+        // 5. 성능 검증
+        const perfCheck = await this.checkPerformance(fix);
+        if (perfCheck.degraded) {
+            validation.issues.push({
+                type: 'performance',
+                message: `성능이 ${perfCheck.degradation}% 저하되었습니다.`,
+                severity: 'warning'
+            });
+        }
+        
+        return validation;
+    }
+
+    async generateFixReport(bug: Bug, fix: Fix): Promise<string> {
+        const validation = fix.validation;
+        const confidence = fix.confidence;
+        
+        return `
+# 버그 수정 보고서
+
+## 버그 정보
+- **ID**: ${bug.id}
+- **유형**: ${bug.type}
+- **심각도**: ${bug.severity}
+- **위치**: ${bug.location.file}:${bug.location.line}
+
+## 수정 내용
+### 변경 사항
+\`\`\`diff
+${fix.diff}
+\`\`\`
+
+### 설명
+${fix.explanation}
+
+## 검증 결과
+- **신뢰도**: ${(confidence * 100).toFixed(1)}%
+- **테스트 통과**: ${validation.tests.filter(t => t.passed).length}/${validation.tests.length}
+- **성능 영향**: ${validation.performanceImpact || '없음'}
+
+## 적용 방법
+1. 변경 사항 검토
+2. 로컬에서 테스트 실행
+3. 코드 리뷰 요청
+4. 배포
+
+## 주의 사항
+${fix.warnings?.map(w => `- ${w}`).join('\n') || '없음'}
+`;
+    }
+}
+
+// 예방적 버그 탐지
+export class PreventiveBugDetection {
+    private analyzer: CodeAnalyzer;
+    private ml: MLModel;
+    private cursor: CursorAI;
+
+    async scanForPotentialBugs(codebase: string): Promise<PotentialBugReport> {
+        const potentialBugs: PotentialBug[] = [];
+        
+        // 1. 정적 분석
+        const staticIssues = await this.performStaticAnalysis(codebase);
+        potentialBugs.push(...staticIssues);
+        
+        // 2. 패턴 매칭
+        const patternIssues = await this.detectDangerousPatterns(codebase);
+        potentialBugs.push(...patternIssues);
+        
+        // 3. ML 예측
+        const mlPredictions = await this.predictBugsWithML(codebase);
+        potentialBugs.push(...mlPredictions);
+        
+        // 4. AI 종합 분석
+        const aiInsights = await this.getAIInsights(codebase, potentialBugs);
+        
+        return {
+            potentialBugs: potentialBugs.sort((a, b) => b.risk - a.risk),
+            summary: this.generateSummary(potentialBugs),
+            recommendations: aiInsights.recommendations,
+            preventiveMeasures: await this.suggestPreventiveMeasures(potentialBugs)
+        };
+    }
+
+    private async detectDangerousPatterns(codebase: string): Promise<PotentialBug[]> {
+        const patterns = [
+            {
+                name: 'race-condition',
+                regex: /setState\s*\(\s*{\s*\.\.\.this\.state/g,
+                risk: 0.8,
+                description: 'setState에서 this.state 직접 참조 (React)',
+                fix: 'setState의 함수형 업데이트 사용'
+            },
+            {
+                name: 'memory-leak-timer',
+                regex: /setInterval|setTimeout(?!.*clear)/g,
+                risk: 0.6,
+                description: '클리어되지 않는 타이머',
+                fix: 'componentWillUnmount나 cleanup에서 타이머 정리'
+            },
+            {
+                name: 'sql-injection',
+                regex: /query\s*\(\s*['"`].*\$\{.*\}.*['"`]/g,
+                risk: 0.9,
+                description: 'SQL 인젝션 취약점',
+                fix: 'Prepared statements 사용'
+            },
+            {
+                name: 'undefined-check',
+                regex: /if\s*\(\s*\w+\s*=\s*undefined\s*\)/g,
+                risk: 0.7,
+                description: '잘못된 undefined 체크',
+                fix: '=== 사용'
+            }
+        ];
+        
+        const issues: PotentialBug[] = [];
+        const files = await this.getSourceFiles(codebase);
+        
+        for (const file of files) {
+            const content = await fs.readFile(file, 'utf-8');
+            
+            for (const pattern of patterns) {
+                const matches = content.matchAll(pattern.regex);
+                
+                for (const match of matches) {
+                    const line = content.substring(0, match.index).split('\n').length;
+                    
+                    issues.push({
+                        type: pattern.name,
+                        file,
+                        line,
+                        risk: pattern.risk,
+                        description: pattern.description,
+                        suggestedFix: pattern.fix,
+                        codeSnippet: this.extractSnippet(content, line)
+                    });
+                }
+            }
+        }
+        
+        return issues;
+    }
+
+    private async getAIInsights(
+        codebase: string, 
+        potentialBugs: PotentialBug[]
+    ): Promise<AIInsights> {
+        const prompt = `
+코드베이스의 잠재적 버그를 분석하고 인사이트를 제공해주세요:
+
+발견된 잠재적 버그 요약:
+${this.summarizeBugs(potentialBugs)}
+
+코드베이스 통계:
+- 총 파일 수: ${await this.countFiles(codebase)}
+- 총 라인 수: ${await this.countLines(codebase)}
+- 주요 언어: ${await this.detectLanguages(codebase)}
+
+다음을 분석해주세요:
+1. 가장 위험한 패턴
+2. 시스템 전체적인 취약점
+3. 아키텍처 개선 제안
+4. 코드 품질 향상 방안
+5. 장기적 기술 부채 관리
+`;
+
+        const response = await this.cursor.ai.generateCode(prompt);
+        return JSON.parse(response);
+    }
+
+    async suggestPreventiveMeasures(
+        potentialBugs: PotentialBug[]
+    ): Promise<PreventiveMeasure[]> {
+        const measures: PreventiveMeasure[] = [];
+        
+        // 버그 유형별 그룹화
+        const bugsByType = this.groupBugsByType(potentialBugs);
+        
+        for (const [type, bugs] of bugsByType) {
+            const measure = await this.generatePreventiveMeasure(type, bugs);
+            measures.push(measure);
+        }
+        
+        // 전체적인 예방 조치
+        measures.push({
+            type: 'general',
+            title: '코드 리뷰 프로세스 강화',
+            description: 'AI 기반 자동 코드 리뷰 도입',
+            implementation: `
+// .github/workflows/ai-review.yml
+name: AI Code Review
+on: [pull_request]
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: AI Review
+        run: |
+          npx @cursor/cli review \\
+            --strict \\
+            --check-patterns \\
+            --suggest-fixes
+`,
+            estimatedImpact: 'high',
+            effort: 'low'
+        });
+        
+        return measures.sort((a, b) => {
+            const impactScore = { high: 3, medium: 2, low: 1 };
+            const effortScore = { low: 3, medium: 2, high: 1 };
+            
+            return (impactScore[b.estimatedImpact] * effortScore[b.effort]) -
+                   (impactScore[a.estimatedImpact] * effortScore[a.effort]);
+        });
+    }
+}
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="practice-section">
+                <h2><i class="fas fa-laptop-code"></i> 실습: AI 디버깅 도구 구축</h2>
+                
+                <div class="exercise">
+                    <h3>과제: 지능형 디버깅 플랫폼 개발</h3>
+                    <p>다음 요구사항을 만족하는 AI 기반 디버깅 시스템을 구축하세요:</p>
+                    
+                    <div class="requirements">
+                        <h4>요구사항:</h4>
+                        <ul>
+                            <li>실시간 버그 탐지와 알림</li>
+                            <li>자동 근본 원인 분석</li>
+                            <li>시간 여행 디버깅 기능</li>
+                            <li>AI 기반 수정 제안</li>
+                            <li>협업 디버깅 세션</li>
+                            <li>버그 예방 리포트 생성</li>
+                        </ul>
+                    </div>
+
+                    <div class="hints">
+                        <h4>힌트:</h4>
+                        <ul>
+                            <li>Chrome DevTools Protocol 활용</li>
+                            <li>Source Map으로 원본 코드 추적</li>
+                            <li>WebSocket으로 실시간 협업</li>
+                            <li>Proxy로 상태 변경 감지</li>
+                            <li>AST 분석으로 패턴 탐지</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary-section">
+                <h2><i class="fas fa-bookmark"></i> 핵심 요약</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>버그 탐지</h3>
+                        <ul>
+                            <li>실시간 에러 분석</li>
+                            <li>패턴 기반 탐지</li>
+                            <li>예측적 버그 발견</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>원인 분석</h3>
+                        <ul>
+                            <li>스택 트레이스 분석</li>
+                            <li>실행 컨텍스트 추적</li>
+                            <li>AI 근본 원인 진단</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>디버깅 기법</h3>
+                        <ul>
+                            <li>시간 여행 디버깅</li>
+                            <li>비주얼 디버깅</li>
+                            <li>분산 시스템 추적</li>
+                        </ul>
+                    </div>
+                    <div class="summary-item">
+                        <h3>자동 수정</h3>
+                        <ul>
+                            <li>AI 코드 생성</li>
+                            <li>자동 검증</li>
+                            <li>안전한 적용</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="progress-indicator">
+                <h3>진행 상황</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 90%;"></div>
+                </div>
+                <span>27/30 강의 (90%)</span>
+            </div>
+
+            <nav class="lesson-nav-sidebar">
+                <h3>전체 강의</h3>
+                <ul>
+                    <li><a href="lesson25.html">제25강: 마이그레이션 도구</a></li>
+                    <li><a href="lesson26.html">제26강: 성능 프로파일링</a></li>
+                    <li class="current">제27강: AI 디버깅 도구</li>
+                    <li><a href="lesson28.html">제28강: 프로젝트 자동화</a></li>
+                    <li><a href="lesson29.html">제29강: AI 개발 생태계</a></li>
+                </ul>
+            </nav>
+
+            <div class="study-tips">
+                <h3>학습 팁</h3>
+                <ul>
+                    <li>디버깅은 체계적인 접근이 중요합니다</li>
+                    <li>로그와 브레이크포인트를 적극 활용하세요</li>
+                    <li>문제를 재현할 수 있어야 해결할 수 있습니다</li>
+                    <li>근본 원인을 찾는 것이 중요합니다</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../assets/lesson-script.js"></script>
+</body>
+</html>
