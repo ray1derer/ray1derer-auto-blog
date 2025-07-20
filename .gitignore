@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Development logs
+dev.log
+*.log
+
+# Editor directories
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+
+# Playwright test results
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Screenshots (개발 중 테스트용)
+/public/screenshots/test/

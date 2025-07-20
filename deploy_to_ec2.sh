@@ -8,7 +8,7 @@ NC='\033[0m' # No Color
 
 # EC2 정보
 EC2_IP=$1
-KEY_PATH="~/.ssh/your-key.pem"  # SSH 키 경로를 수정하세요
+KEY_PATH="~/.ssh/artisan.pem"  # Artisan 서버 SSH 키
 
 if [ -z "$EC2_IP" ]; then
     echo -e "${RED}사용법: ./deploy_to_ec2.sh [EC2-IP-주소]${NC}"
@@ -18,9 +18,8 @@ fi
 echo -e "${GREEN}🚀 ray1derer-auto-blog EC2 배포 시작${NC}"
 echo -e "${YELLOW}대상 서버: $EC2_IP${NC}"
 
-# 1. 로컬에서 빌드
-echo -e "${GREEN}📦 프로젝트 빌드 중...${NC}"
-npm run build
+# 1. 로컬 빌드 스킵 (Docker에서 빌드)
+echo -e "${GREEN}📦 프로젝트 준비 중...${NC}"
 
 # 2. 프로젝트 압축
 echo -e "${GREEN}📦 프로젝트 압축 중...${NC}"
@@ -38,13 +37,13 @@ scp -i $KEY_PATH ray1derer-auto-blog.tar.gz ubuntu@$EC2_IP:~/
 # 4. EC2에서 배포 실행
 echo -e "${GREEN}🔧 EC2에서 배포 스크립트 실행 중...${NC}"
 ssh -i $KEY_PATH ubuntu@$EC2_IP << 'EOF'
-    # 기존 컨테이너 중지
-    cd ray1derer-auto-blog 2>/dev/null && docker-compose down || true
+    # 기존 컨테이너 완전 정리
+    cd ray1derer-auto-blog 2>/dev/null && docker-compose down -v || true
+    docker system prune -af || true
     
-    # 백업
-    if [ -d "ray1derer-auto-blog" ]; then
-        sudo mv ray1derer-auto-blog ray1derer-auto-blog.backup.$(date +%Y%m%d_%H%M%S)
-    fi
+    # 기존 디렉토리 완전 삭제
+    sudo rm -rf ray1derer-auto-blog
+    sudo rm -rf ray1derer-auto-blog.backup.*
     
     # 압축 해제
     mkdir ray1derer-auto-blog
@@ -54,7 +53,8 @@ ssh -i $KEY_PATH ubuntu@$EC2_IP << 'EOF'
     # 환경 변수 파일 생성 (필요시)
     cat > .env << EOL
 NODE_ENV=production
-DATABASE_URL=your_database_url_here
+DATABASE_URL=postgresql://localhost:5432/ray1derer_blog
+NEXT_PUBLIC_APP_URL=http://54.180.94.235
 EOL
     
     # Docker 빌드 및 실행

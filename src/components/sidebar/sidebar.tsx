@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { 
   Home,
   FileText,
@@ -103,12 +104,15 @@ export function Sidebar({ className }: SidebarProps) {
   ]
 
   return (
-    <div className={cn("pb-12 min-h-screen", className)}>
+    <div className={cn("pb-12 min-h-screen bg-gray-50 dark:bg-gray-900", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            Ray1derer Auto Blog
-          </h2>
+          <div className="flex items-center justify-between mb-2 px-4">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Ray1derer Auto Blog
+            </h2>
+            <ThemeToggle />
+          </div>
           <div className="px-3">
             <Link href="/posts/new">
               <Button className="w-full justify-start mb-4" size="sm">
@@ -269,7 +273,7 @@ export function Sidebar({ className }: SidebarProps) {
                               setAddingCategory(false)
                             }
                           }}
-                          className="flex-1 px-2 py-1 text-sm border rounded"
+                          className="flex-1 px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                           placeholder="카테고리 이름"
                           autoFocus
                         />

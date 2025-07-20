@@ -1,0 +1,87 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+    
+    - name: Deploy to EC2
+      env:
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USER: ubuntu
+        EC2_KEY: ${{ secrets.EC2_SSH_KEY }}
+      run: |
+        # SSH 키 설정
+        echo "$EC2_KEY" > deploy_key.pem
+        chmod 600 deploy_key.pem
+        
+        # 프로젝트 압축
+        tar -czf deploy.tar.gz \
+          --exclude='node_modules' \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='.next' \
+          --exclude='.env.local' \
+          --exclude='*.log' \
+          .
+        
+        # EC2로 파일 전송
+        scp -o StrictHostKeyChecking=no -i deploy_key.pem \
+          deploy.tar.gz $EC2_USER@$EC2_HOST:~/
+        
+        # EC2에서 배포 실행
+        ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << 'EOF'
+          # 기존 컨테이너 정리
+          cd ray1derer-auto-blog 2>/dev/null && docker-compose down -v || true
+          docker system prune -af || true
+          
+          # 기존 디렉토리 삭제
+          sudo rm -rf ray1derer-auto-blog
+          
+          # 새 디렉토리 생성 및 압축 해제
+          mkdir ray1derer-auto-blog
+          tar -xzf deploy.tar.gz -C ray1derer-auto-blog
+          cd ray1derer-auto-blog
+          
+          # 환경 변수 설정
+          cat > .env << EOL
+          NODE_ENV=production
+          DATABASE_URL=postgresql://localhost:5432/ray1derer_blog
+          NEXT_PUBLIC_APP_URL=http://${{ secrets.EC2_HOST }}
+        EOL
+          
+          # Docker 빌드 및 실행
+          docker-compose build
+          docker-compose up -d
+          
+          # 상태 확인
+          docker-compose ps
+          
+          # 정리
+          cd ..
+          rm deploy.tar.gz
+        EOF
+        
+        # 로컬 정리
+        rm deploy_key.pem deploy.tar.gz
+    
+    - name: Health check
+      run: |
+        sleep 30
+        curl -f http://${{ secrets.EC2_HOST }}:3000 || exit 1
+        echo "Deployment successful! 🎉"

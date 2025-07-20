@@ -124,7 +124,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-3">
             {recentPosts.map((post) => (
-              <div key={post.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+              <div key={post.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                 <div className="flex-1">
                   <h4 className="font-medium">{post.title}</h4>
                   <div className="flex items-center gap-2 mt-1">
@@ -173,7 +173,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-3">
             {upcomingSchedule.map((schedule) => (
-              <div key={schedule.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+              <div key={schedule.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                 <div className="flex-1">
                   <h4 className="font-medium">{schedule.title}</h4>
                   <div className="flex items-center gap-2 mt-1">
@@ -210,28 +210,28 @@ export default function Home() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link href="/categories/lectures/notion">
-                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
                   <h3 className="font-semibold">노션</h3>
                   <p className="text-2xl font-bold mt-2">{notionLessons.length}</p>
                   <p className="text-xs text-muted-foreground">강좌</p>
                 </div>
               </Link>
               <Link href="/categories/lectures/obsidian">
-                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
                   <h3 className="font-semibold">옵시디언</h3>
                   <p className="text-2xl font-bold mt-2">{obsidianLessons.length}</p>
                   <p className="text-xs text-muted-foreground">강좌</p>
                 </div>
               </Link>
               <Link href="/categories/lectures/cursor-ai">
-                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
                   <h3 className="font-semibold">커서 AI</h3>
                   <p className="text-2xl font-bold mt-2">{cursorLessons.length}</p>
                   <p className="text-xs text-muted-foreground">강좌</p>
                 </div>
               </Link>
               <Link href="/categories/lectures/claude-ai">
-                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="text-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
                   <h3 className="font-semibold">클로드 AI</h3>
                   <p className="text-2xl font-bold mt-2">{claudeLessons.length}</p>
                   <p className="text-xs text-muted-foreground">강좌</p>
