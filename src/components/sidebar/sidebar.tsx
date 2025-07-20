@@ -17,7 +17,8 @@ import {
   ChevronDown,
   Plus,
   Minus,
-  Layers
+  Layers,
+  Newspaper
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { getCategories, saveCategory, deleteCategory, Category } from "@/lib/storage"
@@ -84,6 +85,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: "예약 발행",
       href: "/schedule",
       icon: <Calendar className="h-4 w-4" />
+    },
+    {
+      title: "AI 뉴스",
+      href: "/ai-news",
+      icon: <Newspaper className="h-4 w-4" />
     },
     {
       title: "플랫폼 연동",
