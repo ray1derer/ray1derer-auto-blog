@@ -1,74 +1,150 @@
-# Ray1derer Auto Blog 프로젝트 설명서
+# Ray1derer Auto Blog - 완전 가이드
 
-## 프로젝트 개요
+## 📋 목차
+- [프로젝트 개요](#프로젝트-개요)
+- [AWS 서버 정보](#aws-서버-정보)
+- [프로젝트 기능](#프로젝트-기능)
+- [기술 스택](#기술-스택)
+- [서버 접속 방법](#서버-접속-방법)
+- [배포 관리](#배포-관리)
+- [로컬 개발](#로컬-개발)
+- [문제 해결](#문제-해결)
+
+---
+
+## 🚀 프로젝트 개요
 Ray1derer Auto Blog는 AI 기반 자동 블로그 시스템으로, 다양한 플랫폼에 콘텐츠를 자동으로 발행하고 관리할 수 있는 통합 블로그 관리 플랫폼입니다.
 
-## 주요 기능
-
-### 1. 포스트 관리
-- **마크다운 자동 변환**: 일반 텍스트로 작성하면 자동으로 HTML로 변환
-- **실시간 미리보기**: 작성 중인 내용을 실시간으로 확인
-- **카테고리 관리**: 동적 카테고리 생성 및 관리
-- **태그 시스템**: 포스트에 태그 추가 및 검색 기능
-
-### 2. AI 기능
-- **AI 자동 스크린샷**: 콘텐츠에 맞는 스크린샷 자동 생성
-- **스크린샷 갤러리**: 생성된 스크린샷 관리 및 재사용
-- **이미지 자동 추가**: AI가 콘텐츠에 적합한 이미지 추천
-
-### 3. 강좌 관리
-- **노션 강좌**: 30개 강좌
-- **옵시디언 강좌**: 35개 강좌
-- **커서 AI 강좌**: 30개 강좌
-- **클로드 AI 강좌**: 40개 강좌
-
-### 4. 멀티 플랫폼 발행
-- 티스토리
-- 네이버 블로그
-- 브런치
-- 워드프레스
-- 미디엄
-- 벨로그
-
-### 5. 예약 발행
-- 날짜와 시간 지정하여 자동 발행
-- 여러 플랫폼에 동시 발행 가능
-- 발행 상태 실시간 확인
-
-## 기술 스택
-- **프론트엔드**: Next.js 15, TypeScript, Tailwind CSS
-- **UI 컴포넌트**: Shadcn/ui
-- **상태 관리**: React Hooks, LocalStorage
-- **배포**: Docker, AWS EC2
-
-## 프로젝트 구조
+### 🌐 실제 서비스 URL
 ```
-ray1derer-auto-blog/
-├── src/
-│   ├── app/               # Next.js 앱 라우터
-│   ├── components/        # React 컴포넌트
-│   └── lib/              # 유틸리티 함수
-├── public/               # 정적 파일
-│   ├── notion-lessons/   # 노션 강좌 HTML
-│   ├── obsidian-lessons/ # 옵시디언 강좌 HTML
-│   ├── cursor-lessons/   # 커서 AI 강좌 HTML
-│   └── claude-lessons/   # 클로드 AI 강좌 HTML
-└── package.json          # 프로젝트 설정
+http://43.203.57.64:3000
 ```
 
-## 주요 페이지
-- `/` - 대시보드
-- `/posts` - 포스트 관리
-- `/posts/new` - 새 포스트 작성
-- `/schedule` - 예약 발행 관리
-- `/platforms` - 플랫폼 연동
-- `/categories/[category]` - 카테고리별 포스트
+### 📦 GitHub Repository
+```
+https://github.com/ray1derer/ray1derer-auto-blog.git
+```
 
-## 설치 및 실행
+---
+
+## 🖥️ AWS 서버 정보
+
+### EC2 인스턴스 정보
+| 항목 | 값 |
+|------|-----|
+| **인스턴스 ID** | i-0978272d24308e91e |
+| **인스턴스 유형** | t2.small |
+| **퍼블릭 IP** | 43.203.57.64 |
+| **리전** | ap-northeast-2 (서울) |
+| **AMI** | ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610 |
+| **스토리지** | 30GB (gp3) |
+| **보안 그룹** | 포트 22(SSH), 80(HTTP), 3000(Node.js) 열림 |
+
+### SSH 키 파일 위치
+```
+G:\내 드라이브\CLADE PROJECT\KEY\artisan.pem
+```
+
+### 서버 사용자 정보
+- **사용자명**: ubuntu
+- **프로젝트 경로**: /home/ubuntu/blog
+
+---
+
+## 🔑 서버 접속 방법
+
+### 1. SSH 접속 (Windows)
+```bash
+ssh -i "G:\내 드라이브\CLADE PROJECT\KEY\artisan.pem" ubuntu@43.203.57.64
+```
+
+### 2. SSH 접속 (Mac/Linux)
+```bash
+ssh -i "/path/to/artisan.pem" ubuntu@43.203.57.64
+```
+
+### 3. 접속 후 프로젝트 디렉토리로 이동
+```bash
+cd ~/blog
+```
+
+---
+
+## 📊 서버 소프트웨어 정보
+
+### 설치된 소프트웨어
+- **OS**: Ubuntu 24.04.2 LTS
+- **Node.js**: v20.19.4
+- **npm**: v10.8.2
+- **PM2**: 최신 버전 (프로세스 매니저)
+- **Docker**: v28.3.2
+- **nginx**: v1.24.0
+- **Git**: v2.43.0
+
+---
+
+## 🚀 배포 관리
+
+### PM2 명령어
+```bash
+# 상태 확인
+pm2 status
+
+# 로그 보기
+pm2 logs blog
+
+# 재시작
+pm2 restart blog
+
+# 중지
+pm2 stop blog
+
+# 시작
+pm2 start blog
+
+# 서버 재부팅 시 자동 시작 설정
+pm2 startup
+pm2 save
+```
+
+### 코드 업데이트 방법
+```bash
+# 서버 접속
+ssh -i "G:\내 드라이브\CLADE PROJECT\KEY\artisan.pem" ubuntu@43.203.57.64
+
+# 프로젝트 디렉토리로 이동
+cd ~/blog
+
+# 최신 코드 가져오기
+git pull origin main
+
+# 의존성 설치
+npm install
+
+# PM2로 재시작
+pm2 restart blog
+```
+
+### 환경 변수 설정
+```bash
+# .env.local 파일 편집
+nano .env.local
+
+# 다음 내용 포함
+NEXT_PUBLIC_API_URL=http://43.203.57.64:3000
+DATABASE_URL=postgresql://postgres:dbpassword@db:5432/blog
+NEXTAUTH_URL=http://43.203.57.64
+NEXTAUTH_SECRET=supersecretkey123
+```
+
+---
+
+## 💻 로컬 개발
 
 ### 1. 프로젝트 클론
 ```bash
-cd "/Users/ray1derer/Library/CloudStorage/GoogleDrive-ray1derer@gmail.com/내 드라이브/CLADE PROJECT/GITHUB/ray1derer-auto-blog"
+git clone https://github.com/ray1derer/ray1derer-auto-blog.git
+cd ray1derer-auto-blog
 ```
 
 ### 2. 의존성 설치
@@ -76,68 +152,149 @@ cd "/Users/ray1derer/Library/CloudStorage/GoogleDrive-ray1derer@gmail.com/내 �
 npm install
 ```
 
-### 3. 개발 서버 실행
+### 3. Prisma 설정 (데이터베이스 사용 시)
+```bash
+npm install @prisma/client prisma
+npx prisma generate
+```
+
+### 4. 개발 서버 실행
 ```bash
 npm run dev
 ```
 
-### 4. 브라우저에서 접속
+### 5. 브라우저에서 접속
 ```
 http://localhost:3000
 ```
 
-## 사용 방법
+---
 
-### 1. 새 포스트 작성
-1. 사이드바에서 "새 포스트" 버튼 클릭
-2. 제목, 설명, 카테고리 입력
-3. 마크다운 형식으로 내용 작성
-4. 실시간 미리보기로 확인
-5. "임시 저장" 또는 "예약 발행" 클릭
+## 🛠️ 프로젝트 기능
 
-### 2. 카테고리 추가
-1. 사이드바의 "블로그 관리" 섹션 펼치기
-2. "카테고리 추가" 버튼 클릭
-3. 카테고리 이름 입력 후 "추가"
+### 1. 포스트 관리
+- 마크다운 자동 변환
+- 실시간 미리보기
+- 카테고리 관리 (편집/삭제 가능)
+- 태그 시스템
 
-### 3. 예약 발행
-1. 포스트 작성 또는 편집 페이지에서 "예약 발행" 클릭
-2. 발행할 날짜와 시간 선택
-3. 발행할 플랫폼 선택
-4. "예약하기" 클릭
+### 2. AI 기능
+- AI 자동 스크린샷
+- 스크린샷 갤러리
+- 이미지 자동 추가
 
-## 마크다운 문법 가이드
-- `# 제목 1` → 큰 제목
-- `## 제목 2` → 중간 제목
-- `### 제목 3` → 작은 제목
-- `**굵은 글씨**` → **굵은 글씨**
-- `*기울임*` → *기울임*
-- `[링크](URL)` → 링크 추가
-- `![이미지](URL)` → 이미지 추가
-- `` `코드` `` → 인라인 코드
-- `* 항목` → 리스트
-- `1. 항목` → 번호 리스트
+### 3. 강좌 관리
+- 노션 강좌: 30개
+- 옵시디언 강좌: 35개
+- 커서 AI 강좌: 30개
+- 클로드 AI 강좌: 40개
 
-## 문제 해결
-
-### 포스트가 저장되지 않을 때
-- 브라우저의 로컬 스토리지를 확인
-- 개발자 도구(F12) → Application → Local Storage
-
-### 카테고리가 표시되지 않을 때
-- 페이지 새로고침 (F5)
-- 사이드바의 "블로그 관리" 섹션 재확인
-
-## 향후 계획
-- [ ] 실제 플랫폼 API 연동
-- [ ] 이미지 업로드 기능
-- [ ] 통계 대시보드 개선
-- [ ] SEO 최적화
-- [ ] 다크 모드 지원
-
-## 라이선스
-이 프로젝트는 개인 사용 목적으로 개발되었습니다.
+### 4. 멀티 플랫폼 발행
+- 티스토리, 네이버 블로그, 브런치
+- 워드프레스, 미디엄, 벨로그
 
 ---
-작성일: 2025년 7월 13일
-작성자: Ray1derer
+
+## 🏗️ 프로젝트 구조
+```
+ray1derer-auto-blog/
+├── src/
+│   ├── app/               # Next.js 15 앱 라우터
+│   ├── components/        # React 컴포넌트
+│   └── lib/              # 유틸리티 함수
+├── public/               # 정적 파일
+│   ├── notion-lessons/   # 노션 강좌 HTML
+│   ├── obsidian-lessons/ # 옵시디언 강좌 HTML
+│   ├── cursor-lessons/   # 커서 AI 강좌 HTML
+│   └── claude-lessons/   # 클로드 AI 강좌 HTML
+├── prisma/              # Prisma 스키마
+├── .env.local           # 환경 변수
+└── package.json         # 프로젝트 설정
+```
+
+---
+
+## 🐛 문제 해결
+
+### 서버가 응답하지 않을 때
+```bash
+# PM2 상태 확인
+pm2 status
+
+# 로그 확인
+pm2 logs blog --lines 50
+
+# 재시작
+pm2 restart blog
+```
+
+### 포트 충돌 시
+```bash
+# 3000번 포트 사용 중인 프로세스 확인
+sudo lsof -i :3000
+
+# 프로세스 종료
+sudo kill -9 [PID]
+```
+
+### nginx 설정 문제
+```bash
+# nginx 설정 테스트
+sudo nginx -t
+
+# nginx 재시작
+sudo systemctl restart nginx
+```
+
+---
+
+## 🔐 보안 정보
+
+### AWS 계정
+- **계정 ID**: 931318540685
+- **리전**: ap-northeast-2 (서울)
+
+### 중요 파일 위치
+- **SSH 키**: `G:\내 드라이브\CLADE PROJECT\KEY\artisan.pem`
+- **로컬 프로젝트**: `C:\Users\RAY1DERER\Documents\github-projects\ray1derer-auto-blog`
+
+---
+
+## 📝 추가 참고 문서
+- [AWS 배포 가이드](./AWS_DEPLOYMENT_README.md)
+- [EC2 새 인스턴스 가이드](./EC2_새_인스턴스_가이드.md)
+- [서버 정보](./SERVER_INFO.md)
+
+---
+
+## 🚀 빠른 시작 가이드
+
+### 새로운 Claude가 이 프로젝트를 이어받을 때:
+
+1. **서버 접속**
+   ```bash
+   ssh -i "G:\내 드라이브\CLADE PROJECT\KEY\artisan.pem" ubuntu@43.203.57.64
+   ```
+
+2. **프로젝트 상태 확인**
+   ```bash
+   cd ~/blog
+   pm2 status
+   ```
+
+3. **코드 수정 후 배포**
+   ```bash
+   git pull origin main
+   npm install
+   pm2 restart blog
+   ```
+
+4. **브라우저에서 확인**
+   ```
+   http://43.203.57.64:3000
+   ```
+
+---
+
+**최종 업데이트**: 2025년 7월 21일
+**작성자**: Ray1derer with Claude
