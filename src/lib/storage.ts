@@ -249,39 +249,16 @@ export const getCategories = (): Category[] => {
 export const saveCategory = (category: Category) => {
   if (typeof window === 'undefined') return
   
-  const categories = localStorage.getItem(CATEGORY_KEY)
-  const savedCategories = categories ? JSON.parse(categories) : []
+  const categories = getCategories()
+  const existingIndex = categories.findIndex(c => c.id === category.id)
   
-  // 기본 카테고리들
-  const defaultCategories: Category[] = [
-    { id: 'notion', name: '노션', slug: 'notion' },
-    { id: 'obsidian', name: '옵시디언', slug: 'obsidian' },
-    { id: 'cursor-ai', name: '커서 AI', slug: 'cursor-ai' },
-    { id: 'claude-ai', name: '클로드 AI', slug: 'claude-ai' },
-    { id: 'uncategorized', name: '미분류', slug: 'uncategorized' }
-  ]
-  
-  // 모든 카테고리 병합
-  const allCategories = [...defaultCategories]
-  savedCategories.forEach((saved: Category) => {
-    const existingIndex = allCategories.findIndex(cat => cat.id === saved.id)
-    if (existingIndex >= 0) {
-      allCategories[existingIndex] = saved
-    } else {
-      allCategories.push(saved)
-    }
-  })
-  
-  // 업데이트할 카테고리 찾기
-  const existingIndex = allCategories.findIndex(c => c.id === category.id)
   if (existingIndex >= 0) {
-    allCategories[existingIndex] = category
+    categories[existingIndex] = category
   } else {
-    allCategories.push(category)
+    categories.push(category)
   }
   
-  // 모든 카테고리를 저장 (기본 카테고리 포함)
-  localStorage.setItem(CATEGORY_KEY, JSON.stringify(allCategories))
+  localStorage.setItem(CATEGORY_KEY, JSON.stringify(categories))
 }
 
 export const deleteCategory = (categoryId: string) => {
@@ -292,11 +269,8 @@ export const deleteCategory = (categoryId: string) => {
     return false
   }
   
-  const categories = localStorage.getItem(CATEGORY_KEY)
-  const savedCategories = categories ? JSON.parse(categories) : []
-  
-  // 카테고리 삭제
-  const filtered = savedCategories.filter((c: Category) => c.id !== categoryId)
+  const categories = getCategories()
+  const filtered = categories.filter((c: Category) => c.id !== categoryId)
   localStorage.setItem(CATEGORY_KEY, JSON.stringify(filtered))
   
   // 해당 카테고리의 포스트들을 미분류로 이동
