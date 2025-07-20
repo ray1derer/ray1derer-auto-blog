@@ -1,0 +1,230 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and authorization
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?  // For local auth, nullable for OAuth
+  role      Role     @default(EDITOR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  posts     Post[]
+  sessions  Session[]
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// Session management
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Category model
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  isSystem    Boolean  @default(false) // For system categories like 'uncategorized'
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  posts       Post[]
+}
+
+// Post model
+model Post {
+  id           String       @id @default(cuid())
+  title        String
+  content      String       @db.Text
+  description  String?
+  slug         String       @unique
+  status       PostStatus   @default(DRAFT)
+  publishedAt  DateTime?
+  scheduledAt  DateTime?
+  categoryId   String
+  authorId     String
+  viewCount    Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  
+  category     Category     @relation(fields: [categoryId], references: [id])
+  author       User         @relation(fields: [authorId], references: [id])
+  tags         TagsOnPosts[]
+  platforms    PlatformPublication[]
+  media        Media[]
+  
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+}
+
+// Tag model
+model Tag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+  
+  posts     TagsOnPosts[]
+}
+
+// Many-to-many relation between posts and tags
+model TagsOnPosts {
+  postId    String
+  tagId     String
+  assignedAt DateTime @default(now())
+  
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([postId, tagId])
+}
+
+// Platform configuration
+model Platform {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  apiEndpoint String?
+  icon        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  connections PlatformConnection[]
+  publications PlatformPublication[]
+}
+
+// User's platform connections
+model PlatformConnection {
+  id           String   @id @default(cuid())
+  platformId   String
+  userId       String
+  username     String?
+  accessToken  String?  @db.Text // Encrypted in application
+  refreshToken String?  @db.Text // Encrypted in application
+  expiresAt    DateTime?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  platform     Platform @relation(fields: [platformId], references: [id])
+  
+  @@unique([platformId, userId])
+}
+
+// Track publications to platforms
+model PlatformPublication {
+  id          String   @id @default(cuid())
+  postId      String
+  platformId  String
+  externalId  String?  // ID on the external platform
+  url         String?
+  status      PublicationStatus @default(PENDING)
+  publishedAt DateTime?
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  platform    Platform @relation(fields: [platformId], references: [id])
+  
+  @@unique([postId, platformId])
+  @@index([status])
+}
+
+enum PublicationStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+}
+
+// Media files (images, screenshots)
+model Media {
+  id          String   @id @default(cuid())
+  filename    String
+  url         String
+  type        MediaType
+  size        Int      // in bytes
+  width       Int?
+  height      Int?
+  postId      String?
+  createdAt   DateTime @default(now())
+  
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
+}
+
+enum MediaType {
+  IMAGE
+  SCREENSHOT
+  VIDEO
+}
+
+// AI News data
+model AINews {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  source      String
+  sourceUrl   String
+  category    String
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+  
+  @@index([publishedAt])
+  @@index([category])
+}
+
+// Lessons/Courses data
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  content     String   @db.Text
+  category    String   // notion, obsidian, cursor-ai, claude-ai
+  order       Int
+  duration    String?  // e.g., "15 min"
+  difficulty  Difficulty @default(BEGINNER)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category, order])
+  @@index([isPublished])
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}

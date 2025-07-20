@@ -1,13 +1,79 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { PlaywrightTestPanel } from "@/components/playwright-test-panel"
+import { Edit, Trash2, Plus } from "lucide-react"
+import { getCategories, saveCategory, deleteCategory } from "@/lib/storage"
 
 export default function SettingsPage() {
+  const [categories, setCategories] = useState<any[]>([])
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [newCategorySlug, setNewCategorySlug] = useState("")
+  const [editingCategory, setEditingCategory] = useState<any>(null)
+
+  useEffect(() => {
+    loadCategories()
+  }, [])
+
+  const loadCategories = () => {
+    const loadedCategories = getCategories()
+    setCategories(loadedCategories)
+  }
+
+  const handleAddCategory = () => {
+    if (!newCategoryName || !newCategorySlug) {
+      alert("카테고리 이름과 슬러그를 모두 입력해주세요.")
+      return
+    }
+
+    const newCategory = {
+      id: Date.now().toString(),
+      name: newCategoryName,
+      slug: newCategorySlug,
+      postCount: 0
+    }
+
+    saveCategory(newCategory)
+    loadCategories()
+    setNewCategoryName("")
+    setNewCategorySlug("")
+    setShowAddCategory(false)
+  }
+
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category)
+  }
+
+  const handleSaveEdit = () => {
+    if (!editingCategory.name || !editingCategory.slug) {
+      alert("카테고리 이름과 슬러그를 모두 입력해주세요.")
+      return
+    }
+
+    saveCategory(editingCategory)
+    loadCategories()
+    setEditingCategory(null)
+  }
+
+  const handleDeleteCategory = (categoryId: string) => {
+    if (categoryId === 'uncategorized') {
+      alert("미분류 카테고리는 삭제할 수 없습니다.")
+      return
+    }
+
+    if (confirm("정말로 이 카테고리를 삭제하시겠습니까? 해당 카테고리의 모든 포스트는 미분류로 이동됩니다.")) {
+      const success = deleteCategory(categoryId)
+      if (success) {
+        loadCategories()
+      }
+    }
+  }
   return (
     <div>
       <div className="mb-8">
@@ -18,6 +84,102 @@ export default function SettingsPage() {
       </div>
       
       <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>카테고리 관리</CardTitle>
+                <CardDescription>
+                  포스트 카테고리를 관리합니다.
+                </CardDescription>
+              </div>
+              <Button onClick={() => setShowAddCategory(true)} size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                카테고리 추가
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {categories.map((category) => (
+                <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  {editingCategory?.id === category.id ? (
+                    <>
+                      <div className="flex-1 flex gap-2">
+                        <Input
+                          value={editingCategory.name}
+                          onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                          placeholder="카테고리 이름"
+                          className="w-40"
+                        />
+                        <Input
+                          value={editingCategory.slug}
+                          onChange={(e) => setEditingCategory({...editingCategory, slug: e.target.value})}
+                          placeholder="슬러그"
+                          className="w-32"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleSaveEdit}>저장</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingCategory(null)}>취소</Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex-1">
+                        <div className="font-medium">{category.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          슬러그: {category.slug} | 포스트: {category.postCount || 0}개
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditCategory(category)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteCategory(category.id)}
+                          disabled={category.id === 'uncategorized'}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+              
+              {showAddCategory && (
+                <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="카테고리 이름"
+                    className="w-40"
+                  />
+                  <Input
+                    value={newCategorySlug}
+                    onChange={(e) => setNewCategorySlug(e.target.value)}
+                    placeholder="슬러그 (영문)"
+                    className="w-32"
+                  />
+                  <Button size="sm" onClick={handleAddCategory}>추가</Button>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    setShowAddCategory(false)
+                    setNewCategoryName("")
+                    setNewCategorySlug("")
+                  }}>취소</Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
         <Card>
           <CardHeader>
             <CardTitle>프로필 설정</CardTitle>

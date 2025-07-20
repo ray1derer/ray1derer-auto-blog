@@ -18,7 +18,9 @@ import {
   ChevronDown,
   Plus,
   Minus,
-  Layers
+  Layers,
+  Newspaper,
+  Edit2
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { getCategories, saveCategory, deleteCategory, Category } from "@/lib/storage"
@@ -70,6 +72,28 @@ export function Sidebar({ className }: SidebarProps) {
     }
   }
 
+  const [editingCategory, setEditingCategory] = useState<string | null>(null)
+  const [editingName, setEditingName] = useState("")
+
+  const startEditCategory = (category: Category) => {
+    setEditingCategory(category.id)
+    setEditingName(category.name)
+  }
+
+  const updateCategoryName = (categoryId: string) => {
+    if (!editingName.trim()) return
+    
+    const categories = getCategories()
+    const category = categories.find(c => c.id === categoryId)
+    if (category) {
+      category.name = editingName
+      saveCategory(category)
+      setDynamicCategories(getCategories())
+      setEditingCategory(null)
+      setEditingName("")
+    }
+  }
+
   const staticMenuItems = [
     {
       title: "대시보드",
@@ -85,6 +109,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: "예약 발행",
       href: "/schedule",
       icon: <Calendar className="h-4 w-4" />
+    },
+    {
+      title: "AI 뉴스",
+      href: "/ai-news",
+      icon: <Newspaper className="h-4 w-4" />
     },
     {
       title: "플랫폼 연동",
@@ -190,72 +219,161 @@ export function Sidebar({ className }: SidebarProps) {
                       
                       {expandedItems.includes("강좌") && (
                         <div className="mt-1">
-                          <Link href="/categories/lectures/notion">
-                            <Button
-                              variant={pathname === "/categories/lectures/notion" ? "secondary" : "ghost"}
-                              className="w-full justify-start pl-16 mb-1"
-                            >
-                              <FileText className="h-4 w-4" />
-                              <span className="ml-2">노션</span>
-                            </Button>
-                          </Link>
-                          <Link href="/categories/lectures/obsidian">
-                            <Button
-                              variant={pathname === "/categories/lectures/obsidian" ? "secondary" : "ghost"}
-                              className="w-full justify-start pl-16 mb-1"
-                            >
-                              <FileText className="h-4 w-4" />
-                              <span className="ml-2">옵시디언</span>
-                            </Button>
-                          </Link>
-                          <Link href="/categories/lectures/cursor-ai">
-                            <Button
-                              variant={pathname === "/categories/lectures/cursor-ai" ? "secondary" : "ghost"}
-                              className="w-full justify-start pl-16 mb-1"
-                            >
-                              <FileText className="h-4 w-4" />
-                              <span className="ml-2">커서 AI</span>
-                            </Button>
-                          </Link>
-                          <Link href="/categories/lectures/claude-ai">
-                            <Button
-                              variant={pathname === "/categories/lectures/claude-ai" ? "secondary" : "ghost"}
-                              className="w-full justify-start pl-16 mb-1"
-                            >
-                              <FileText className="h-4 w-4" />
-                              <span className="ml-2">클로드 AI</span>
-                            </Button>
-                          </Link>
+                          {dynamicCategories.filter(cat => ['notion', 'obsidian', 'cursor-ai', 'claude-ai'].includes(cat.id)).map((category) => (
+                            <div key={category.id} className="flex items-center group">
+                              {editingCategory === category.id ? (
+                                <div className="flex items-center pl-16 pr-2 flex-1">
+                                  <input
+                                    type="text"
+                                    value={editingName}
+                                    onChange={(e) => setEditingName(e.target.value)}
+                                    onKeyPress={(e) => {
+                                      if (e.key === 'Enter') updateCategoryName(category.id)
+                                      if (e.key === 'Escape') {
+                                        setEditingCategory(null)
+                                        setEditingName("")
+                                      }
+                                    }}
+                                    onBlur={() => updateCategoryName(category.id)}
+                                    className="flex-1 px-2 py-1 text-sm border rounded"
+                                    autoFocus
+                                  />
+                                  <Button
+                                    size="sm"
+                                    className="ml-1 h-6 px-2"
+                                    onClick={() => updateCategoryName(category.id)}
+                                  >
+                                    저장
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="ml-1 h-6 px-2"
+                                    onClick={() => {
+                                      setEditingCategory(null)
+                                      setEditingName("")
+                                    }}
+                                  >
+                                    취소
+                                  </Button>
+                                </div>
+                              ) : (
+                                <>
+                                  <Link href={`/categories/lectures/${category.slug}`} className="flex-1">
+                                    <Button
+                                      variant={pathname === `/categories/lectures/${category.slug}` ? "secondary" : "ghost"}
+                                      className="w-full justify-start pl-16 mb-1"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      <span className="ml-2">{category.name}</span>
+                                    </Button>
+                                  </Link>
+                                  <div className="flex opacity-0 group-hover:opacity-100">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="p-1 h-6 w-6"
+                                      onClick={() => startEditCategory(category)}
+                                      title="수정"
+                                    >
+                                      <Edit2 className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="p-1 h-6 w-6"
+                                      onClick={() => removeCategory(category.id)}
+                                      title="삭제"
+                                    >
+                                      <Minus className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
                     
-                    {/* 동적 카테고리들 */}
+                    {/* 모든 카테고리들 (기본 카테고리 포함) */}
                     {dynamicCategories.filter(cat => !['notion', 'obsidian', 'cursor-ai', 'claude-ai'].includes(cat.id)).map((category) => (
                       <div key={category.id} className="flex items-center group">
-                        <Link href={`/categories/${category.slug}`} className="flex-1">
-                          <Button
-                            variant={pathname === `/categories/${category.slug}` ? "secondary" : "ghost"}
-                            className="w-full justify-start pl-8 mb-1"
-                          >
-                            <FileText className="h-4 w-4" />
-                            <span className="ml-2">{category.name}</span>
-                            {category.postCount ? (
-                              <span className="ml-auto text-xs text-muted-foreground">
-                                {category.postCount}
-                              </span>
-                            ) : null}
-                          </Button>
-                        </Link>
-                        {!['uncategorized'].includes(category.id) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="p-1 h-6 w-6 opacity-0 group-hover:opacity-100"
-                            onClick={() => removeCategory(category.id)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
+                        {editingCategory === category.id ? (
+                          <div className="flex items-center pl-8 pr-2 flex-1">
+                            <input
+                              type="text"
+                              value={editingName}
+                              onChange={(e) => setEditingName(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') updateCategoryName(category.id)
+                                if (e.key === 'Escape') {
+                                  setEditingCategory(null)
+                                  setEditingName("")
+                                }
+                              }}
+                              onBlur={() => updateCategoryName(category.id)}
+                              className="flex-1 px-2 py-1 text-sm border rounded"
+                              autoFocus
+                            />
+                            <Button
+                              size="sm"
+                              className="ml-1 h-6 px-2"
+                              onClick={() => updateCategoryName(category.id)}
+                            >
+                              저장
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="ml-1 h-6 px-2"
+                              onClick={() => {
+                                setEditingCategory(null)
+                                setEditingName("")
+                              }}
+                            >
+                              취소
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <Link href={`/categories/${category.slug}`} className="flex-1">
+                              <Button
+                                variant={pathname === `/categories/${category.slug}` ? "secondary" : "ghost"}
+                                className="w-full justify-start pl-8 mb-1"
+                              >
+                                <FileText className="h-4 w-4" />
+                                <span className="ml-2">{category.name}</span>
+                                {category.postCount ? (
+                                  <span className="ml-auto text-xs text-muted-foreground">
+                                    {category.postCount}
+                                  </span>
+                                ) : null}
+                              </Button>
+                            </Link>
+                            {!['uncategorized'].includes(category.id) && (
+                              <div className="flex opacity-0 group-hover:opacity-100">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-1 h-6 w-6"
+                                  onClick={() => startEditCategory(category)}
+                                  title="수정"
+                                >
+                                  <Edit2 className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-1 h-6 w-6"
+                                  onClick={() => removeCategory(category.id)}
+                                  title="삭제"
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     ))}
