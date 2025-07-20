@@ -1,0 +1,17 @@
+# Ray1derer Auto Blog robots.txt
+# https://www.robotstxt.org/robotstxt.html
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /settings
+Disallow: /*/edit
+
+# Crawl-delay for responsible crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: http://localhost:3000/sitemap.xml
