@@ -30,55 +30,31 @@ jobs:
         echo "$EC2_KEY" > deploy_key.pem
         chmod 600 deploy_key.pem
         
-        # 프로젝트 압축
-        tar -czf deploy.tar.gz \
-          --exclude='node_modules' \
-          --exclude='.git' \
-          --exclude='.github' \
-          --exclude='.next' \
-          --exclude='.env.local' \
-          --exclude='*.log' \
-          .
-        
-        # EC2로 파일 전송
-        scp -o StrictHostKeyChecking=no -i deploy_key.pem \
-          deploy.tar.gz $EC2_USER@$EC2_HOST:~/
-        
         # EC2에서 배포 실행
         ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << 'EOF'
-          # 기존 컨테이너 정리
-          cd ray1derer-auto-blog 2>/dev/null && docker-compose down -v || true
-          docker system prune -af || true
+          # 프로젝트 디렉토리로 이동
+          cd ~/blog
           
-          # 기존 디렉토리 삭제
-          sudo rm -rf ray1derer-auto-blog
+          # 최신 코드 가져오기
+          git pull origin main
           
-          # 새 디렉토리 생성 및 압축 해제
-          mkdir ray1derer-auto-blog
-          tar -xzf deploy.tar.gz -C ray1derer-auto-blog
-          cd ray1derer-auto-blog
+          # 의존성 설치
+          npm install
           
-          # 환경 변수 설정
-          cat > .env << EOL
-          NODE_ENV=production
-          DATABASE_URL=postgresql://localhost:5432/ray1derer_blog
-          NEXT_PUBLIC_APP_URL=http://${{ secrets.EC2_HOST }}
-        EOL
+          # 프로덕션 빌드
+          npm run build
           
-          # Docker 빌드 및 실행
-          docker-compose build
-          docker-compose up -d
+          # PM2로 재시작
+          pm2 restart blog || pm2 start npm --name "blog" -- start
           
           # 상태 확인
-          docker-compose ps
+          pm2 status blog
           
-          # 정리
-          cd ..
-          rm deploy.tar.gz
+          echo "Deployment completed successfully! 🚀"
         EOF
         
         # 로컬 정리
-        rm deploy_key.pem deploy.tar.gz
+        rm deploy_key.pem
     
     - name: Health check
       run: |
