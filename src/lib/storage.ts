@@ -220,7 +220,7 @@ export const getCategories = (): Category[] => {
   const categories = localStorage.getItem(CATEGORY_KEY)
   const savedCategories = categories ? JSON.parse(categories) : []
   
-  // 기본 카테고리 추가
+  // 기본 카테고리들
   const defaultCategories: Category[] = [
     { id: 'notion', name: '노션', slug: 'notion' },
     { id: 'obsidian', name: '옵시디언', slug: 'obsidian' },
@@ -229,54 +229,75 @@ export const getCategories = (): Category[] => {
     { id: 'uncategorized', name: '미분류', slug: 'uncategorized' }
   ]
   
-  // 저장된 카테고리와 기본 카테고리 병합 (중복 제거)
-  const allCategories = [...defaultCategories]
-  savedCategories.forEach((saved: Category) => {
-    if (!allCategories.find(cat => cat.id === saved.id)) {
-      allCategories.push(saved)
-    }
-  })
+  // 저장된 카테고리가 없으면 기본 카테고리 반환
+  if (savedCategories.length === 0) {
+    const posts = getPosts()
+    return defaultCategories.map(cat => ({
+      ...cat,
+      postCount: posts.filter(post => post.category === cat.slug).length
+    }))
+  }
   
-  // 각 카테고리의 포스트 수 계산
+  // 저장된 카테고리가 있으면 그대로 사용
   const posts = getPosts()
-  return allCategories.map(cat => ({
+  return savedCategories.map((cat: Category) => ({
     ...cat,
     postCount: posts.filter(post => post.category === cat.slug).length
   }))
 }
 
 export const saveCategory = (category: Category) => {
-  const categories = getCategories()
-  const existingIndex = categories.findIndex(c => c.id === category.id)
+  if (typeof window === 'undefined') return
   
+  const categories = localStorage.getItem(CATEGORY_KEY)
+  const savedCategories = categories ? JSON.parse(categories) : []
+  
+  // 기본 카테고리들
+  const defaultCategories: Category[] = [
+    { id: 'notion', name: '노션', slug: 'notion' },
+    { id: 'obsidian', name: '옵시디언', slug: 'obsidian' },
+    { id: 'cursor-ai', name: '커서 AI', slug: 'cursor-ai' },
+    { id: 'claude-ai', name: '클로드 AI', slug: 'claude-ai' },
+    { id: 'uncategorized', name: '미분류', slug: 'uncategorized' }
+  ]
+  
+  // 모든 카테고리 병합
+  const allCategories = [...defaultCategories]
+  savedCategories.forEach((saved: Category) => {
+    const existingIndex = allCategories.findIndex(cat => cat.id === saved.id)
+    if (existingIndex >= 0) {
+      allCategories[existingIndex] = saved
+    } else {
+      allCategories.push(saved)
+    }
+  })
+  
+  // 업데이트할 카테고리 찾기
+  const existingIndex = allCategories.findIndex(c => c.id === category.id)
   if (existingIndex >= 0) {
-    categories[existingIndex] = category
+    allCategories[existingIndex] = category
   } else {
-    categories.push(category)
+    allCategories.push(category)
   }
   
-  // 기본 카테고리는 저장하지 않음
-  const customCategories = categories.filter(cat => 
-    !['notion', 'obsidian', 'cursor-ai', 'claude-ai', 'uncategorized'].includes(cat.id)
-  )
-  
-  localStorage.setItem(CATEGORY_KEY, JSON.stringify(customCategories))
+  // 모든 카테고리를 저장 (기본 카테고리 포함)
+  localStorage.setItem(CATEGORY_KEY, JSON.stringify(allCategories))
 }
 
 export const deleteCategory = (categoryId: string) => {
-  // 기본 카테고리는 삭제 불가
-  if (['notion', 'obsidian', 'cursor-ai', 'claude-ai', 'uncategorized'].includes(categoryId)) {
+  if (typeof window === 'undefined') return false
+  
+  // 미분류 카테고리는 삭제 불가 (최소 하나의 카테고리는 필요)
+  if (categoryId === 'uncategorized') {
     return false
   }
   
-  const categories = getCategories()
-  const filtered = categories.filter(c => c.id !== categoryId)
+  const categories = localStorage.getItem(CATEGORY_KEY)
+  const savedCategories = categories ? JSON.parse(categories) : []
   
-  const customCategories = filtered.filter(cat => 
-    !['notion', 'obsidian', 'cursor-ai', 'claude-ai', 'uncategorized'].includes(cat.id)
-  )
-  
-  localStorage.setItem(CATEGORY_KEY, JSON.stringify(customCategories))
+  // 카테고리 삭제
+  const filtered = savedCategories.filter((c: Category) => c.id !== categoryId)
+  localStorage.setItem(CATEGORY_KEY, JSON.stringify(filtered))
   
   // 해당 카테고리의 포스트들을 미분류로 이동
   const posts = getPosts()
