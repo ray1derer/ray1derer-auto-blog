@@ -101,11 +101,6 @@ export function Sidebar({ className }: SidebarProps) {
       icon: <Home className="h-4 w-4" />
     },
     {
-      title: "포스트 관리",
-      href: "/posts",
-      icon: <FileText className="h-4 w-4" />
-    },
-    {
       title: "예약 발행",
       href: "/schedule",
       icon: <Calendar className="h-4 w-4" />
