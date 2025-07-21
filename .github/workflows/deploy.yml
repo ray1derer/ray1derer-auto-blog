@@ -23,6 +23,10 @@ jobs:
         echo "$EC2_KEY" > deploy_key.pem
         chmod 600 deploy_key.pem
         
+        # SSH 연결 테스트
+        echo "Testing SSH connection to $EC2_HOST..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i deploy_key.pem $EC2_USER@$EC2_HOST "echo 'SSH connection successful!'"
+        
         # EC2에서 배포 실행
         ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << 'EOF'
           # 프로젝트 디렉토리로 이동
