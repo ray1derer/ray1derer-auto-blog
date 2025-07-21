@@ -12,6 +12,7 @@ import { ArrowLeft, Save, Calendar, Eye, Sparkles, ImagePlus, Image } from "luci
 import Link from "next/link"
 import { ScreenshotGallery } from "@/components/screenshot-gallery"
 import { getCategories } from "@/lib/storage"
+import { TagInput } from "@/components/ui/tag-input"
 
 export default function NewPostContent() {
   const router = useRouter()
@@ -20,7 +21,7 @@ export default function NewPostContent() {
   const [content, setContent] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
-  const [tags, setTags] = useState("")
+  const [tags, setTags] = useState<string[]>([])
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [scheduleDate, setScheduleDate] = useState("")
   const [scheduleTime, setScheduleTime] = useState("")
@@ -102,7 +103,7 @@ export default function NewPostContent() {
       category,
       status: 'draft' as const,
       date: new Date().toISOString().split('T')[0],
-      tags: tags.split(',').map(t => t.trim()).filter(Boolean)
+      tags: tags
     }
     
     savePost(newPost)
@@ -196,7 +197,7 @@ export default function NewPostContent() {
       scheduledDate: scheduleDate,
       scheduledTime: scheduleTime,
       platforms: selectedPlatforms,
-      tags: tags.split(',').map(t => t.trim()).filter(Boolean)
+      tags: tags
     }
     
     savePost(newPost)
@@ -291,11 +292,10 @@ export default function NewPostContent() {
 
               <div>
                 <Label htmlFor="tags">태그</Label>
-                <Input
-                  id="tags"
-                  placeholder="태그를 쉼표로 구분하여 입력하세요"
+                <TagInput
                   value={tags}
-                  onChange={(e) => setTags(e.target.value)}
+                  onChange={setTags}
+                  placeholder="태그를 입력하세요 (쉼표로 구분)"
                 />
               </div>
             </div>

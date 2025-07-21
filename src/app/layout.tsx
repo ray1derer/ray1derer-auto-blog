@@ -73,6 +73,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: SITE_URL,
+    types: {
+      'application/rss+xml': [
+        { url: '/rss.xml', title: `${DEFAULT_SITE_NAME} - RSS Feed` }
+      ]
+    }
   },
   manifest: "/manifest.json",
   icons: {

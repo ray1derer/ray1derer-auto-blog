@@ -20,7 +20,8 @@ import {
   Minus,
   Layers,
   Newspaper,
-  Edit2
+  Edit2,
+  Tag
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { getCategories, saveCategory, deleteCategory, Category } from "@/lib/storage"
@@ -159,6 +160,17 @@ export function Sidebar({ className }: SidebarProps) {
                   </Button>
                 </Link>
               ))}
+              
+              {/* 태그 메뉴 */}
+              <Link href="/tags">
+                <Button
+                  variant={pathname === "/tags" ? "secondary" : "ghost"}
+                  className="w-full justify-start mb-1"
+                >
+                  <Tag className="h-4 w-4" />
+                  <span className="ml-2">태그</span>
+                </Button>
+              </Link>
               
               {/* 블로그 관리 섹션 */}
               <div>

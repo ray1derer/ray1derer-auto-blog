@@ -284,3 +284,76 @@ export const deleteCategory = (categoryId: string) => {
   
   return true
 }
+
+// 태그 관련 함수들
+export interface Tag {
+  name: string
+  count: number
+}
+
+// 모든 태그 가져오기
+export const getTags = (): Tag[] => {
+  const posts = getPosts()
+  const tagMap = new Map<string, number>()
+  
+  posts.forEach(post => {
+    if (post.tags && Array.isArray(post.tags)) {
+      post.tags.forEach(tag => {
+        const normalizedTag = tag.trim().toLowerCase()
+        if (normalizedTag) {
+          tagMap.set(normalizedTag, (tagMap.get(normalizedTag) || 0) + 1)
+        }
+      })
+    }
+  })
+  
+  return Array.from(tagMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+}
+
+// 인기 태그 가져오기 (사용 빈도 기준)
+export const getPopularTags = (limit: number = 10): Tag[] => {
+  const tags = getTags()
+  return tags.sort((a, b) => b.count - a.count).slice(0, limit)
+}
+
+// 특정 태그의 포스트 가져오기
+export const getPostsByTag = (tag: string): Post[] => {
+  const posts = getPosts()
+  const normalizedTag = tag.trim().toLowerCase()
+  
+  return posts.filter(post => {
+    if (!post.tags || !Array.isArray(post.tags)) return false
+    return post.tags.some(t => t.trim().toLowerCase() === normalizedTag)
+  })
+}
+
+// 태그 자동완성을 위한 함수
+export const searchTags = (query: string): string[] => {
+  const tags = getTags()
+  const normalizedQuery = query.trim().toLowerCase()
+  
+  if (!normalizedQuery) return tags.slice(0, 10).map(t => t.name)
+  
+  return tags
+    .filter(tag => tag.name.includes(normalizedQuery))
+    .sort((a, b) => {
+      // 정확히 일치하는 태그를 우선 정렬
+      const aExact = a.name === normalizedQuery
+      const bExact = b.name === normalizedQuery
+      if (aExact && !bExact) return -1
+      if (!aExact && bExact) return 1
+      
+      // 시작 부분이 일치하는 태그를 우선 정렬
+      const aStarts = a.name.startsWith(normalizedQuery)
+      const bStarts = b.name.startsWith(normalizedQuery)
+      if (aStarts && !bStarts) return -1
+      if (!aStarts && bStarts) return 1
+      
+      // 사용 빈도순 정렬
+      return b.count - a.count
+    })
+    .slice(0, 10)
+    .map(t => t.name)
+}
